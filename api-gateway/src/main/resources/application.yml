@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - Content-Type
+              - Authorization
+              - X-Requested-With
+              - Refresh-Token
+            allowCredentials: true
+            maxAge: 3600
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        
+
+
+server:
+  port: ${PORT}
+
+eureka:
+  instance:
+    hostname: ${spring.application.name}
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${random.value}
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL}
+
+logging:
+  level:
+    root: TRACE
