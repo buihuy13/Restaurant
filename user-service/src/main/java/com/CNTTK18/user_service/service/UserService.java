@@ -2,12 +2,14 @@ package com.CNTTK18.user_service.service;
 
 import java.util.List;
 
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.CNTTK18.Common.Event.ConfirmationEvent;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.user_service.dto.request.Login;
 import com.CNTTK18.user_service.dto.request.Register;
@@ -18,6 +20,7 @@ import com.CNTTK18.user_service.exception.InactivateException;
 import com.CNTTK18.user_service.model.Users;
 import com.CNTTK18.user_service.repository.UserRepository;
 import com.CNTTK18.user_service.util.UserUtil;
+import org.springframework.kafka.core.KafkaTemplate;
 
 @Service
 public class UserService {
@@ -25,12 +28,14 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final KafkaTemplate kafkaTemplate;
     public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, 
-                       AuthenticationManager authenticationManager, JwtService jwtService) {
+                       AuthenticationManager authenticationManager, JwtService jwtService, KafkaTemplate kafkaTemplate) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -63,6 +68,8 @@ public class UserService {
         newUser.setEnabled(false);
         newUser.setVerficationCode(java.util.UUID.randomUUID().toString());
         newUser.setRole("USER");
+        kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(newUser.getEmail(), 
+                                        "api/users/confirmation?code=" + newUser.getVerficationCode()));
         userRepository.save(newUser);
     }
 
@@ -97,7 +104,6 @@ public class UserService {
         if (user.isEnabled()) {
             throw new IllegalStateException("Account is already activated");
         }
-        
-        // Gửi email xác thực (chưa làm)
+        kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(email, "api/users/confirmation?code=" + user.getVerficationCode()));
     }
 }

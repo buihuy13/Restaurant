@@ -4,5 +4,6 @@ include (
     ":api-gateway",
     ":service-discovery",
     ":user-service",
-    ":Common"
+    ":Common",
+    ":notification-service"
 )
