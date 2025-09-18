@@ -26,8 +26,38 @@ spring:
       discovery:
         locator:
           enabled: true
-          lower-case-service-id: true
+          #lower-case-service-id: true
       routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+            - Method=GET, PUT
+          filters:
+            - name: JwtAuthentication
+        - id: user-service-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+            - Method=POST, DELETE
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: ADMIN
+        - id: user-service-docs
+          uri: lb://user-service
+          predicates:
+            - Path=/v3/api-docs/user-service
+        - id: eureka
+          uri: ${EUREKA_SERVER_URI}
+          predicates:
+          - Path=/eureka/web
+          filters:
+          - SetPath=/
+        - id: eureka-static
+          uri: ${EUREKA_SERVER_URI}
+          predicates:
+          - Path=/eureka/** 
         
 
 
@@ -36,9 +66,9 @@ server:
 
 eureka:
   instance:
-    hostname: ${spring.application.name}
-    prefer-ip-address: false
-    instance-id: ${spring.application.name}:${random.value}
+    #hostname: ${spring.application.name}
+    #prefer-ip-address: false
+    #instance-id: ${spring.application.name}:${random.value}
   client:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL}
@@ -46,3 +76,11 @@ eureka:
 logging:
   level:
     root: TRACE
+
+#Swagger
+springdoc:
+  swagger-ui: 
+    path: /api-docs/swagger-ui.html
+    urls:
+      - name: User Service
+        url: /v3/api-docs/user-service

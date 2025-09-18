@@ -5,6 +5,7 @@ plugins {
 extra["springCloudVersion"] = "2025.0.0"
 
 dependencies {
+	implementation(project(":Common"))
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -14,13 +15,17 @@ dependencies {
     //implementation("org.springframework.boot:spring-boot-starter-actuator")
     //implementation("io.micrometer:micrometer-tracing-bridge-brave")
     //implementation("io.zipkin.reporter2:zipkin-reporter-brave")
-	implementation("org.springframework.cloud:spring-cloud-starter-gateway")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	implementation("io.jsonwebtoken:jjwt-api:0.12.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.5")
-	implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.8")
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+	runtimeOnly("com.mysql:mysql-connector-j")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	testImplementation("org.springframework.security:spring-security-test")
+	implementation("org.springframework.boot:spring-boot-starter-web")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
 }
 
 dependencyManagement {

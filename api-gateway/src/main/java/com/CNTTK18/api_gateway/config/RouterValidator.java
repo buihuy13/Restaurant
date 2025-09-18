@@ -11,7 +11,15 @@ import org.springframework.stereotype.Component;
 public class RouterValidator {
     //List các endpoints không cần thêm authentication filter
     public static final List<String> openApiEndpoints = List.of(
-        "/eureka/web"
+        "/api/users/login",
+        "/api/users/register",
+        "/eureka/web",
+        "/api/users/confirmation",
+        "/api/users/email",
+        "/v3/api-docs/**",
+        "/swagger-ui.html",
+        "/swagger-ui/**",
+        "/api-docs/swagger-ui.html"
     );
 
     public Predicate<ServerHttpRequest> isSecured =

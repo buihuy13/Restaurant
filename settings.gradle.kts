@@ -2,5 +2,7 @@ rootProject.name = "Restaurant"
 
 include (
     ":api-gateway",
-    ":service-discovery"
+    ":service-discovery",
+    ":user-service",
+    ":Common"
 )
