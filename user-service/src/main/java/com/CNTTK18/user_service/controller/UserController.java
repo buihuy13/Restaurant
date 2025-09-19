@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.user_service.dto.request.Login;
 import com.CNTTK18.user_service.dto.request.Register;
+import com.CNTTK18.user_service.dto.request.Rejection;
 import com.CNTTK18.user_service.dto.request.UserRequest;
 import com.CNTTK18.user_service.dto.response.TokenResponse;
 import com.CNTTK18.user_service.dto.response.UserResponse;
@@ -96,5 +97,28 @@ public class UserController {
     public ResponseEntity<Void> reSendVerificationEmail(@RequestParam String email) {
         userService.sendVerificationEmail(email);
         return ResponseEntity.ok().build();
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get roles")
+    @GetMapping("/roles")
+    public ResponseEntity<List<String>> getRoles() {
+        return ResponseEntity.ok(userService.getRoles());
+    }
+
+    @Tag(name = "Put")
+    @Operation(summary = "Approve merchant")
+    @PutMapping("/approvement/{id}")
+    public ResponseEntity<MessageResponse> approveMerchant(@PathVariable String id) {
+        userService.approveMerchant(id);
+        return ResponseEntity.ok(new MessageResponse("Merchant approved successfully"));
+    }
+
+    @Tag(name = "Delete")
+    @Operation(summary = "Reject merchant")
+    @DeleteMapping("/rejection/{id}")
+    public ResponseEntity<MessageResponse> rejectMerchant(@PathVariable String id, @RequestBody @Valid Rejection rejection) {
+        userService.rejectMerchant(id, rejection);
+        return ResponseEntity.ok(new MessageResponse("Merchant rejected successfully"));
     }
 }

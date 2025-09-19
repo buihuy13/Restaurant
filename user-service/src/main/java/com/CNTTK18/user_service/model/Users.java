@@ -1,8 +1,14 @@
 package com.CNTTK18.user_service.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -33,4 +39,23 @@ public class Users {
     @Column(name = "verificationcode")
     private String verficationCode;
     private String role;
+    private String phone;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Address> addressList;
+
+    public List<Address> getAddressList() {
+        if (addressList == null) {
+            return new ArrayList<Address>();
+        }
+        return addressList;
+    }
+
+    public void setAddressList(List<Address> addressList) {
+        if (addressList == null) {
+            this.addressList = new ArrayList<Address>();
+            return;
+        }
+        this.addressList = addressList;
+    }
 }

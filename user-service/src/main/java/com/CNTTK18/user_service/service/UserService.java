@@ -1,5 +1,6 @@
 package com.CNTTK18.user_service.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.kafka.core.KafkaTemplate;
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Service;
 
 import com.CNTTK18.Common.Event.ConfirmationEvent;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
+import com.CNTTK18.user_service.data.Role;
 import com.CNTTK18.user_service.dto.request.Login;
 import com.CNTTK18.user_service.dto.request.Register;
+import com.CNTTK18.user_service.dto.request.Rejection;
 import com.CNTTK18.user_service.dto.request.UserRequest;
 import com.CNTTK18.user_service.dto.response.TokenResponse;
 import com.CNTTK18.user_service.dto.response.UserResponse;
@@ -52,7 +55,8 @@ public class UserService {
         existingUser.setUsername(user.getUsername());
         existingUser.setEmail(user.getEmail());
         userRepository.save(existingUser);
-        return new UserResponse(existingUser.getId(),user.getUsername(),user.getEmail(), existingUser.isEnabled(), existingUser.getRole());
+        return new UserResponse(existingUser.getId(),user.getUsername(),user.getEmail(), 
+                                existingUser.isEnabled(), existingUser.getRole(), existingUser.getPhone());
     }
 
     public void deleteUserById(String id) {
@@ -67,7 +71,7 @@ public class UserService {
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
         newUser.setEnabled(false);
         newUser.setVerficationCode(java.util.UUID.randomUUID().toString());
-        newUser.setRole("USER");
+        newUser.setRole(user.getRole());
         kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(newUser.getEmail(), 
                                         "api/users/confirmation?code=" + newUser.getVerficationCode()));
         userRepository.save(newUser);
@@ -105,5 +109,29 @@ public class UserService {
             throw new IllegalStateException("Account is already activated");
         }
         kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(email, "api/users/confirmation?code=" + user.getVerficationCode()));
+    }
+
+    public List<String> getRoles() {
+        return java.util.Arrays.asList(Role.USER.toString(), Role.ADMIN.toString(), Role.MERCHANT.toString());
+    }
+
+    public void approveMerchant(String id) {
+        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if (!user.getRole().equals(Role.MERCHANT.toString())) {
+            throw new IllegalStateException("User is not a merchant");
+        }
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        //Send congratulation email to merchant
+    }
+
+    public void rejectMerchant(String id, Rejection rejection) {
+        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if (!user.getRole().equals(Role.MERCHANT.toString())) {
+            throw new IllegalStateException("User is not a merchant");
+        }
+        //Send rejection email to merchant
+        userRepository.deleteById(id);
     }
 }
