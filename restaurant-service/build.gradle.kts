@@ -23,6 +23,10 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+	implementation("com.cloudinary:cloudinary-core:2.3.2")
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
+    testImplementation("io.projectreactor:reactor-test")
+  	implementation("org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j")
 }
 
 dependencyManagement {

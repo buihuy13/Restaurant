@@ -15,7 +15,7 @@ create table users (
 
 create table address (
     id varchar(255) primary key,
-    location varchar(255) not null,
+    `location` varchar(255) not null,
     user_id varchar(255) not null references users(id)
 );
 
@@ -25,62 +25,67 @@ use `restaurant-service`;
 
 create table categories (
     id varchar(10) primary key,
-    name varchar(100) not null unique
+    `catename` varchar(100) not null unique
 );
 
 create table restaurants (
     id varchar(255) primary key,
-    `name` varchar(255) not null,
+    `resname` varchar(255) not null,
     `address` varchar(255) not null,
-    rating float not null,
+    rating float,
     openingtime time not null,
     closingtime time not null,
-    `imagename` varchar(255) not null,
-    `imagetype` varchar(50) not null,
-    `imagedata` longblob not null,
-    merchant_id varchar(255) not null 
+    imageurl varchar(255),
+    publicid varchar(255),
+    phone varchar(15),
+    merchant_id varchar(255) not null,
+    `enabled` boolean not null
 );
 
 create table restaurant_categories (
-    id varchar(255) primary key,
-    restaurant_id varchar(255) not null references restaurants(id),
-    category_id varchar(10) not null references categories(id),
-    UNIQUE KEY unique_restaurant_category (restaurant_id, category_id)
+    restaurant_id varchar(255) not null,
+    category_id varchar(10) not null,
+    PRIMARY KEY (restaurant_id, category_id),
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(id),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
 );
 
 create table size (
-    id varchar(10) primary key,
-    name varchar(50) not null unique
+    id varchar(5) primary key,
+    `name` varchar(50) not null unique
 );
 
 create table products (
     id varchar(255) primary key,
-    name varchar(255) not null,
+    product_name varchar(255) not null,
     `description` text not null,
-    price decimal not null,
     restaurant_id varchar(255) not null references restaurants(id),
-    imagename varchar(255) not null,
-    imagetype varchar(50) not null,
-    imagedata longblob not null,
+    imageurl varchar(255),
+    publicid varchar(255),
     category_id varchar(10) not null references categories(id),
     volume int not null,
+    total_review int,
+    rating float,
     available boolean not null
 );
 
 create table product_sizes (
-    id varchar(255) primary key,
-    product_id varchar(255) not null references products(id),
-    size_id varchar(10) not null references size(id),
-    UNIQUE KEY unique_product_size (product_id, size_id)
+    product_id varchar(255) not null,
+    size_id varchar(10) not null,
+    price decimal not null,
+    PRIMARY KEY (product_id, size_id),
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (size_id) REFERENCES size(id)
 );
 
 create table reviews (
     id varchar(200) primary key,
     title varchar(255) not null,
     content text not null,
-    rating float not null,
+    rating float,
     review_id varchar(255) not null,
     review_type varchar(20) not null,
     created_at timestamp default current_timestamp,
+    total_review int,
     user_id varchar(255) not null
 );

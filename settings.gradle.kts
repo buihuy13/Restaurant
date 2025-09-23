@@ -6,5 +6,5 @@ include (
     ":user-service",
     ":Common",
     ":notification-service",
-    ":restaurant-service",
+    ":restaurant-service"
 )
