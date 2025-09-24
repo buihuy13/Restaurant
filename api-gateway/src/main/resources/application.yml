@@ -58,6 +58,17 @@ spring:
           uri: ${EUREKA_SERVER_URI}
           predicates:
           - Path=/eureka/** 
+        - id: restaurant-service
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/restaurants/**
+            - Method=GET
+          filters:
+            - name: JwtAuthentication
+        - id: restaurant-service-docs
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/v3/api-docs/restaurant-service
         
 
 
@@ -84,3 +95,5 @@ springdoc:
     urls:
       - name: User Service
         url: /v3/api-docs/user-service
+      - name: Restaurant Service
+        url: /v3/api-docs/restaurant-service
