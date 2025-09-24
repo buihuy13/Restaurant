@@ -64,7 +64,6 @@ spring:
           uri: lb://restaurant-service
           predicates:
             - Path=/api/size/**, /api/restaurant/**, /api/products/**, /api/category/**, /api/review/**
-            - Method=GET
           filters:
             - name: JwtAuthentication
         - id: restaurant-service-docs
