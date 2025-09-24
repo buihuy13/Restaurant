@@ -47,7 +47,7 @@ public class cateController {
 
     @Tag(name = "Get")
     @Operation(summary = "Get category by cate's name")
-    @GetMapping("")
+    @GetMapping("/search")
     public ResponseEntity<categories> getCateByName(@RequestParam String name) {
         return ResponseEntity.ok(cateService.getCateByName(name));
     }
