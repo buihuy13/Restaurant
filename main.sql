@@ -3,7 +3,7 @@ create database if not exists `user-service`;
 use `user-service`;
 
 create table users (
-    id varchar(255) primary key,
+    id varchar(100) primary key,
     username varchar(255) not null,
     email varchar(255) not null unique,
     `password` varchar(255) not null,
@@ -92,4 +92,18 @@ create table reviews (
     created_at timestamp default current_timestamp,
     total_review int,
     user_id varchar(255) not null
+);
+
+drop database if exists `chat-service`;
+create database if not exists `chat-service`;
+use `chat-service`;
+
+create table messages (
+    id varchar(255) primary key,
+    sender_id varchar(255) not null,
+    receiver_id varchar(255),
+    content text not null,
+    roomtype varchar(30) not null,
+    room_id varchar(255) not null,
+    `timestamp` timestamp default current_timestamp
 );
