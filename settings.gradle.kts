@@ -5,5 +5,6 @@ include (
     ":service-discovery",
     ":user-service",
     ":Common",
-    ":notification-service"
+    ":notification-service",
+    ":restaurant-service"
 )

@@ -9,7 +9,9 @@ spring:
         add-to-simple-url-handler-mapping: true
         cors-configurations:
           '[/**]':
-            allowedOrigins: "http://localhost:3000"
+            allowedOrigins:
+              - "http://localhost:3000"
+              - "http://localhost:8080"
             allowedMethods:
               - GET
               - POST
@@ -58,6 +60,16 @@ spring:
           uri: ${EUREKA_SERVER_URI}
           predicates:
           - Path=/eureka/** 
+        - id: restaurant-service
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/size/**, /api/restaurant/**, /api/products/**, /api/category/**, /api/review/**
+          filters:
+            - name: JwtAuthentication
+        - id: restaurant-service-docs
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/v3/api-docs/restaurant-service
         
 
 
@@ -84,3 +96,5 @@ springdoc:
     urls:
       - name: User Service
         url: /v3/api-docs/user-service
+      - name: Restaurant Service
+        url: /v3/api-docs/restaurant-service
