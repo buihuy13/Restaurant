@@ -60,7 +60,7 @@ public class reviewService {
             products product = productRepository.findById(rvId)
                                     .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
             
-            float newRating = (product.getTotalReview() * product.getRating() + reviewRequest.getRating() / 5) / (product.getTotalReview() + 1);
+            float newRating = (product.getTotalReview() * product.getRating() + reviewRequest.getRating()) / (product.getTotalReview() + 1);
             product.setTotalReview(product.getTotalReview() + 1);
             product.setRating(newRating);
             productRepository.save(product);
@@ -69,7 +69,7 @@ public class reviewService {
             restaurants res = resRepository.findById(rvId)
                                     .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-            float newRating = (res.getTotalReview() * res.getRating() + reviewRequest.getRating() / 5) / (res.getTotalReview() + 1);
+            float newRating = (res.getTotalReview() * res.getRating() + reviewRequest.getRating()) / (res.getTotalReview() + 1);
             res.setTotalReview(res.getTotalReview() + 1);
             res.setRating(newRating);
             resRepository.save(res);
@@ -87,19 +87,19 @@ public class reviewService {
         reviews rv = reviewRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Review not found"));
         String rvType = rv.getReviewType();
         if (rvType.equals(reviewType.PRODUCT.toString())) {
-            products product = productRepository.findById(id)
+            products product = productRepository.findById(rv.getReviewId())
                                     .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
             
-            float newRating = (product.getTotalReview() * product.getRating() - rv.getRating() / 5) / (product.getTotalReview() - 1);
+            float newRating = (product.getTotalReview() * product.getRating() - rv.getRating()) / (product.getTotalReview() - 1);
             product.setTotalReview(product.getTotalReview() - 1);
             product.setRating(newRating);
             productRepository.save(product);
         }
         else if (rvType.equals(reviewType.RESTAURANT.toString())) {
-            restaurants res = resRepository.findById(id)
+            restaurants res = resRepository.findById(rv.getReviewId())
                                     .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-            float newRating = (res.getTotalReview() * res.getRating() - rv.getRating() / 5) / (res.getTotalReview() - 1);
+            float newRating = (res.getTotalReview() * res.getRating() - rv.getRating()) / (res.getTotalReview() - 1);
             res.setTotalReview(res.getTotalReview() - 1);
             res.setRating(newRating);
             resRepository.save(res);

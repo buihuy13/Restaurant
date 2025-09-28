@@ -146,7 +146,9 @@ public class productService {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         List<reviews> rv = reviewRepository.findByReviewId(id).stream()
                                 .filter(r -> r.getReviewType().equals(reviewType.PRODUCT.toString())).toList();
-        imageFileService.deleteImage(product.getPublicID());
+        if (!product.getPublicID().isEmpty()) {
+            imageFileService.deleteImage(product.getPublicID());
+        }
         reviewRepository.deleteAll(rv);
         productRepo.delete(product);
     }
