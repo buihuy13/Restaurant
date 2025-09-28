@@ -20,7 +20,7 @@ insert into users(id, `password`, username, email, phone, `role`, `enabled`, `ve
 create table address (
     id varchar(255) primary key,
     `location` varchar(255) not null,
-    user_id varchar(255) not null references users(id)
+    user_id varchar(100) not null references users(id)
 );
 
 drop database if exists `restaurant-service`;
@@ -42,7 +42,7 @@ create table restaurants (
     imageurl varchar(255),
     publicid varchar(255),
     phone varchar(15),
-    merchant_id varchar(255) not null,
+    merchant_id varchar(100) not null,
     `enabled` boolean not null
 );
 
@@ -91,19 +91,27 @@ create table reviews (
     review_type varchar(20) not null,
     created_at timestamp default current_timestamp,
     total_review int,
-    user_id varchar(255) not null
+    user_id varchar(100) not null
 );
 
 drop database if exists `chat-service`;
 create database if not exists `chat-service`;
 use `chat-service`;
 
+create table chat_rooms (
+    id varchar(255) primary key,
+    user1_id varchar(100) not null,
+    user2_id varchar(100) not null,
+    last_message_time timestamp current_timestamp,
+    last_message text
+);
+
 create table messages (
     id varchar(255) primary key,
-    sender_id varchar(255) not null,
-    receiver_id varchar(255),
+    sender_id varchar(100) not null,
+    receiver_id varchar(100) not null,
     content text not null,
-    roomtype varchar(30) not null,
-    room_id varchar(255) not null,
-    `timestamp` timestamp default current_timestamp
+    room_id varchar(255) not null references chat_rooms(id),
+    `timestamp` timestamp default current_timestamp,
+    `read` boolean default false
 );

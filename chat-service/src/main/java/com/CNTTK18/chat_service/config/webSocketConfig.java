@@ -18,7 +18,7 @@ public class webSocketConfig implements WebSocketMessageBrokerConfigurer  {
         // Set prefix for client messages (server nhận message từ client)
         config.setApplicationDestinationPrefixes("/app");
         
-        // Set user destination prefix for private messages  
+        // Set user destination prefix for private messages
         config.setUserDestinationPrefix("/user");
     }
 

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import com.CNTTK18.chat_service.dto.MessageDTO;
 import com.CNTTK18.chat_service.service.MessageService;
 
+import jakarta.validation.Valid;
+
 @Controller
 public class MessageController {
     private MessageService messageService;
@@ -16,8 +18,9 @@ public class MessageController {
     public MessageController(MessageService messageService) {
         this.messageService = messageService;
     }   
+    // Gửi tin thì vẫn phải là /app/chat.sendMessage
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload MessageDTO message) {
+    public void sendMessage(@Valid @Payload MessageDTO message) {
         message.setTimestamp(LocalDateTime.now());
         messageService.processMessage(message);
     }

@@ -13,6 +13,10 @@ public class WebSocketExceptionHandler extends StompSubProtocolErrorHandler {
         // Log lỗi ở đây
         System.err.println("Lỗi khi xử lý message WebSocket: " + ex.getMessage());
 
+        if (clientMessage != null) {
+            System.err.println("Client message: " + new String(clientMessage.getPayload()));
+        }
+
         // Tạo một message lỗi để gửi lại cho client
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.ERROR);
         accessor.setMessage(ex.getMessage());

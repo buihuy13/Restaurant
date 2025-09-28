@@ -16,9 +16,8 @@ public class MessageDTO {
     private String roomId;
     @NotBlank
     private String senderId;
-    private String receiverId;
     @NotBlank
-    private String roomType;
+    private String receiverId;
     @NotBlank
     private String content;
 
