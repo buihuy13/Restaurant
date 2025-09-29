@@ -18,6 +18,8 @@ import com.CNTTK18.restaurant_service.repository.productRepository;
 import com.CNTTK18.restaurant_service.repository.resRepository;
 import com.CNTTK18.restaurant_service.repository.reviewRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class reviewService {
     private reviewRepository reviewRepo;
@@ -42,6 +44,7 @@ public class reviewService {
         return rv;
     }
 
+    @Transactional
     public reviews createReview(reviewRequest reviewRequest) {
         UserResponse user = webClientBuilder.build()
                                 .get()
@@ -83,25 +86,39 @@ public class reviewService {
         return reviewRepo.save(rv);
     }
 
+    @Transactional
     public void deleteReview(String id) {
         reviews rv = reviewRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Review not found"));
         String rvType = rv.getReviewType();
         if (rvType.equals(reviewType.PRODUCT.toString())) {
             products product = productRepository.findById(rv.getReviewId())
                                     .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-            
-            float newRating = (product.getTotalReview() * product.getRating() - rv.getRating()) / (product.getTotalReview() - 1);
-            product.setTotalReview(product.getTotalReview() - 1);
-            product.setRating(newRating);
+            int totalReview = product.getTotalReview();
+            if (totalReview == 1) {
+                product.setTotalReview(0);
+                product.setRating(0);
+            }
+            else {
+                float newRating = (product.getTotalReview() * product.getRating() - rv.getRating()) / (product.getTotalReview() - 1);
+                product.setTotalReview(product.getTotalReview() - 1);
+                product.setRating(newRating);
+            }
             productRepository.save(product);
         }
         else if (rvType.equals(reviewType.RESTAURANT.toString())) {
             restaurants res = resRepository.findById(rv.getReviewId())
                                     .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-            float newRating = (res.getTotalReview() * res.getRating() - rv.getRating()) / (res.getTotalReview() - 1);
-            res.setTotalReview(res.getTotalReview() - 1);
-            res.setRating(newRating);
+            int total_review = res.getTotalReview();
+            if (total_review == 1) {
+                res.setTotalReview(0);
+                res.setRating(0);
+            }
+            else {
+                float newRating = (res.getTotalReview() * res.getRating() - rv.getRating()) / (res.getTotalReview() - 1);
+                res.setTotalReview(res.getTotalReview() - 1);
+                res.setRating(newRating);
+            }
             resRepository.save(res);
         }
         reviewRepo.delete(rv);

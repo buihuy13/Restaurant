@@ -7,5 +7,5 @@ import com.CNTTK18.restaurant_service.model.restaurants;
 
 @Repository
 public interface resRepository extends JpaRepository<restaurants, String> {
-
+    
 }
