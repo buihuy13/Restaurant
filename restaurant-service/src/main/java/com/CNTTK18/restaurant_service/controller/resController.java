@@ -84,4 +84,21 @@ public class resController {
         resService.deleteRestaurant(id);
         return ResponseEntity.ok(new MessageResponse("Delete Successfully"));
     }
+
+    //method này của role admin
+    @Tag(name = "Put")
+    @Operation(summary = "Update restaurant enabled status")
+    @PutMapping("/enable/{id}")
+    public ResponseEntity<MessageResponse> updateRestaurantEnable(@PathVariable String id) {
+        resService.changeResStatus(id);
+        return ResponseEntity.ok(new MessageResponse("Update status successfully"));
+    }
+
+    @Tag(name = "Delete")
+    @Operation(summary = "Delete restaurant image")
+    @DeleteMapping("/image/{id}")
+    public ResponseEntity<MessageResponse> deleteResImage(@PathVariable String id) {
+        resService.deleteImage(id);
+        return ResponseEntity.ok(new MessageResponse("Delete image successfully"));
+    }
 }

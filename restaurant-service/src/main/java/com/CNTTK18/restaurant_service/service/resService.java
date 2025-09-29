@@ -20,6 +20,8 @@ import com.CNTTK18.restaurant_service.model.reviews;
 import com.CNTTK18.restaurant_service.repository.resRepository;
 import com.CNTTK18.restaurant_service.repository.reviewRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class resService {
     private resRepository resRepository;
@@ -46,6 +48,7 @@ public class resService {
         return res;
     }
 
+    @Transactional
     public restaurants createRestaurant(resRequest resRequest, MultipartFile imageFile) {
         UserResponse user = webClientBuilder.build()
                                 .get()
@@ -57,7 +60,7 @@ public class resService {
         if (user == null) {
             throw new ResourceNotFoundException("Không tồn tại user");
         }
-        if (user.getRole() != "MERCHANT") {
+        if (!user.getRole().equals("MERCHANT")) {
             throw new InvalidRequestException("User không phải là merchant");
         }
 
@@ -85,6 +88,7 @@ public class resService {
         return resRepository.save(res);
     }
 
+    @Transactional
     public restaurants updateRestaurant(String id, updateRes updateRes, MultipartFile imageFile) {
         restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
@@ -93,19 +97,19 @@ public class resService {
         res.setClosingTime(updateRes.getClosingTime());
         res.setResName(updateRes.getResName());
         res.setPhone(updateRes.getPhone());
-        imageService.deleteImage(res.getPublicID());
         if (imageFile != null) {
+            String oldPublicId = res.getPublicID();
             Map<String, String> image = imageService.saveImageFile(imageFile);
             res.setImageURL(image.get("url"));
             res.setPublicID(image.get("public_id"));
-        }
-        else {
-            res.setImageURL(null);
-            res.setPublicID(null);
+            if (oldPublicId != null && !oldPublicId.isEmpty()) {
+                imageService.deleteImage(oldPublicId);
+            }
         }
         return resRepository.save(res);
     }
 
+    @Transactional
     public void deleteRestaurant(String id) {
         restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
@@ -113,8 +117,26 @@ public class resService {
         List<reviews> rv = reviewRepository.findByReviewId(id).stream()
                                 .filter(r -> r.getReviewType().equals(reviewType.RESTAURANT.toString())).toList();
                             
-        imageService.deleteImage(res.getPublicID());
+        if (res.getPublicID() != null && !res.getPublicID().isEmpty()) {
+            imageService.deleteImage(res.getPublicID());
+        }
         reviewRepository.deleteAll(rv);
         resRepository.delete(res);
+    }
+
+    @Transactional
+    public void changeResStatus(String id) {
+        restaurants res = resRepository.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        res.setEnabled(!res.isEnabled());
+        resRepository.save(res);
+    }
+
+    public void deleteImage(String resId) {
+        restaurants res = resRepository.findById(resId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        imageService.deleteImage(res.getPublicID());
+        res.setImageURL(null);
+        res.setPublicID(null);
     }
 }

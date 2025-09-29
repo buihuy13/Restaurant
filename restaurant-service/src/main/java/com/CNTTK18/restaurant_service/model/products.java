@@ -54,6 +54,9 @@ public class products {
 
     // Helper methods
     public void addProductSize(ProductSize productSize) {
+        if (this.productSizes == null) {
+            this.productSizes = new HashSet<>();
+        }
         productSizes.add(productSize);
         productSize.setProduct(this);
     }

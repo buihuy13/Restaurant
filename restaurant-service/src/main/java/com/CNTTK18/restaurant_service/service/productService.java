@@ -23,6 +23,9 @@ import com.CNTTK18.restaurant_service.repository.resRepository;
 import com.CNTTK18.restaurant_service.repository.reviewRepository;
 import com.CNTTK18.restaurant_service.repository.sizeRepository;
 import com.CNTTK18.restaurant_service.util.productUtil;
+
+import jakarta.transaction.Transactional;
+
 import com.CNTTK18.restaurant_service.dto.product.request.updateProduct;
 import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
 
@@ -56,6 +59,7 @@ public class productService {
         return productUtil.mapProductToProductResponse(product);
     }
 
+    @Transactional
     public products createProduct(productRequest productRequest, MultipartFile imageFile) {
         categories cate = cateRepository.findById(productRequest.getCategoryId())
                                     .orElseThrow(() -> new ResourceNotFoundException("category not found"));
@@ -77,6 +81,7 @@ public class productService {
         //Check cate
         if (!res.getCategories().contains(cate)) {
             res.addCate(cate);
+            resRepository.save(res);
         }
             
         if (productRequest.getSizeIds() != null) {
@@ -104,15 +109,35 @@ public class productService {
         return productRepo.save(product);
     }
 
+    @Transactional
     public products updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile) {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         categories cate = cateRepository.findById(updateProduct.getCategoryId())
                                     .orElseThrow(() -> new ResourceNotFoundException("category not found"));
 
+        restaurants res = resRepository.findById(product.getRestaurant().getId())
+                                    .orElseThrow(() -> new ResourceNotFoundException("restaurant not found"));
+        
+        categories oldCategory = product.getCategory();
+        boolean categoryChanged = !oldCategory.getId().equals(cate.getId());
+
+        if (categoryChanged) {
+            Long count = productRepo.countProductWithCateIdWithInRes(product.getCategory().getId(), product.getRestaurant().getId());
+            if (count == 1) {
+                res.removeCate(product.getCategory());
+            }
+        }
+
         product.setProductName(updateProduct.getProductName());
         product.setCategory(cate);
         product.setDescription(updateProduct.getDescription());
+
+        if (!res.getCategories().contains(cate)) {
+            res.addCate(cate);
+        }
+
+        resRepository.save(res);
 
         if (updateProduct.getSizeIds() != null) {
 
@@ -133,21 +158,60 @@ public class productService {
             }
         }
 
-        imageFileService.deleteImage(product.getPublicID());
         if (imageFile != null) {
+            String oldPublicId = product.getPublicID();
             Map<String, String> image = imageFileService.saveImageFile(imageFile);
             product.setImageURL(image.get("url"));
             product.setPublicID(image.get("public_id"));
+
+            if (oldPublicId != null && !oldPublicId.isEmpty()) {
+                imageFileService.deleteImage(oldPublicId);
+            }
         }
         return productRepo.save(product);
     }
 
+    @Transactional
     public void deleteProduct(String id) {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         List<reviews> rv = reviewRepository.findByReviewId(id).stream()
                                 .filter(r -> r.getReviewType().equals(reviewType.PRODUCT.toString())).toList();
-        imageFileService.deleteImage(product.getPublicID());
+        if (product.getPublicID() != null && !product.getPublicID().isEmpty()) {
+            imageFileService.deleteImage(product.getPublicID());
+        }
+        Long count = productRepo.countProductWithCateIdWithInRes(product.getCategory().getId(), product.getRestaurant().getId());
+        if (count == 1) {
+            restaurants res = product.getRestaurant();
+            categories cate = product.getCategory();
+            res.removeCate(cate);
+            resRepository.save(res);
+        }
         reviewRepository.deleteAll(rv);
         productRepo.delete(product);
+    }
+
+    @Transactional
+    public void changeProductAvailability(String id) {
+        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        product.setAvailable(!product.isAvailable());
+        productRepo.save(product);
+    }
+
+    @Transactional
+    // Có thể bị race condition
+    public int increaseProductVolume(String id) {
+        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        int newVolume = product.getVolume() + 1;
+        product.setVolume(newVolume);
+        productRepo.save(product);
+        return newVolume;
+    }
+
+    public void deleteImage(String productId) {
+        products product = productRepo.findById(productId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        imageFileService.deleteImage(product.getPublicID());
+        product.setImageURL(null);
+        product.setPublicID(null);
     }
 }

@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "restaurants")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -62,7 +62,15 @@ public class restaurants {
     private Set<products> products;
 
     public void addCate(categories cate) {
+        if (this.categories == null) {
+            this.categories = new java.util.HashSet<>();
+        }
         this.categories.add(cate);
         cate.getRestaurants().add(this);
+    }
+
+    public void removeCate(categories cate) {
+        this.categories.remove(cate);
+        cate.getRestaurants().remove(this);
     }
 }

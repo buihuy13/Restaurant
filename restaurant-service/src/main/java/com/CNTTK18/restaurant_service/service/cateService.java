@@ -11,6 +11,8 @@ import com.CNTTK18.restaurant_service.dto.cate.request.cateRequest;
 import com.CNTTK18.restaurant_service.model.categories;
 import com.CNTTK18.restaurant_service.repository.cateRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class cateService {
     private cateRepository cateRepository;
@@ -37,11 +39,13 @@ public class cateService {
         return cate;
     }
 
+    @Transactional
     public categories createCate(cateRequest cateRequest) {
         categories cate = new categories(RandomIdGenerator.generate(10), cateRequest.getCateName(), new HashSet<>());
         return cateRepository.save(cate);
     }
 
+    @Transactional
     public categories updateCate(String id, cateRequest cateRequest) {
         categories cate = cateRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -50,6 +54,7 @@ public class cateService {
         return cateRepository.save(cate);
     }
 
+    @Transactional
     public void deleteCate(String id) {
         categories cate = cateRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
