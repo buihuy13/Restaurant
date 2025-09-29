@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.CNTTK18.Common.Event.ConfirmationEvent;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
+import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.user_service.data.Role;
 import com.CNTTK18.user_service.dto.request.Login;
 import com.CNTTK18.user_service.dto.request.Register;
@@ -65,7 +66,7 @@ public class UserService {
 
     public void register(Register user) {
         Users newUser = new Users();
-        newUser.setId(java.util.UUID.randomUUID().toString());
+        newUser.setId(RandomIdGenerator.generate(99));
         newUser.setUsername(user.getUsername());
         newUser.setEmail(user.getEmail());
         newUser.setPassword(passwordEncoder.encode(user.getPassword()));
