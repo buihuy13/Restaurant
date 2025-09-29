@@ -104,6 +104,10 @@ create table reviews (
     user_id varchar(100) not null
 );
 
+create index idx_userid on reviews(user_id);
+
+create index idx_reviewid on reviews(review_id);
+
 drop database if exists `chat-service`;
 create database if not exists `chat-service`;
 use `chat-service`;
@@ -112,9 +116,12 @@ create table chat_rooms (
     id varchar(255) primary key,
     user1_id varchar(100) not null,
     user2_id varchar(100) not null,
-    last_message_time timestamp current_timestamp,
+    last_message_time timestamp default current_timestamp,
     last_message text
 );
+
+create index idx_chat_rooms_user1 on chat_rooms(user1_id);
+create index idx_chat_rooms_user2 on chat_rooms(user2_id);
 
 create table messages (
     id varchar(255) primary key,
@@ -126,6 +133,9 @@ create table messages (
     `read` boolean default false
 );
 
-create index idx_userid on reviews(user_id);
+create index idx_roomid on messages(room_id);
+create index idx_senderid on messages(sender_id);
+create index idx_receiverid on messages(receiver_id);
 
-create index idx_reviewid on reviews(review_id);
+-- Hiệu quả khi truy vấn tin nhắn trong một phòng theo thời gian gần nhất
+CREATE INDEX idx_messages_room_timestamp ON messages(room_id, `timestamp` DESC);
