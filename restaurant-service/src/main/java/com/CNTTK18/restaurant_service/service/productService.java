@@ -223,9 +223,8 @@ public class productService {
     }
 
     @Transactional
-    // Có thể bị race condition
     public int increaseProductVolume(String id) {
-        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        products product = productRepo.findProductById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         int newVolume = product.getVolume() + 1;
         product.setVolume(newVolume);
         productRepo.save(product);
