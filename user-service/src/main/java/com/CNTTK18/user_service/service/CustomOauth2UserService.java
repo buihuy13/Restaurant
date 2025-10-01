@@ -47,6 +47,8 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
             if (!user.getAuthProvider().equals(Provider.GOOGLE.toString())) {
                 throw new OAuth2AuthenticationException("Please use your " + user.getAuthProvider() + " account to login.");
             }
+            user.setUsername(name);
+            userRepository.save(user);
         }
         return oAuth2User;
     }
