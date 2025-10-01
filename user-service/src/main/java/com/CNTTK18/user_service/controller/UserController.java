@@ -18,8 +18,10 @@ import com.CNTTK18.user_service.dto.request.Login;
 import com.CNTTK18.user_service.dto.request.Register;
 import com.CNTTK18.user_service.dto.request.Rejection;
 import com.CNTTK18.user_service.dto.request.UserRequest;
+import com.CNTTK18.user_service.dto.request.UserUpdateAfterLogin;
 import com.CNTTK18.user_service.dto.response.TokenResponse;
 import com.CNTTK18.user_service.dto.response.UserResponse;
+import com.CNTTK18.user_service.model.Address;
 import com.CNTTK18.user_service.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -120,5 +122,21 @@ public class UserController {
     public ResponseEntity<MessageResponse> rejectMerchant(@PathVariable String id, @RequestBody @Valid Rejection rejection) {
         userService.rejectMerchant(id, rejection);
         return ResponseEntity.ok(new MessageResponse("Merchant rejected successfully"));
+    }
+
+    @Tag(name = "Put")
+    @Operation(summary = "Update user after login")
+    @PutMapping("/profile/{id}")
+    public ResponseEntity<UserResponse> updateUserAfterLogin(@PathVariable String id, @RequestBody @Valid UserUpdateAfterLogin userUpdate) {
+        UserResponse updatedUser = userService.updateUserAfterLogin(userUpdate, id);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get user addresses")
+    @GetMapping("/addresses/{id}")
+    public ResponseEntity<List<Address>> getUserAddresses(@PathVariable String id) {
+        List<Address> addresses = userService.getUserAddresses(id);
+        return ResponseEntity.ok(addresses);
     }
 }

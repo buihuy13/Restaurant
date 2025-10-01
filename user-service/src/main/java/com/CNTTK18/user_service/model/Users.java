@@ -60,4 +60,12 @@ public class Users {
         }
         this.addressList = addressList;
     }
+
+    public void addAddress(Address address) {
+        if (this.addressList == null) {
+            this.addressList = new ArrayList<Address>();
+        }
+        this.addressList.add(address);
+        address.setUser(this);
+    }
 }

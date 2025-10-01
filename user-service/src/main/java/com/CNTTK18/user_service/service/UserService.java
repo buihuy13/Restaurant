@@ -1,6 +1,5 @@
 package com.CNTTK18.user_service.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.kafka.core.KafkaTemplate;
@@ -18,10 +17,13 @@ import com.CNTTK18.user_service.dto.request.Login;
 import com.CNTTK18.user_service.dto.request.Register;
 import com.CNTTK18.user_service.dto.request.Rejection;
 import com.CNTTK18.user_service.dto.request.UserRequest;
+import com.CNTTK18.user_service.dto.request.UserUpdateAfterLogin;
 import com.CNTTK18.user_service.dto.response.TokenResponse;
 import com.CNTTK18.user_service.dto.response.UserResponse;
 import com.CNTTK18.user_service.exception.InactivateException;
+import com.CNTTK18.user_service.model.Address;
 import com.CNTTK18.user_service.model.Users;
+import com.CNTTK18.user_service.repository.AddressRepository;
 import com.CNTTK18.user_service.repository.UserRepository;
 import com.CNTTK18.user_service.util.UserUtil;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -33,13 +35,17 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final KafkaTemplate kafkaTemplate;
+    private final AddressRepository addressRepository;
+
     public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, 
-                       AuthenticationManager authenticationManager, JwtService jwtService, KafkaTemplate kafkaTemplate) {
+                       AuthenticationManager authenticationManager, JwtService jwtService, KafkaTemplate kafkaTemplate,
+                       AddressRepository addressRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.kafkaTemplate = kafkaTemplate;
+        this.addressRepository = addressRepository;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -134,5 +140,21 @@ public class UserService {
         }
         //Send rejection email to merchant
         userRepository.deleteById(id);
+    }
+
+    public UserResponse updateUserAfterLogin(UserUpdateAfterLogin userUpdate, String id) {
+        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setPhone(userUpdate.getPhone());
+        Address address = new Address();
+        address.setId(RandomIdGenerator.generate(99));
+        address.setLocation(userUpdate.getDefaultAddress());
+        user.addAddress(address);
+        Users updatedUser = userRepository.save(user);
+        return UserUtil.mapUsersToUserResponse(updatedUser);
+    }
+
+    public List<Address> getUserAddresses(String id) {
+        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return user.getAddressList();
     }
 }
