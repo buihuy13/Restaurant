@@ -40,6 +40,8 @@ public class Users {
     private String verficationCode;
     private String role;
     private String phone;
+    @Column(name = "authprovider")
+    private String authProvider;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Address> addressList;
@@ -57,5 +59,13 @@ public class Users {
             return;
         }
         this.addressList = addressList;
+    }
+
+    public void addAddress(Address address) {
+        if (this.addressList == null) {
+            this.addressList = new ArrayList<Address>();
+        }
+        this.addressList.add(address);
+        address.setUser(this);
     }
 }
