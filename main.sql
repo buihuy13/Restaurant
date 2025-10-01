@@ -6,11 +6,12 @@ create table users (
     id varchar(255) primary key,
     username varchar(255) not null,
     email varchar(255) not null unique,
-    `password` varchar(255) not null,
+    `password` varchar(255),
     `role` varchar(10) not null,
     `enabled` boolean not null,
-    verificationcode varchar(255) not null,
-    phone varchar(15) not null
+    verificationcode varchar(255),
+    phone varchar(15),
+    authprovider varchar(20) default 'LOCAL'
 );
 
 insert into users(id, `password`, username, email, phone, `role`, `enabled`, `verificationcode`) values 

@@ -40,6 +40,8 @@ public class Users {
     private String verficationCode;
     private String role;
     private String phone;
+    @Column(name = "authprovider")
+    private String authProvider;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Address> addressList;
