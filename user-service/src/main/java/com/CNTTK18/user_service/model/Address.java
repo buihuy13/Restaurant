@@ -21,6 +21,8 @@ public class Address {
     @Id
     private String id;
     private String location;
+    private double longitude;
+    private double latitude;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

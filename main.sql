@@ -24,7 +24,7 @@ create table address (
     id varchar(255) primary key,
     `location` varchar(255) not null,
     longitude double not null,
-    latitudd double not null,
+    latitude double not null,
     user_id varchar(255) not null references users(id)
 );
 
@@ -44,7 +44,7 @@ create table restaurants (
     `resname` varchar(255) not null,
     `address` varchar(255) not null,
     longitude double not null,
-    latitudd double not null,
+    latitude double not null,
     rating float,
     openingtime time not null,
     closingtime time not null,
