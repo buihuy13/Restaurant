@@ -30,6 +30,8 @@ public class restaurants {
     @Column(name = "resname", nullable = false)
     private String resName;
     private String address;
+    private double longitude; //kinh độ
+    private double latitude; //vĩ độ
     private float rating;
     @Column(name = "openingtime", nullable = false)
     private LocalTime openingTime;

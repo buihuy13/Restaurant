@@ -26,5 +26,6 @@ public class productResponse {
     private boolean available;
     private restaurants restaurant;
     private int totalReview;
+    private float rating;
     private Set<ProductSize> productSizes;
 }

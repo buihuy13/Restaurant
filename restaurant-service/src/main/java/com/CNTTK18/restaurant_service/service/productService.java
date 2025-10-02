@@ -1,5 +1,7 @@
 package com.CNTTK18.restaurant_service.service;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -49,8 +51,31 @@ public class productService {
         this.reviewRepository = reviewRepository;
     }
 
-    public List<productResponse> getAllProducts() {
-        return productRepo.findAll().stream().map(productUtil::mapProductToProductResponse).toList();
+    public List<productResponse> getAllProducts(String rating, String category, BigDecimal minPrice, BigDecimal maxPrice) {
+        List<products> products = productRepo.findAll();
+        if (rating != null) {
+            if (rating.equals("asc")) {
+                products = products.stream().sorted((p1, p2) -> Float.compare(p1.getRating(), p2.getRating())).toList();
+            } 
+            else if (rating.equals("desc")) {
+                products = products.stream().sorted((p1, p2) -> Float.compare(p2.getRating(), p1.getRating())).toList();
+            }
+        }
+        List<String> categoryNames = Arrays.asList(category.split(","));
+        if (category != null) {
+            products = products.stream().filter(p -> categoryNames.contains(p.getCategory().getCateName())).toList();
+        }
+
+        if (minPrice != null) {
+            products = products.stream().filter(p -> p.getProductSizes().stream()
+                                            .anyMatch(ps -> ps.getPrice().compareTo(minPrice) >= 0)).toList();
+        }
+
+        if (maxPrice != null) {
+            products = products.stream().filter(p -> p.getProductSizes().stream()
+                                            .anyMatch(ps -> ps.getPrice().compareTo(maxPrice) <= 0)).toList();
+        }
+        return products.stream().map(productUtil::mapProductToProductResponse).toList();
     }
 
     public productResponse getProductById(String id) {
@@ -198,9 +223,8 @@ public class productService {
     }
 
     @Transactional
-    // Có thể bị race condition
     public int increaseProductVolume(String id) {
-        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        products product = productRepo.findProductById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         int newVolume = product.getVolume() + 1;
         product.setVolume(newVolume);
         productRepo.save(product);

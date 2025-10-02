@@ -14,6 +14,7 @@ public class productUtil {
                             .productName(product.getProductName())
                             .productSizes(product.getProductSizes())
                             .restaurant(product.getRestaurant())
+                            .rating(product.getRating())
                             .volume(product.getVolume())
                             .build();
     }

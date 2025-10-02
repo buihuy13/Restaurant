@@ -77,6 +77,8 @@ public class resService {
                             .products(new HashSet<>())
                             .totalReview(0)
                             .rating(0)
+                            .longitude(resRequest.getLongitude())
+                            .latitude(resRequest.getLatitude())
                             .build();
 
         if (imageFile != null) {
@@ -97,6 +99,8 @@ public class resService {
         res.setClosingTime(updateRes.getClosingTime());
         res.setResName(updateRes.getResName());
         res.setPhone(updateRes.getPhone());
+        res.setLongitude(updateRes.getLongitude());
+        res.setLatitude(updateRes.getLatitude());
         if (imageFile != null) {
             String oldPublicId = res.getPublicID();
             Map<String, String> image = imageService.saveImageFile(imageFile);

@@ -1,5 +1,6 @@
 package com.CNTTK18.restaurant_service.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.HttpStatusCode;
@@ -38,8 +39,11 @@ public class productController {
     @Tag(name = "Get")
     @Operation(summary = "Get all products")
     @GetMapping("")
-    public ResponseEntity<List<productResponse>> getAllProducts(@RequestParam(required = false) String categoryId) {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<List<productResponse>> getAllProducts(@RequestParam(required = false) String rating,
+                                                               @RequestParam(required = false) String category,
+                                                               @RequestParam(required = false) BigDecimal minPrice,
+                                                               @RequestParam(required = false) BigDecimal maxPrice) {
+        return ResponseEntity.ok(productService.getAllProducts(rating, category, minPrice, maxPrice));
     }
 
     @Tag(name = "Get")
