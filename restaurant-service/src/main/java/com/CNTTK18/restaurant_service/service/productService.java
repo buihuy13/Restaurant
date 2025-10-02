@@ -2,6 +2,7 @@ package com.CNTTK18.restaurant_service.service;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -51,15 +52,11 @@ public class productService {
         this.reviewRepository = reviewRepository;
     }
 
-    public List<productResponse> getAllProducts(String rating, String category, BigDecimal minPrice, BigDecimal maxPrice) {
+    public List<productResponse> getAllProducts(String rating, String category, BigDecimal minPrice, 
+                                BigDecimal maxPrice, String order, String locations, String search, Integer nearby) {
         List<products> products = productRepo.findAll();
-        if (rating != null) {
-            if (rating.equals("asc")) {
-                products = products.stream().sorted((p1, p2) -> Float.compare(p1.getRating(), p2.getRating())).toList();
-            } 
-            else if (rating.equals("desc")) {
-                products = products.stream().sorted((p1, p2) -> Float.compare(p2.getRating(), p1.getRating())).toList();
-            }
+        if (search != null && !search.isEmpty()) {
+            products = products.stream().filter(p -> p.getProductName().toLowerCase().contains(search.toLowerCase())).toList();
         }
         List<String> categoryNames = Arrays.asList(category.split(","));
         if (category != null) {
@@ -74,6 +71,27 @@ public class productService {
         if (maxPrice != null) {
             products = products.stream().filter(p -> p.getProductSizes().stream()
                                             .anyMatch(ps -> ps.getPrice().compareTo(maxPrice) <= 0)).toList();
+        }
+        if (rating != null) {
+            if (rating.equals("asc")) {
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getRating)).toList();
+            } 
+            else if (rating.equals("desc")) {
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getRating).reversed())
+                                            .toList();
+            }
+        }
+        if (order != null) {
+            if (order.equals("asc")) {
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getVolume)).toList();
+            }
+            else if (order.equals("desc")) {
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getVolume).reversed())
+                                            .toList();
+            }
+        }
+        if (locations != null) {
+            
         }
         return products.stream().map(productUtil::mapProductToProductResponse).toList();
     }

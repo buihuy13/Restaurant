@@ -42,8 +42,12 @@ public class productController {
     public ResponseEntity<List<productResponse>> getAllProducts(@RequestParam(required = false) String rating,
                                                                @RequestParam(required = false) String category,
                                                                @RequestParam(required = false) BigDecimal minPrice,
-                                                               @RequestParam(required = false) BigDecimal maxPrice) {
-        return ResponseEntity.ok(productService.getAllProducts(rating, category, minPrice, maxPrice));
+                                                               @RequestParam(required = false) BigDecimal maxPrice,
+                                                               @RequestParam(required = false) String order,
+                                                               @RequestParam(required = false) String locations,
+                                                               @RequestParam(required = false) String search,
+                                                               @RequestParam(required = false) Integer nearby) {
+        return ResponseEntity.ok(productService.getAllProducts(rating, category, minPrice, maxPrice, order, locations, search, nearby));
     }
 
     @Tag(name = "Get")
