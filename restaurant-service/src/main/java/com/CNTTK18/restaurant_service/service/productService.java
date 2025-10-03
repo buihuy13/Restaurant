@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -255,5 +256,12 @@ public class productService {
         imageFileService.deleteImage(product.getPublicID());
         product.setImageURL(null);
         product.setPublicID(null);
+    }
+
+    public Set<ProductSize> getAllProductSizeOfProduct(String id) {
+        products product = productRepo.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        return product.getProductSizes();
     }
 }

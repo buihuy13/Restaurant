@@ -2,6 +2,7 @@ package com.CNTTK18.restaurant_service.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import com.CNTTK18.restaurant_service.dto.product.request.productRequest;
 import com.CNTTK18.restaurant_service.dto.product.request.updateProduct;
 import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
+import com.CNTTK18.restaurant_service.model.ProductSize;
 import com.CNTTK18.restaurant_service.model.products;
 import com.CNTTK18.restaurant_service.service.productService;
 
@@ -103,5 +105,12 @@ public class productController {
     public ResponseEntity<MessageResponse> deleteProductImage(@PathVariable String id) {
         productService.deleteImage(id);
         return ResponseEntity.ok(new MessageResponse("Delete image successfully"));
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get all product sizes of a product")
+    @GetMapping("/productsize/{id}")
+    public ResponseEntity<Set<ProductSize>> getProductSizesOfAProduct(@PathVariable String id) {
+        return ResponseEntity.ok(productService.getAllProductSizeOfProduct(id));
     }
 }
