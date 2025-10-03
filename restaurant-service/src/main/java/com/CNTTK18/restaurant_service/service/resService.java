@@ -14,10 +14,12 @@ import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.restaurant_service.data.reviewType;
 import com.CNTTK18.restaurant_service.dto.api.UserResponse;
+import com.CNTTK18.restaurant_service.dto.distance.response.Summary;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
 import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
+import com.CNTTK18.restaurant_service.exception.DistanceDurationException;
 import com.CNTTK18.restaurant_service.exception.InvalidRequestException;
 import com.CNTTK18.restaurant_service.model.restaurants;
 import com.CNTTK18.restaurant_service.model.reviews;
@@ -88,11 +90,23 @@ public class resService {
                     });
     }
 
-    public restaurants getRestaurantById(String id) {
+    public Mono<resResponse> getRestaurantById(String id, Coordinates location) {
         restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-        return res;
+        List<Double> start = List.of(location.getLongitude(), location.getLatitude());
+        List<Double> end = List.of(res.getLongitude(), res.getLatitude());
+        return distanceService.getDistanceAndDuration(start, end)
+                        .map(response -> {
+                            if (response == null || response.getFeatures().isEmpty()) {
+                                throw new DistanceDurationException("Error while calculating distance and duration");
+                            }
+                            Summary summary = response.getFeatures().get(0).getProperties().getSummary();  
+                            double distance = summary.getDistance();
+                            double duration = summary.getDuration();
+                                
+                            return resUtil.mapResToResResponsewithDistanceAndDuration(res, distance, duration);
+                        });
     }
 
     @Transactional

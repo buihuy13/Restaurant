@@ -56,8 +56,13 @@ public class resController {
     @Tag(name = "Get")
     @Operation(summary = "Get restaurant by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<restaurants> getRestaurantById(@PathVariable String id) {
-        return ResponseEntity.ok(resService.getRestaurantById(id));
+    public Mono<ResponseEntity<resResponse>> getRestaurantById(@PathVariable String id,
+                                                        @RequestParam(required = true) Double lat,
+                                                        @RequestParam(required = true) Double lon) {
+        Coordinates location = new Coordinates(lon,lat);
+        return resService.getRestaurantById(id,location).map(
+            res -> ResponseEntity.ok(res)
+        );
     }
 
     @Tag(name = "Put")

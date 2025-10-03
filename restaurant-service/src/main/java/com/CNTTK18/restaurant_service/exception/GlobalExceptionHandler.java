@@ -72,6 +72,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     } 
 
+    @ExceptionHandler(DistanceDurationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleDistanceDurationException(DistanceDurationException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            "Invalid distance or duration",
+            ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
     // Xử lý exception chung
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

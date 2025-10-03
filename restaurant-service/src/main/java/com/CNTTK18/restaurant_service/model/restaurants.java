@@ -75,4 +75,18 @@ public class restaurants {
         this.categories.remove(cate);
         cate.getRestaurants().remove(this);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        restaurants that = (restaurants) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        // Các đối tượng bằng nhau phải có hashCode bằng nhau
+        return id != null ? id.hashCode() : 0;
+    }
 }
