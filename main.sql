@@ -89,10 +89,10 @@ create index idx_restaurantid on products(restaurant_id);
 create index idx_categoryid on products(category_id);
 
 create table product_sizes (
+    id varchar(255) primary key,
     product_id varchar(255) not null,
     size_id varchar(10) not null,
     price decimal not null,
-    PRIMARY KEY (product_id, size_id),
     FOREIGN KEY (product_id) REFERENCES products(id),
     FOREIGN KEY (size_id) REFERENCES size(id)
 );
