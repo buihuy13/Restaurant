@@ -23,6 +23,8 @@ insert into users(id, `password`, username, email, phone, `role`, `enabled`, `ve
 create table address (
     id varchar(255) primary key,
     `location` varchar(255) not null,
+    longitude double not null,
+    latitude double not null,
     user_id varchar(100) not null references users(id)
 );
 
@@ -41,6 +43,8 @@ create table restaurants (
     id varchar(255) primary key,
     `resname` varchar(255) not null,
     `address` varchar(255) not null,
+    longitude double not null,
+    latitude double not null,
     rating float,
     openingtime time not null,
     closingtime time not null,
@@ -85,10 +89,10 @@ create index idx_restaurantid on products(restaurant_id);
 create index idx_categoryid on products(category_id);
 
 create table product_sizes (
+    id varchar(255) primary key,
     product_id varchar(255) not null,
     size_id varchar(10) not null,
     price decimal not null,
-    PRIMARY KEY (product_id, size_id),
     FOREIGN KEY (product_id) REFERENCES products(id),
     FOREIGN KEY (size_id) REFERENCES size(id)
 );

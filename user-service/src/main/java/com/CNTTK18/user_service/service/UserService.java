@@ -148,6 +148,8 @@ public class UserService {
         Address address = new Address();
         address.setId(RandomIdGenerator.generate(99));
         address.setLocation(userUpdate.getDefaultAddress());
+        address.setLatitude(userUpdate.getLatitude());
+        address.setLongitude(userUpdate.getLongitude());
         user.addAddress(address);
         Users updatedUser = userRepository.save(user);
         return UserUtil.mapUsersToUserResponse(updatedUser);

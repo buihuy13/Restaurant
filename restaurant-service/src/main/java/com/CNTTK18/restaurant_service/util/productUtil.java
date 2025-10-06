@@ -1,10 +1,11 @@
 package com.CNTTK18.restaurant_service.util;
 
 import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
 import com.CNTTK18.restaurant_service.model.products;
 
 public class productUtil {
-    public static productResponse mapProductToProductResponse(products product) {
+    public static productResponse mapProductToProductResponse(products product, resResponse resResponse) {
         return productResponse.builder()
                             .available(product.isAvailable())
                             .id(product.getId())
@@ -13,7 +14,7 @@ public class productUtil {
                             .imageURL(product.getImageURL())
                             .productName(product.getProductName())
                             .productSizes(product.getProductSizes())
-                            .restaurant(product.getRestaurant())
+                            .restaurant(resResponse)
                             .rating(product.getRating())
                             .volume(product.getVolume())
                             .build();

@@ -10,13 +10,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
+import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
 import com.CNTTK18.restaurant_service.model.restaurants;
 import com.CNTTK18.restaurant_service.service.resService;
 
@@ -26,6 +29,7 @@ import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/restaurant")
@@ -39,15 +43,26 @@ public class resController {
     @Tag(name = "Get")
     @Operation(summary = "Get all restaurants")
     @GetMapping()
-    public ResponseEntity<List<restaurants>> getAllRestaurants() {
-        return ResponseEntity.ok(resService.getAllRestaurants());
+    public Mono<ResponseEntity<List<resResponse>>> getAllRestaurants(@RequestParam(required = true) Double lat,
+                                                               @RequestParam(required = true) Double lon,
+                                                               @RequestParam(required = false) String search, 
+                                                               @RequestParam(required = false) Integer nearby) {
+        Coordinates location = new Coordinates(lon, lat);
+        return resService.getAllRestaurants(location, search, nearby).map(
+            resList -> ResponseEntity.ok(resList)
+        );
     }
 
     @Tag(name = "Get")
     @Operation(summary = "Get restaurant by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<restaurants> getRestaurantById(@PathVariable String id) {
-        return ResponseEntity.ok(resService.getRestaurantById(id));
+    public Mono<ResponseEntity<resResponse>> getRestaurantById(@PathVariable String id,
+                                                        @RequestParam(required = true) Double lat,
+                                                        @RequestParam(required = true) Double lon) {
+        Coordinates location = new Coordinates(lon,lat);
+        return resService.getRestaurantById(id,location).map(
+            res -> ResponseEntity.ok(res)
+        );
     }
 
     @Tag(name = "Put")
