@@ -1,11 +1,13 @@
 package com.CNTTK18.restaurant_service.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -323,5 +325,16 @@ public class productService {
                             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         return product.getProductSizes();
+    }
+
+    public List<products> getAllProductsByRestaurantId(String id) {
+        restaurants res = resRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cannot find restaurant"));
+
+        Optional<List<products>> products = productRepo.findProductsByRestaurant(res);
+
+        if (!products.isPresent()) {
+            return new ArrayList<>();
+        }
+        return products.get();
     }
 }
