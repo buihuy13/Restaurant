@@ -1,0 +1,165 @@
+version: '3.8'
+
+services:
+  # Zookeeper: trình quản lý cho Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.2
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  # Kafka Broker (máy chủ Kafka)
+  broker:
+    image: confluentinc/cp-kafka:7.3.2
+    container_name: broker
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+  redis:
+    image: "redis:7-alpine"
+    container_name: redis
+    ports:
+      - "6379:6379"
+  db:
+    image: "mysql:8.0"
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./main.sql:/docker-entrypoint-initdb.d/main.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "db", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+  service-discovery:
+    build:
+      context: .
+      dockerfile: ./service-discovery/dockerfile
+      args:
+        MODULE_PATH: service-discovery
+    ports:
+      - "8761:8761"
+    environment:
+      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+      - EUREKA_HOST_NAME={EUREKA_HOST_NAME}
+      - PORT={SERVICE_DISCOVERY_PORT}
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/dockerfile
+      args:
+        MODULE_PATH: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - JWT_SECRETKEY=${JWT_SECRETKEY}
+      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+      - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
+      - PORT={API_GATEWAY_PORT}
+    depends_on:
+      - service-discovery
+  user-service:
+    build:
+      context: .
+      dockerfile: ./user-service/dockerfile
+      args:
+        MODULE_PATH: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      - USER_SERVICE_DB_URL=${USER_SERVICE_DB_URL}
+      - USER_SERVICE_DB_USER=${USER_SERVICE_DB_USER}
+      - USER_SERVICE_DB_PASSWORD=${USER_SERVICE_DB_PASSWORD}
+      - JWT_SECRETKEY=${JWT_SECRETKEY}
+      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+      - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
+      - PORT=${USER_PORT}
+      - KAFKA_SERVER=${KAFKA_SERVER}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+      service-discovery:
+        condition: service_started
+  notification-service:
+    build:
+      context: .
+      dockerfile: ./notification-service/dockerfile
+      args:
+        MODULE_PATH: notification-service
+    ports:
+      - "8084:8084"
+    environment:
+      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+      - PORT=${NOTIFICATION_PORT}
+      - KAFKA_SERVER=${KAFKA_SERVER}
+      - URL=${URL}
+    depends_on:
+      - service-discovery
+  chat-service:
+    build:
+      context: .
+      dockerfile: ./chat-service/dockerfile
+      args:
+        - MODULE_PATH=chat-service
+    ports:
+      - "8086:8086"
+    environment:
+      - PORT=${CHAT_PORT}
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_SSL=${REDIS_SSL}
+      - CHAT_SERVICE_DB_URL=${CHAT_SERVICE_DB_URL}
+      - CHAT_SERVICE_DB_USER=${CHAT_SERVICE_DB_USER}
+      - CHAT_SERVICE_DB_PASSWORD=${CHAT_SERVICE_DB_PASSWORD}
+  restaurant-service:
+    build:
+      context: .
+      dockerfile: ./restaurant-service/dockerfile
+      args:
+        - MODULE_PATH=restaurant-service
+    ports:
+      - "8085:8085"
+    environment:
+      - PORT=${RESTAURANT_PORT}
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+      - RESTAURANT_SERVICE_DB_URL=${RESTAURANT_SERVICE_DB_URL}
+      - RESTAURANT_SERVICE_DB_USER=${RESTAURANT_SERVICE_DB_USER}
+      - RESTAURANT_SERVICE_DB_PASSWORD=${RESTAURANT_SERVICE_DB_PASSWORD}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - OPENROUTESERVICE_URL=${OPENROUTESERVICE_URL}
+      - OPENROUTESERVICE_LIST_URL=${OPENROUTESERVICE_LIST_URL}
+      - OPENROUTESERVICE_API_KEY=${OPENROUTESERVICE_API_KEY}
+
+volumes:
+  mysql_data:
