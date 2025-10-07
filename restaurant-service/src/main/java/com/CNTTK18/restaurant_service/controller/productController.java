@@ -121,4 +121,11 @@ public class productController {
     public ResponseEntity<Set<ProductSize>> getProductSizesOfAProduct(@PathVariable String id) {
         return ResponseEntity.ok(productService.getAllProductSizeOfProduct(id));
     }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get all product by restaurant id")
+    @GetMapping("/restaurant/{id}")
+    public ResponseEntity<List<products>> getProductsByRestaurantId(@PathVariable String id) {
+        return ResponseEntity.ok(productService.getAllProductsByRestaurantId(id));
+    }
 }

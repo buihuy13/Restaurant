@@ -1,9 +1,11 @@
 package com.CNTTK18.restaurant_service.service;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Service;
@@ -54,40 +56,46 @@ public class resService {
         }
         
         // Lấy các res trong bán kính nearby (theo đường chim bay)
-        if (nearby != null) {
-            res = res.stream().filter(
-                r -> {
-                    Double distance = distanceService.calculateHaversineDistance(location.getLongitude(), location.getLatitude(),
-                                                                                r.getLongitude(), r.getLatitude());
-                                                                        
-                    return distance <= nearby;
-                }
-            ).toList();
+        if (location != null) {
+            if (nearby != null) {
+                res = res.stream().filter(
+                    r -> {
+                        Double distance = distanceService.calculateHaversineDistance(location.getLongitude(), location.getLatitude(),
+                                                                                    r.getLongitude(), r.getLatitude());
+                                                                            
+                        return distance <= nearby;
+                    }
+                ).toList();
+            }
+
+            if (res.isEmpty()) {
+                return Mono.just(Collections.emptyList());
+            }
+
+            final List<restaurants> filteredRes = res;
+            
+            List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
+            List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
+            
+            return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
+                        .map(response -> {
+                            List<Double> durations = response.getDurations().get(0);
+                            List<Double> distances = response.getDistances().get(0);
+
+                            return IntStream.range(0, filteredRes.size()).mapToObj(i -> {
+                                restaurants resIndex = filteredRes.get(i);
+
+                                resResponse resResponseIndex = resUtil.mapResToResResponse(resIndex);
+                                resResponseIndex.setDuration(durations.get(i));
+                                resResponseIndex.setDistance(distances.get(i));
+                                return resResponseIndex;
+                            }).toList();
+                        });
         }
-
-        if (res.isEmpty()) {
-            return Mono.just(Collections.emptyList());
-        }
-
-        final List<restaurants> filteredRes = res;
-        
-        List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
-        List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
-        
-        return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
-                    .map(response -> {
-                        List<Double> durations = response.getDurations().get(0);
-                        List<Double> distances = response.getDistances().get(0);
-
-                        return IntStream.range(0, filteredRes.size()).mapToObj(i -> {
-                            restaurants resIndex = filteredRes.get(i);
-
-                            resResponse resResponseIndex = resUtil.mapResToResResponse(resIndex);
-                            resResponseIndex.setDuration(durations.get(i));
-                            resResponseIndex.setDistance(distances.get(i));
-                            return resResponseIndex;
-                        }).toList();
-                    });
+        List<resResponse> resResponses = res.stream()
+            .map(resUtil::mapResToResResponse)
+            .toList();
+        return Mono.just(resResponses);
     }
 
     public Mono<resResponse> getRestaurantById(String id, Coordinates location) {
@@ -203,5 +211,26 @@ public class resService {
         imageService.deleteImage(res.getPublicID());
         res.setImageURL(null);
         res.setPublicID(null);
+    }
+
+    public List<resResponse> getRestaurantsByMerchantId(String id) {
+        UserResponse user = webClientBuilder.build()
+                                .get()
+                                .uri("lb://user-service/api/users/{id}", id)
+                                .retrieve()
+                                .bodyToMono(UserResponse.class)
+                                .block();
+        
+        if (user == null) {
+            throw new ResourceNotFoundException("Không tồn tại user");
+        }
+        if (!user.getRole().equals("MERCHANT")) {
+            throw new InvalidRequestException("User không phải là merchant");
+        }
+        Optional<List<restaurants>> resList = resRepository.findRestaurantsByMerchantId(id);
+        if (!resList.isPresent()) {
+            return new ArrayList<>();
+        }
+        return resList.get().stream().map(resUtil::mapResToResResponse).toList();
     }
 }

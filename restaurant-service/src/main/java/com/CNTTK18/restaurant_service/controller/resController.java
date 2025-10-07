@@ -43,8 +43,8 @@ public class resController {
     @Tag(name = "Get")
     @Operation(summary = "Get all restaurants")
     @GetMapping()
-    public Mono<ResponseEntity<List<resResponse>>> getAllRestaurants(@RequestParam(required = true) Double lat,
-                                                               @RequestParam(required = true) Double lon,
+    public Mono<ResponseEntity<List<resResponse>>> getAllRestaurants(@RequestParam(required = false) Double lat,
+                                                               @RequestParam(required = false) Double lon,
                                                                @RequestParam(required = false) String search, 
                                                                @RequestParam(required = false) Integer nearby) {
         Coordinates location = new Coordinates(lon, lat);
@@ -63,6 +63,13 @@ public class resController {
         return resService.getRestaurantById(id,location).map(
             res -> ResponseEntity.ok(res)
         );
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get restaurants by merchant id")
+    @GetMapping("/merchant/{id}")
+    public ResponseEntity<List<resResponse>> getRestaurantByMerchantId(@PathVariable String id) {
+        return ResponseEntity.ok(resService.getRestaurantsByMerchantId(id));
     }
 
     @Tag(name = "Put")
