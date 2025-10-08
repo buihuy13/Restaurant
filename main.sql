@@ -18,8 +18,8 @@ create index idx_email on users(email);
 
 insert into users(id, `password`, username, email, phone, `role`, `enabled`, `verificationcode`) values 
 ("testadminid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testadmin", "testadmin@gmail.com", "0762612698", "ADMIN", true, "abcxyz123"),
-("testuserid", "$2a$12$CydeMvJj1Hvu/824Lh2NuOEIrZnlhRMIUM736cYXa7bSD3LUmGW7K", "testuser", "testuser@gmail.com", "0762612699", "USER", true, "abcxyz456");
-("testmerchantid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testmerchant", "testmerchant@gmail.com", "0762612697", "MERCHANT", true, "abcxyz789")
+("testuserid", "$2a$12$CydeMvJj1Hvu/824Lh2NuOEIrZnlhRMIUM736cYXa7bSD3LUmGW7K", "testuser", "testuser@gmail.com", "0762612699", "USER", true, "abcxyz456"),
+("testmerchantid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testmerchant", "testmerchant@gmail.com", "0762612697", "MERCHANT", true, "abcxyz789");
 create table address (
     id varchar(255) primary key,
     `location` varchar(255) not null,
