@@ -20,10 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.CNTTK18.restaurant_service.dto.product.request.productRequest;
 import com.CNTTK18.restaurant_service.dto.product.request.updateProduct;
 import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
+import com.CNTTK18.restaurant_service.dto.product.response.productWithoutResResponse;
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
 import com.CNTTK18.restaurant_service.model.ProductSize;
-import com.CNTTK18.restaurant_service.model.products;
 import com.CNTTK18.restaurant_service.service.productService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,14 +63,14 @@ public class productController {
     @Tag(name = "Get")
     @Operation(summary = "Get product by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<products> getProductById(@PathVariable String id) {
+    public ResponseEntity<productResponse> getProductById(@PathVariable String id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
 
     @Tag(name = "Post")
     @Operation(summary = "Create new product")
     @PostMapping("")
-    public ResponseEntity<products> createProduct(@RequestPart(value = "product", required = true) @Valid productRequest productRequest,
+    public ResponseEntity<productResponse> createProduct(@RequestPart(value = "product", required = true) @Valid productRequest productRequest,
                                         @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         return new ResponseEntity<>(productService.createProduct(productRequest, imageFile), HttpStatusCode.valueOf(201));
     }
@@ -78,7 +78,7 @@ public class productController {
     @Tag(name = "Put") 
     @Operation(summary = "Update a product")
     @PutMapping("/{id}")
-    public ResponseEntity<products> updateProduct(@RequestPart(value = "product", required = true) @Valid updateProduct updateProduct,
+    public ResponseEntity<productResponse> updateProduct(@RequestPart(value = "product", required = true) @Valid updateProduct updateProduct,
                                         @RequestPart(value = "image", required = false) MultipartFile imageFile,
                                         @PathVariable String id) {
         return ResponseEntity.ok(productService.updateProduct(updateProduct, id, imageFile));
@@ -125,7 +125,7 @@ public class productController {
     @Tag(name = "Get")
     @Operation(summary = "Get all product by restaurant id")
     @GetMapping("/restaurant/{id}")
-    public ResponseEntity<List<products>> getProductsByRestaurantId(@PathVariable String id) {
+    public ResponseEntity<List<productWithoutResResponse>> getProductsByRestaurantId(@PathVariable String id) {
         return ResponseEntity.ok(productService.getAllProductsByRestaurantId(id));
     }
 }

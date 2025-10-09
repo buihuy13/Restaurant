@@ -24,9 +24,9 @@ public class updateRes {
     private double longitude;
     @NotNull
     private double latitude;
-    @NotBlank(message = "Opening time is required")
+    @NotNull(message = "Opening time is required")
     private LocalTime openingTime;
-    @NotBlank(message = "Closing time is required")
+    @NotNull(message = "Closing time is required")
     private LocalTime closingTime;
     @NotBlank(message = "Phone number is required")
     @Size(max = 12)

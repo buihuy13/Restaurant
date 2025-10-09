@@ -49,6 +49,7 @@ public class resService {
         this.distanceService = distanceService;
     }
 
+    @Transactional
     public Mono<List<resResponse>> getAllRestaurants(Coordinates location, String search, Integer nearby) {
         List<restaurants> res = resRepository.findAll();
         if (search != null && !search.isEmpty()) {
@@ -102,23 +103,27 @@ public class resService {
         restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-        List<Double> start = List.of(location.getLongitude(), location.getLatitude());
-        List<Double> end = List.of(res.getLongitude(), res.getLatitude());
-        return distanceService.getDistanceAndDuration(start, end)
-                        .map(response -> {
-                            if (response == null || response.getFeatures().isEmpty()) {
-                                throw new DistanceDurationException("Error while calculating distance and duration");
-                            }
-                            Summary summary = response.getFeatures().get(0).getProperties().getSummary();  
-                            double distance = summary.getDistance();
-                            double duration = summary.getDuration();
-                                
-                            return resUtil.mapResToResResponsewithDistanceAndDuration(res, distance, duration);
-                        });
+        if (location != null) {
+            List<Double> start = List.of(location.getLongitude(), location.getLatitude());
+            List<Double> end = List.of(res.getLongitude(), res.getLatitude());
+            return distanceService.getDistanceAndDuration(start, end)
+                            .map(response -> {
+                                if (response == null || response.getFeatures().isEmpty()) {
+                                    throw new DistanceDurationException("Error while calculating distance and duration");
+                                }
+                                Summary summary = response.getFeatures().get(0).getProperties().getSummary();  
+                                double distance = summary.getDistance();
+                                double duration = summary.getDuration();
+                                    
+                                return resUtil.mapResToResResponsewithDistanceAndDuration(res, distance, duration);
+                            });
+        }
+
+        return Mono.just(resUtil.mapResToResResponse(res));
     }
 
     @Transactional
-    public restaurants createRestaurant(resRequest resRequest, MultipartFile imageFile) {
+    public resResponse createRestaurant(resRequest resRequest, MultipartFile imageFile) {
         UserResponse user = webClientBuilder.build()
                                 .get()
                                 .uri("lb://user-service/api/users/{id}", resRequest.getMerchantId())
@@ -150,17 +155,18 @@ public class resService {
                             .latitude(resRequest.getLatitude())
                             .build();
 
-        if (imageFile != null) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             Map<String, String> image = imageService.saveImageFile(imageFile);
             res.setImageURL(image.get("url"));
             res.setPublicID(image.get("public_id"));
         }
 
-        return resRepository.save(res);
+        resRepository.save(res);
+        return resUtil.mapResToResResponse(res);
     }
 
     @Transactional
-    public restaurants updateRestaurant(String id, updateRes updateRes, MultipartFile imageFile) {
+    public resResponse updateRestaurant(String id, updateRes updateRes, MultipartFile imageFile) {
         restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
         res.setAddress(updateRes.getAddress());
@@ -179,7 +185,8 @@ public class resService {
                 imageService.deleteImage(oldPublicId);
             }
         }
-        return resRepository.save(res);
+        resRepository.save(res);
+        return resUtil.mapResToResResponse(res);
     }
 
     @Transactional

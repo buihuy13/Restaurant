@@ -1,9 +1,8 @@
-package com.CNTTK18.restaurant_service.dto.restaurant.response;
+package com.CNTTK18.restaurant_service.dto.product.response;
 
 import java.time.LocalTime;
 import java.util.Set;
 
-import com.CNTTK18.restaurant_service.dto.product.response.productWithoutResResponse;
 import com.CNTTK18.restaurant_service.model.categories;
 
 import lombok.AllArgsConstructor;
@@ -17,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class resResponse {
+public class productRestaurant {
     private String id;
     private String resName;
     private String address;
@@ -30,9 +29,8 @@ public class resResponse {
     private String imageURL;
     private String merchantId;
     private boolean enabled;
-    private int totalReview;
     private double distance;
     private double duration;
+    private int totalReview;
     private Set<categories> categories;
-    private Set<productWithoutResResponse> products;
 }

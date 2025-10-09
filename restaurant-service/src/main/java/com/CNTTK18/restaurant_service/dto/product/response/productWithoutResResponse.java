@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.CNTTK18.restaurant_service.model.ProductSize;
 import com.CNTTK18.restaurant_service.model.categories;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class productResponse {
+public class productWithoutResResponse {
     private String id;
     private String productName;
     private String description;
@@ -23,7 +24,6 @@ public class productResponse {
     private categories category;
     private int volume;
     private boolean available;
-    private productRestaurant restaurant;
     private int totalReview;
     private float rating;
     private Set<ProductSize> productSizes;
