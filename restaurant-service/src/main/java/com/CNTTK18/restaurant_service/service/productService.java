@@ -161,12 +161,13 @@ public class productService {
                     });
     }
 
-    public products getProductById(String id) {
-        return productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    public productResponse getProductById(String id) {
+        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        return productUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
     @Transactional
-    public products createProduct(productRequest productRequest, MultipartFile imageFile) {
+    public productResponse createProduct(productRequest productRequest, MultipartFile imageFile) {
         categories cate = cateRepository.findById(productRequest.getCategoryId())
                                     .orElseThrow(() -> new ResourceNotFoundException("category not found"));
 
@@ -206,17 +207,18 @@ public class productService {
             }
         }
 
-        if (imageFile != null) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             Map<String, String> image = imageFileService.saveImageFile(imageFile);
             product.setImageURL(image.get("url"));
             product.setPublicID(image.get("public_id"));
         }
 
-        return productRepo.save(product);
+        productRepo.save(product);
+        return productUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
     @Transactional
-    public products updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile) {
+    public productResponse updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile) {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         categories cate = cateRepository.findById(updateProduct.getCategoryId())
@@ -264,7 +266,7 @@ public class productService {
             }
         }
 
-        if (imageFile != null) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             String oldPublicId = product.getPublicID();
             Map<String, String> image = imageFileService.saveImageFile(imageFile);
             product.setImageURL(image.get("url"));
@@ -274,7 +276,8 @@ public class productService {
                 imageFileService.deleteImage(oldPublicId);
             }
         }
-        return productRepo.save(product);
+        productRepo.save(product);
+        return productUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
     @Transactional
@@ -327,7 +330,7 @@ public class productService {
         return product.getProductSizes();
     }
 
-    public List<products> getAllProductsByRestaurantId(String id) {
+    public List<productResponse> getAllProductsByRestaurantId(String id) {
         restaurants res = resRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cannot find restaurant"));
 
         Optional<List<products>> products = productRepo.findProductsByRestaurant(res);
@@ -335,6 +338,6 @@ public class productService {
         if (!products.isPresent()) {
             return new ArrayList<>();
         }
-        return products.get();
+        return products.get().stream().map(productUtil::mapProductToProductResponseWitoutResParam).toList();
     }
 }

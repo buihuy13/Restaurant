@@ -20,7 +20,7 @@ import com.CNTTK18.restaurant_service.dto.distance.response.Summary;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
-import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponseWithProduct;
 import com.CNTTK18.restaurant_service.exception.DistanceDurationException;
 import com.CNTTK18.restaurant_service.exception.InvalidRequestException;
 import com.CNTTK18.restaurant_service.model.restaurants;
@@ -49,7 +49,7 @@ public class resService {
         this.distanceService = distanceService;
     }
 
-    public Mono<List<resResponse>> getAllRestaurants(Coordinates location, String search, Integer nearby) {
+    public Mono<List<resResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby) {
         List<restaurants> res = resRepository.findAll();
         if (search != null && !search.isEmpty()) {
             res = res.stream().filter(r -> r.getResName().toLowerCase().contains(search.toLowerCase())).toList();
@@ -85,36 +85,36 @@ public class resService {
                             return IntStream.range(0, filteredRes.size()).mapToObj(i -> {
                                 restaurants resIndex = filteredRes.get(i);
 
-                                resResponse resResponseIndex = resUtil.mapResToResResponse(resIndex);
+                                resResponseWithProduct resResponseIndex = resUtil.mapResToResResponseWithProduct(resIndex);
                                 resResponseIndex.setDuration(durations.get(i));
                                 resResponseIndex.setDistance(distances.get(i));
                                 return resResponseIndex;
                             }).toList();
                         });
         }
-        List<resResponse> resResponses = res.stream()
-            .map(resUtil::mapResToResResponse)
-            .toList();
-        return Mono.just(resResponses);
+        return Mono.just(res.stream().map(resUtil::mapResToResResponseWithProduct).toList());
     }
 
-    public Mono<resResponse> getRestaurantById(String id, Coordinates location) {
+    public Mono<resResponseWithProduct> getRestaurantById(String id, Coordinates location) {
         restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
-        List<Double> start = List.of(location.getLongitude(), location.getLatitude());
-        List<Double> end = List.of(res.getLongitude(), res.getLatitude());
-        return distanceService.getDistanceAndDuration(start, end)
-                        .map(response -> {
-                            if (response == null || response.getFeatures().isEmpty()) {
-                                throw new DistanceDurationException("Error while calculating distance and duration");
-                            }
-                            Summary summary = response.getFeatures().get(0).getProperties().getSummary();  
-                            double distance = summary.getDistance();
-                            double duration = summary.getDuration();
-                                
-                            return resUtil.mapResToResResponsewithDistanceAndDuration(res, distance, duration);
-                        });
+        if (location != null) {
+            List<Double> start = List.of(location.getLongitude(), location.getLatitude());
+            List<Double> end = List.of(res.getLongitude(), res.getLatitude());
+            return distanceService.getDistanceAndDuration(start, end)
+                            .map(response -> {
+                                if (response == null || response.getFeatures().isEmpty()) {
+                                    throw new DistanceDurationException("Error while calculating distance and duration");
+                                }
+                                Summary summary = response.getFeatures().get(0).getProperties().getSummary();  
+                                double distance = summary.getDistance();
+                                double duration = summary.getDuration();
+                                    
+                                return resUtil.mapResToResResponseWithProductandDistanceAndDuration(res, distance, duration);
+                            });
+        }
+        return Mono.just(resUtil.mapResToResResponseWithProduct(res));
     }
 
     @Transactional
@@ -150,7 +150,7 @@ public class resService {
                             .latitude(resRequest.getLatitude())
                             .build();
 
-        if (imageFile != null) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             Map<String, String> image = imageService.saveImageFile(imageFile);
             res.setImageURL(image.get("url"));
             res.setPublicID(image.get("public_id"));
@@ -170,7 +170,7 @@ public class resService {
         res.setPhone(updateRes.getPhone());
         res.setLongitude(updateRes.getLongitude());
         res.setLatitude(updateRes.getLatitude());
-        if (imageFile != null) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             String oldPublicId = res.getPublicID();
             Map<String, String> image = imageService.saveImageFile(imageFile);
             res.setImageURL(image.get("url"));
@@ -213,7 +213,7 @@ public class resService {
         res.setPublicID(null);
     }
 
-    public List<resResponse> getRestaurantsByMerchantId(String id) {
+    public List<resResponseWithProduct> getRestaurantsByMerchantId(String id) {
         UserResponse user = webClientBuilder.build()
                                 .get()
                                 .uri("lb://user-service/api/users/{id}", id)
@@ -231,6 +231,6 @@ public class resService {
         if (!resList.isPresent()) {
             return new ArrayList<>();
         }
-        return resList.get().stream().map(resUtil::mapResToResResponse).toList();
+        return resList.get().stream().map(resUtil::mapResToResResponseWithProduct).toList();
     }
 }

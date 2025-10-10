@@ -3,6 +3,7 @@ package com.CNTTK18.restaurant_service.controller;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
 import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponseWithProduct;
 import com.CNTTK18.restaurant_service.model.restaurants;
 import com.CNTTK18.restaurant_service.service.resService;
 
@@ -35,6 +37,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/restaurant")
 public class resController {
     private resService resService;
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(resController.class);
 
     public resController(resService resService) {
         this.resService = resService;
@@ -43,11 +46,15 @@ public class resController {
     @Tag(name = "Get")
     @Operation(summary = "Get all restaurants")
     @GetMapping()
-    public Mono<ResponseEntity<List<resResponse>>> getAllRestaurants(@RequestParam(required = false) Double lat,
+    public Mono<ResponseEntity<List<resResponseWithProduct>>> getAllRestaurants(@RequestParam(required = false) Double lat,
                                                                @RequestParam(required = false) Double lon,
                                                                @RequestParam(required = false) String search, 
                                                                @RequestParam(required = false) Integer nearby) {
-        Coordinates location = new Coordinates(lon, lat);
+
+        Coordinates location = null;
+        if (lon != null && lat != null) {
+            location = new Coordinates(lon, lat);
+        }
         return resService.getAllRestaurants(location, search, nearby).map(
             resList -> ResponseEntity.ok(resList)
         );
@@ -56,10 +63,13 @@ public class resController {
     @Tag(name = "Get")
     @Operation(summary = "Get restaurant by ID")
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<resResponse>> getRestaurantById(@PathVariable String id,
-                                                        @RequestParam(required = true) Double lat,
-                                                        @RequestParam(required = true) Double lon) {
-        Coordinates location = new Coordinates(lon,lat);
+    public Mono<ResponseEntity<resResponseWithProduct>> getRestaurantById(@PathVariable String id,
+                                                        @RequestParam(required = false) Double lat,
+                                                        @RequestParam(required = false) Double lon) {
+        Coordinates location = null;
+        if (lon != null && lat != null) {
+            location = new Coordinates(lon, lat);
+        }
         return resService.getRestaurantById(id,location).map(
             res -> ResponseEntity.ok(res)
         );
@@ -68,7 +78,7 @@ public class resController {
     @Tag(name = "Get")
     @Operation(summary = "Get restaurants by merchant id")
     @GetMapping("/merchant/{id}")
-    public ResponseEntity<List<resResponse>> getRestaurantByMerchantId(@PathVariable String id) {
+    public ResponseEntity<List<resResponseWithProduct>> getRestaurantByMerchantId(@PathVariable String id) {
         return ResponseEntity.ok(resService.getRestaurantsByMerchantId(id));
     }
 
@@ -92,11 +102,13 @@ public class resController {
         return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(resService.createRestaurant(resRequest, imageFile)));
     }
 
-    public CompletableFuture<String> fallbackMethod(resRequest resRequest, 
+    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(resRequest resRequest, 
         MultipartFile imageFile, Throwable ex)
     {
-        System.out.println("Lỗi khi gọi createRestaurant, kích hoạt fallback. Lỗi: " + ex.getMessage());
-        return CompletableFuture.supplyAsync(() -> "Oops! Something went wrong, please wait for 5 more minutes~");
+        log.error("Lỗi khi gọi createRestaurant, kích hoạt fallback. Lỗi: " + ex.getMessage());
+        return CompletableFuture.completedFuture(
+            ResponseEntity.status(500).body(new MessageResponse(ex.getMessage()))
+        );
     }
 
     @Tag(name = "Delete")
