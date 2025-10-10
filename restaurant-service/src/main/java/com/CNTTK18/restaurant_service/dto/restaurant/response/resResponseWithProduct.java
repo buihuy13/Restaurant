@@ -1,6 +1,10 @@
 package com.CNTTK18.restaurant_service.dto.restaurant.response;
 
 import java.time.LocalTime;
+import java.util.List;
+
+import com.CNTTK18.restaurant_service.dto.cate.response.cateResponse;
+import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class resResponse {
+public class resResponseWithProduct {
     private String id;
     private String resName;
     private String address;
@@ -29,4 +33,6 @@ public class resResponse {
     private int totalReview;
     private double distance;
     private double duration;
+    private List<productResponse> products;
+    private List<cateResponse> cate;
 }
