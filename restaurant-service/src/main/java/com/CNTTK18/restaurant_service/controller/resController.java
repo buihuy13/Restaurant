@@ -20,7 +20,6 @@ import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
-import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponseWithProduct;
 import com.CNTTK18.restaurant_service.model.restaurants;
 import com.CNTTK18.restaurant_service.service.resService;
