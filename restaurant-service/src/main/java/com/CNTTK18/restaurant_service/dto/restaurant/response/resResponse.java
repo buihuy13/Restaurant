@@ -3,7 +3,6 @@ package com.CNTTK18.restaurant_service.dto.restaurant.response;
 import java.time.LocalTime;
 import java.util.Set;
 
-import com.CNTTK18.restaurant_service.dto.product.response.productWithoutResResponse;
 import com.CNTTK18.restaurant_service.model.categories;
 
 import lombok.AllArgsConstructor;
@@ -34,5 +33,4 @@ public class resResponse {
     private double distance;
     private double duration;
     private Set<categories> categories;
-    private Set<productWithoutResResponse> products;
 }

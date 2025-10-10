@@ -2,6 +2,7 @@ package com.CNTTK18.restaurant_service.dto.product.response;
 
 import java.util.Set;
 
+import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
 import com.CNTTK18.restaurant_service.model.ProductSize;
 import com.CNTTK18.restaurant_service.model.categories;
 import lombok.AllArgsConstructor;
@@ -23,7 +24,7 @@ public class productResponse {
     private categories category;
     private int volume;
     private boolean available;
-    private productRestaurant restaurant;
+    private resResponse restaurant;
     private int totalReview;
     private float rating;
     private Set<ProductSize> productSizes;

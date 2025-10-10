@@ -40,9 +40,8 @@ import reactor.core.publisher.Mono;
 
 import com.CNTTK18.restaurant_service.dto.product.request.updateProduct;
 import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
-import com.CNTTK18.restaurant_service.dto.product.response.productRestaurant;
-import com.CNTTK18.restaurant_service.dto.product.response.productWithoutResResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
 
 @Service
 public class productService {
@@ -134,19 +133,18 @@ public class productService {
                         List<Double> durations = response.getDurations().get(0);
                         List<Double> distances = response.getDistances().get(0);
 
-                        Map<String,productRestaurant> listResResponse =  IntStream.range(0, filteredRes.size()).mapToObj(i -> {
+                        Map<String,resResponse> listResResponse =  IntStream.range(0, filteredRes.size()).mapToObj(i -> {
                             restaurants resIndex = filteredRes.get(i);
 
-                            productRestaurant resResponseIndex = resUtil.mapProductRestaurant(resIndex);
+                            resResponse resResponseIndex = resUtil.mapResToResResponse(resIndex);
                             resResponseIndex.setDuration(durations.get(i));
                             resResponseIndex.setDistance(distances.get(i));
                             return resResponseIndex;
-                        }).collect(Collectors.toMap(productRestaurant::getId, Function.identity()));
+                        }).collect(Collectors.toMap(resResponse::getId, Function.identity()));
 
                         List<productResponse> productResponses = filteredProducts.stream()
-                                                                .map(p -> productUtil.mapProductToProductResponseWithResParam(p, listResResponse.get(p.getRestaurant().getId()))) 
+                                                                .map(p -> productUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId()))) 
                                                                 .toList();
-                        
                         if (locationsorted != null) {
                             if (locationsorted.equals("asc")) {
                                 productResponses = productResponses.stream()
@@ -163,13 +161,12 @@ public class productService {
                     });
     }
 
-    public productResponse getProductById(String id) {
-        products product =  productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        return productUtil.mapProductToProductResponse(product);
+    public products getProductById(String id) {
+        return productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 
     @Transactional
-    public productResponse createProduct(productRequest productRequest, MultipartFile imageFile) {
+    public products createProduct(productRequest productRequest, MultipartFile imageFile) {
         categories cate = cateRepository.findById(productRequest.getCategoryId())
                                     .orElseThrow(() -> new ResourceNotFoundException("category not found"));
 
@@ -209,18 +206,17 @@ public class productService {
             }
         }
 
-        if (imageFile != null && !imageFile.isEmpty()) {
+        if (imageFile != null) {
             Map<String, String> image = imageFileService.saveImageFile(imageFile);
             product.setImageURL(image.get("url"));
             product.setPublicID(image.get("public_id"));
         }
 
-        productRepo.save(product);
-        return productUtil.mapProductToProductResponse(product);
+        return productRepo.save(product);
     }
 
     @Transactional
-    public productResponse updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile) {
+    public products updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile) {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         categories cate = cateRepository.findById(updateProduct.getCategoryId())
@@ -278,8 +274,7 @@ public class productService {
                 imageFileService.deleteImage(oldPublicId);
             }
         }
-        productRepo.save(product);
-        return productUtil.mapProductToProductResponse(product);
+        return productRepo.save(product);
     }
 
     @Transactional
@@ -332,14 +327,14 @@ public class productService {
         return product.getProductSizes();
     }
 
-    public List<productWithoutResResponse> getAllProductsByRestaurantId(String id) {
+    public List<products> getAllProductsByRestaurantId(String id) {
         restaurants res = resRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cannot find restaurant"));
 
-        Optional<Set<products>> products = productRepo.findProductsByRestaurant(res);
+        Optional<List<products>> products = productRepo.findProductsByRestaurant(res);
 
         if (!products.isPresent()) {
             return new ArrayList<>();
         }
-        return productUtil.maProductWithoutResResponseList(products.get());
+        return products.get();
     }
 }

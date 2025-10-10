@@ -52,7 +52,6 @@ create table restaurants (
     publicid varchar(255),
     phone varchar(15),
     merchant_id varchar(100) not null,
-    total_review int,
     `enabled` boolean not null
 );
 

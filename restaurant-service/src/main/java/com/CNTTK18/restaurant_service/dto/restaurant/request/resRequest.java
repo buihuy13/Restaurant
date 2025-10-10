@@ -25,9 +25,9 @@ public class resRequest {
     @NotNull
     private double latitude;
     private float rating;
-    @NotNull(message = "Opening time is required")
+    @NotBlank(message = "Opening time is required")
     private LocalTime openingTime;
-    @NotNull(message = "Closing time is required")
+    @NotBlank(message = "Closing time is required")
     private LocalTime closingTime;
     @NotBlank(message = "Phone number is required")
     @Size(max = 12)

@@ -1,7 +1,7 @@
 package com.CNTTK18.restaurant_service.repository;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -23,5 +23,5 @@ public interface productRepository extends JpaRepository<products, String> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<products> findProductById(String id);
 
-    Optional<Set<products>> findProductsByRestaurant(restaurants res);
+    Optional<List<products>> findProductsByRestaurant(restaurants res);
 }
