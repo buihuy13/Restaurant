@@ -118,45 +118,43 @@ public class resService {
     }
 
     @Transactional
-    public restaurants createRestaurant(resRequest resRequest, MultipartFile imageFile) {
-        UserResponse user = webClientBuilder.build()
-                                .get()
-                                .uri("lb://user-service/api/users/{id}", resRequest.getMerchantId())
-                                .retrieve()
-                                .bodyToMono(UserResponse.class)
-                                .block();
-        
-        if (user == null) {
-            throw new ResourceNotFoundException("Không tồn tại user");
-        }
-        if (!user.getRole().equals("MERCHANT")) {
-            throw new InvalidRequestException("User không phải là merchant");
-        }
+    public Mono<restaurants> createRestaurant(resRequest resRequest, MultipartFile imageFile) {
+        return webClientBuilder.build()
+                            .get()
+                            .uri("lb://user-service/api/users/{id}", resRequest.getMerchantId())
+                            .retrieve()
+                            .bodyToMono(UserResponse.class)
+                            .flatMap(user -> {
+                                if (user == null) {
+                                    throw new ResourceNotFoundException("Không tồn tại user");
+                                }
+                                if (!user.getRole().equals("MERCHANT")) {
+                                    throw new InvalidRequestException("User không phải là merchant");
+                                }
+                                restaurants res = restaurants.builder()
+                                                            .address(resRequest.getAddress())
+                                                            .categories(new HashSet<>())
+                                                            .closingTime(resRequest.getClosingTime())
+                                                            .enabled(false)
+                                                            .id(RandomIdGenerator.generate(254))
+                                                            .merchantId(resRequest.getMerchantId())
+                                                            .openingTime(resRequest.getOpeningTime())
+                                                            .phone(resRequest.getPhone())
+                                                            .resName(resRequest.getResName())
+                                                            .products(new HashSet<>())
+                                                            .totalReview(0)
+                                                            .rating(0)
+                                                            .longitude(resRequest.getLongitude())
+                                                            .latitude(resRequest.getLatitude())
+                                                            .build();
 
-        restaurants res = restaurants.builder()
-                            .address(resRequest.getAddress())
-                            .categories(new HashSet<>())
-                            .closingTime(resRequest.getClosingTime())
-                            .enabled(false)
-                            .id(RandomIdGenerator.generate(254))
-                            .merchantId(resRequest.getMerchantId())
-                            .openingTime(resRequest.getOpeningTime())
-                            .phone(resRequest.getPhone())
-                            .resName(resRequest.getResName())
-                            .products(new HashSet<>())
-                            .totalReview(0)
-                            .rating(0)
-                            .longitude(resRequest.getLongitude())
-                            .latitude(resRequest.getLatitude())
-                            .build();
-
-        if (imageFile != null && !imageFile.isEmpty()) {
-            Map<String, String> image = imageService.saveImageFile(imageFile);
-            res.setImageURL(image.get("url"));
-            res.setPublicID(image.get("public_id"));
-        }
-
-        return resRepository.save(res);
+                                        if (imageFile != null && !imageFile.isEmpty()) {
+                                            Map<String, String> image = imageService.saveImageFile(imageFile);
+                                            res.setImageURL(image.get("url"));
+                                            res.setPublicID(image.get("public_id"));
+                                        }
+                                        return Mono.fromCallable(() -> resRepository.save(res));
+                            });
     }
 
     @Transactional

@@ -98,7 +98,8 @@ public class resController {
     @Retry(name = "create")
     public CompletableFuture<ResponseEntity<restaurants>> createRestaurant(@RequestPart(value = "restaurant", required = true) @Valid resRequest resRequest,
                     @RequestPart(value = "image", required = false) MultipartFile imageFile) {
-        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(resService.createRestaurant(resRequest, imageFile)));
+        return resService.createRestaurant(resRequest, imageFile)
+                        .map(savedRestaurant -> ResponseEntity.ok(savedRestaurant)).toFuture();
     }
 
     public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(resRequest resRequest, 
@@ -106,7 +107,7 @@ public class resController {
     {
         log.error("Lỗi khi gọi createRestaurant, kích hoạt fallback. Lỗi: " + ex.getMessage());
         return CompletableFuture.completedFuture(
-            ResponseEntity.status(500).body(new MessageResponse(ex.getMessage()))
+            ResponseEntity.status(503).body(new MessageResponse(ex.getMessage()))
         );
     }
 
