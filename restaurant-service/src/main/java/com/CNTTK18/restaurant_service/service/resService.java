@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -29,7 +30,6 @@ import com.CNTTK18.restaurant_service.repository.resRepository;
 import com.CNTTK18.restaurant_service.repository.reviewRepository;
 import com.CNTTK18.restaurant_service.util.resUtil;
 
-import jakarta.transaction.Transactional;
 import reactor.core.publisher.Mono;
 
 @Service
