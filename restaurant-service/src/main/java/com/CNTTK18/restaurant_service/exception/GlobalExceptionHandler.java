@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.CNTTK18.Common.Exception.ErrorResponse;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
@@ -24,6 +25,14 @@ public class GlobalExceptionHandler {
                 "RESOURCE_NOT_FOUND",
                 ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(WebClientResponseException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(WebClientResponseException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                "Error while calling another service",
+                ex.getMessage());
+        return new ResponseEntity<>(errorResponse, ex.getStatusCode());
     }
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
