@@ -15,6 +15,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.CNTTK18.Common.Event.ConfirmationEvent;
+import com.CNTTK18.Common.Event.MerchantEvent;
 import com.CNTTK18.Common.Event.NotificationEvent;
 
 import jakarta.mail.MessagingException;
@@ -49,7 +50,7 @@ public class EmailService {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
             String subject = StringUtils
-                    .join(Arrays.asList("Greetings", request.getEmail(), "!!!"), ' ');
+                    .join(Arrays.asList("Greetings", request.getEmail()), ' ');
             helper.setSubject(subject);
             helper.setText(process, true);
             helper.setTo(request.getEmail());
@@ -72,7 +73,7 @@ public class EmailService {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
             String subject = StringUtils
-                    .join(Arrays.asList("Greetings", request.getEmail(), "!!!"), ' ');
+                    .join(Arrays.asList("Greetings", request.getEmail()), ' ');
             helper.setSubject(subject);
             helper.setText(process, true);
             helper.setTo(request.getEmail());
@@ -82,4 +83,28 @@ public class EmailService {
             throw new RuntimeException("Lỗi khi gửi mail, " + ex.getMessage(), ex);
         }
     }
+
+    @KafkaListener(topics = "Merchant")
+    public void sendMerchantEmail(MerchantEvent request) {
+        try {
+            Context context = new Context();
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", request.getEmail());
+            map.put("success", request.isSuccess());
+            context.setVariables(map);
+            String process = springTemplateEngine.process("merchant", context);
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+            String subject = StringUtils
+                    .join(Arrays.asList("Greetings", request.getEmail()), ' ');
+            helper.setSubject(subject);
+            helper.setText(process, true);
+            helper.setTo(request.getEmail());
+            helper.setFrom(username);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException | MailException ex) {
+            throw new RuntimeException("Lỗi khi gửi mail, " + ex.getMessage(), ex);
+        }
+    }
+
 }
