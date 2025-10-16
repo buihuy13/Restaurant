@@ -15,7 +15,6 @@ public class RouterValidator {
         "/api/users/register",
         "/eureka/web",
         "/api/users/confirmation",
-        "/api/users/email",
         "/v3/api-docs/**",
         "/swagger-ui.html",
         "/swagger-ui/**",

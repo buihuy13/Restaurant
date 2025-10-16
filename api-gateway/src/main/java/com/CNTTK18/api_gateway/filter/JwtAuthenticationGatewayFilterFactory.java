@@ -1,7 +1,9 @@
 package com.CNTTK18.api_gateway.filter;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -98,9 +100,10 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                 // Nếu route này có yêu cầu quyền cụ thể
                 if (requiredRole != null && !requiredRole.isEmpty()) {
                     String userRoles = jwtUtil.extractRole(authHeader);
+                    List<String> roles = Arrays.asList(requiredRole.split(","));
                     
                     // Kiểm tra xem người dùng có quyền yêu cầu không
-                    if (userRoles == null || !userRoles.equals(requiredRole)) {
+                    if (userRoles == null || !roles.stream().anyMatch(r -> r.equals(userRoles))) {
                         return onError(exchange, 403, "Không có quyền");
                     }
                 }

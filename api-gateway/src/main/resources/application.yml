@@ -30,11 +30,34 @@ spring:
           enabled: true
           #lower-case-service-id: true
       routes:
+        - id: user-service-approvement
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/approvement/**
+            - Method=PUT
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: ADMIN
         - id: user-service
           uri: lb://user-service
           predicates:
             - Path=/api/users/**
             - Method=GET, PUT
+          filters:
+            - name: JwtAuthentication
+        - id: user-service-put
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/*
+            - Method=PUT
+          filters:
+            - name: JwtAuthentication
+        - id: user-service-profile-put
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/profile/**
+            - Method=PUT
           filters:
             - name: JwtAuthentication
         - id: user-service-auth
@@ -60,12 +83,129 @@ spring:
           uri: ${EUREKA_SERVER_URI}
           predicates:
           - Path=/eureka/** 
-        - id: restaurant-service
+        - id: restaurant-service-size
           uri: lb://restaurant-service
           predicates:
-            - Path=/api/size/**, /api/restaurant/**, /api/products/**, /api/category/**, /api/review/**
+            - Path=/api/size/**
+            - Method=GET
           filters:
             - name: JwtAuthentication
+        - id: restaurant-service-size-ADMIN
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/size/**
+            - Method=POST, PUT, DELETE
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: ADMIN
+        - id: restaurant-service-cate
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/category/**
+            - Method=GET
+          filters:
+            - name: JwtAuthentication
+        - id: restaurant-service-cate-ADMIN
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/category/**
+            - Method=POST, PUT, DELETE
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: ADMIN
+        - id: restaurant-service-review
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/review/**
+            - Method=GET, POST, PUT, DELETE
+          filters:
+            - name: JwtAuthentication
+        - id: restaurant-service-res
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/restaurant/**
+            - Method=GET
+          filters:
+            - name: JwtAuthentication
+        - id: restaurant-service-res-enable
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/restaurant/enable/**
+            - Method=PUT
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: ADMIN
+        - id: restaurant-service-res-put
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/restaurant/*
+            - Method=PUT
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: MERCHANT
+        - id: restaurant-service-res-ADMIN
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/restaurant/**
+            - Method=POST, DELETE
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: ADMIN,MERCHANT
+        - id: restaurant-service-product-get
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/products/**
+            - Method=GET
+          filters:
+            - name: JwtAuthentication
+        - id: restaurant-service-product
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/products/**
+            - Method=POST, DELETE
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: ADMIN,MERCHANT
+        - id: restaurant-service-product-availability
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/products/availability/**
+            - Method=PUT
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: ADMIN
+        - id: restaurant-service-product-put
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/products/*
+            - Method=PUT
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: MERCHANT
+        - id: restaurant-service-productsize-get
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/productsize/**
+            - Method=GET
+          filters:
+            - name: JwtAuthentication
+        - id: restaurant-service-productsize
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/productsize/**
+            - Method=POST, DELETE, PUT
+          filters:
+            - name: JwtAuthentication
+              args:
+                requiredRole: ADMIN,MERCHANT
         - id: restaurant-service-docs
           uri: lb://restaurant-service
           predicates:
