@@ -340,4 +340,11 @@ public class productService {
         }
         return products.get().stream().map(productUtil::mapProductToProductResponseWitoutResParam).toList();
     }
+
+    public restaurants getRestaurantByProductId(String id) {
+        products product = productRepo.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                        
+        return product.getRestaurant();
+    }
 }

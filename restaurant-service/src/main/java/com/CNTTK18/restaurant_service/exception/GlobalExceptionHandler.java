@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -88,6 +89,19 @@ public class GlobalExceptionHandler {
             "Invalid distance or duration",
             ex.getMessage()
         );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleMissingParams(MissingServletRequestParameterException ex) {
+        String message = "Tham số bắt buộc '" + ex.getParameterName() + "' bị thiếu.";
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+            "BAD_REQUEST",
+            message
+        );
+        
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 

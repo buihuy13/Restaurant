@@ -36,6 +36,7 @@ public class productUtil {
                                             .map(ps -> new ProductSizeResponse(ps.getId(),ps.getSize().getName(),ps.getPrice())).toList())
                             .rating(product.getRating())
                             .volume(product.getVolume())
+                            .restaurant(resUtil.mapResToResResponse(product.getRestaurant()))
                             .build();
     }
 }

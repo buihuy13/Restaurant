@@ -35,8 +35,15 @@ public class reviewService {
         this.resRepository = resRepository;
     }
 
-    public List<reviews> getAllReviews() {
-        return reviewRepo.findAll();
+    public List<reviews> getAllReviews(String resId, String productId) {
+        List<reviews> rv = reviewRepo.findAll();
+        if (resId != null && !resId.isEmpty()) {
+            rv = rv.stream().filter(r -> r.getReviewId().equals(resId)).toList();
+        }
+        else if (productId != null && !productId.isEmpty()) {
+            rv = rv.stream().filter(r -> r.getReviewId().equals(productId)).toList();
+        }
+        return rv;
     }
 
     public reviews getReviewById(String id) {
