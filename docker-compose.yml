@@ -57,8 +57,8 @@ services:
       - "8761:8761"
     environment:
       - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
-      - EUREKA_HOST_NAME={EUREKA_HOST_NAME}
-      - PORT={SERVICE_DISCOVERY_PORT}
+      - EUREKA_HOST_NAME=${EUREKA_HOST_NAME}
+      - PORT=${SERVICE_DISCOVERY_PORT}
   zipkin:
     image: openzipkin/zipkin
     ports:
@@ -76,7 +76,7 @@ services:
       - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
       - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
       - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
-      - PORT={API_GATEWAY_PORT}
+      - PORT=${API_GATEWAY_PORT}
     depends_on:
       - service-discovery
   user-service:
