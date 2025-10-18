@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
@@ -36,8 +37,9 @@ public class reviewController {
     @Tag(name = "Get")
     @Operation(summary = "Get all reviews")
     @GetMapping("")
-    public ResponseEntity<List<reviews>> getAllReviews() {
-        return ResponseEntity.ok(reviewService.getAllReviews());
+    public ResponseEntity<List<reviews>> getAllReviews(@RequestParam(required = false) String resId,
+                                                        @RequestParam(required = false) String productId) {
+        return ResponseEntity.ok(reviewService.getAllReviews(resId, productId));
     }
 
     @Tag(name = "Get")
