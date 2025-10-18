@@ -78,7 +78,8 @@ services:
       - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
       - PORT=${API_GATEWAY_PORT}
     depends_on:
-      - service-discovery
+      service-discovery:
+        condition: service_started
   user-service:
     build:
       context: .
@@ -119,7 +120,8 @@ services:
       - KAFKA_SERVER=${KAFKA_SERVER}
       - URL=${URL}
     depends_on:
-      - service-discovery
+      service-discovery:
+        condition: service_started
   chat-service:
     build:
       context: .
@@ -139,6 +141,13 @@ services:
       - CHAT_SERVICE_DB_URL=${CHAT_SERVICE_DB_URL}
       - CHAT_SERVICE_DB_USER=${CHAT_SERVICE_DB_USER}
       - CHAT_SERVICE_DB_PASSWORD=${CHAT_SERVICE_DB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+      service-discovery:
+        condition: service_started
+      redis:
+        condition: service_healthy
   restaurant-service:
     build:
       context: .
@@ -160,6 +169,11 @@ services:
       - OPENROUTESERVICE_URL=${OPENROUTESERVICE_URL}
       - OPENROUTESERVICE_LIST_URL=${OPENROUTESERVICE_LIST_URL}
       - OPENROUTESERVICE_API_KEY=${OPENROUTESERVICE_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      service-discovery:
+        condition: service_started
 
 volumes:
   mysql_data:
