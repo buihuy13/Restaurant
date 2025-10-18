@@ -21,6 +21,7 @@ public class resUtil {
                         .merchantId(res.getMerchantId())
                         .enabled(res.isEnabled())
                         .totalReview(res.getTotalReview())
+                        .cate(res.getCategories().stream().map(c -> new cateResponse(c.getId(),c.getCateName())).toList())
                         .build();
     }
 
@@ -41,6 +42,7 @@ public class resUtil {
                         .totalReview(res.getTotalReview())
                         .distance(distance)
                         .duration(duration)
+                        .cate(res.getCategories().stream().map(c -> new cateResponse(c.getId(),c.getCateName())).toList())
                         .build();
     }
 
