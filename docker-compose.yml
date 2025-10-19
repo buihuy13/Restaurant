@@ -38,6 +38,12 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s # Check mỗi 10s
+      timeout: 3s # Không response sau 3s thì timeout
+      retries: 5 # Thử lại 5 lần trước khi mark là unhealthy
+      start_period: 10s # Cho 10s bắt đầu trước khi healthcheck
   db:
     image: "mysql:8.0"
     container_name: mysql_container
