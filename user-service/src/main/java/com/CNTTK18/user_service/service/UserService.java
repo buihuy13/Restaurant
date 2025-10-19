@@ -2,14 +2,12 @@ package com.CNTTK18.user_service.service;
 
 import java.util.List;
 
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.CNTTK18.Common.Event.ConfirmationEvent;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.user_service.data.Role;
@@ -23,10 +21,8 @@ import com.CNTTK18.user_service.dto.response.UserResponse;
 import com.CNTTK18.user_service.exception.InactivateException;
 import com.CNTTK18.user_service.model.Address;
 import com.CNTTK18.user_service.model.Users;
-import com.CNTTK18.user_service.repository.AddressRepository;
 import com.CNTTK18.user_service.repository.UserRepository;
 import com.CNTTK18.user_service.util.UserUtil;
-import org.springframework.kafka.core.KafkaTemplate;
 
 @Service
 public class UserService {
@@ -34,18 +30,15 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final KafkaTemplate kafkaTemplate;
-    private final AddressRepository addressRepository;
+    private final MailService mailService;
 
     public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, 
-                       AuthenticationManager authenticationManager, JwtService jwtService, KafkaTemplate kafkaTemplate,
-                       AddressRepository addressRepository) {
+                       AuthenticationManager authenticationManager, JwtService jwtService, MailService mailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.kafkaTemplate = kafkaTemplate;
-        this.addressRepository = addressRepository;
+        this.mailService = mailService;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -79,9 +72,8 @@ public class UserService {
         newUser.setEnabled(false);
         newUser.setVerficationCode(java.util.UUID.randomUUID().toString());
         newUser.setRole(user.getRole());
-        kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(newUser.getEmail(), 
-                                        "api/users/confirmation?code=" + newUser.getVerficationCode()));
         userRepository.save(newUser);
+        mailService.sendConfirmationEmail(newUser.getEmail(),newUser.getVerficationCode());
     }
 
     public TokenResponse login(Login user) {
@@ -115,7 +107,7 @@ public class UserService {
         if (user.isEnabled()) {
             throw new IllegalStateException("Account is already activated");
         }
-        kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(email, "api/users/confirmation?code=" + user.getVerficationCode()));
+        mailService.sendConfirmationEmailAgain(email, user.getVerficationCode());
     }
 
     public List<String> getRoles() {
@@ -130,7 +122,7 @@ public class UserService {
         user.setEnabled(true);
         userRepository.save(user);
 
-        //Send congratulation email to merchant
+        mailService.sendMerchantEmail(user.getEmail(), true);
     }
 
     public void rejectMerchant(String id, Rejection rejection) {
@@ -138,8 +130,8 @@ public class UserService {
         if (!user.getRole().equals(Role.MERCHANT.toString())) {
             throw new IllegalStateException("User is not a merchant");
         }
-        //Send rejection email to merchant
         userRepository.deleteById(id);
+        mailService.sendMerchantEmail(user.getEmail(), false);
     }
 
     public UserResponse updateUserAfterLogin(UserUpdateAfterLogin userUpdate, String id) {
