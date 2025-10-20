@@ -10,11 +10,11 @@ import org.springframework.amqp.core.TopicExchange;
 @Configuration
 public class RabbitMQConfig {
     @Bean
-    Queue ConfirmationQueue() {
+    Queue confirmationQueue() {
         return new Queue("Confirmation_queue", false);
     }
     @Bean
-    Queue MerchantQueue() {
+    Queue merchantQueue() {
         return new Queue("Merchant_queue", false);
     }
     @Bean
@@ -23,6 +23,6 @@ public class RabbitMQConfig {
     }
     @Bean
     Binding MerchantBinding(Queue merchantQueue, TopicExchange merchantExchange) {
-        return BindingBuilder.bind(merchantExchange).to(merchantExchange).with("Merchant");
+        return BindingBuilder.bind(merchantQueue).to(merchantExchange).with("Merchant");
     }
 }
