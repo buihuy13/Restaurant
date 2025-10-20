@@ -2,37 +2,14 @@ version: '3.8'
 
 services:
   # Zookeeper: trình quản lý cho Kafka
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.3.2
-    container_name: zookeeper
+  rabbitmq:
+    image: "rabbitmq:latest"
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "2181"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
     ports:
-      - "2181:2181"
-
-  # Kafka Broker (máy chủ Kafka)
-  broker:
-    image: confluentinc/cp-kafka:7.3.2
-    container_name: broker
-    ports:
-      - "9092:9092"
-    depends_on:
-      zookeeper:
-        condition: service_healthy
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      - "5672:5672" #Cho các service kết nối đến
+      - "15672:15672" #Dành cho UI
   redis:
     image: "redis:7-alpine"
     container_name: redis
@@ -111,9 +88,12 @@ services:
       - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
       - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
       - PORT=${USER_PORT}
-      - KAFKA_SERVER=${KAFKA_SERVER}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
     depends_on:
       db:
         condition: service_healthy
@@ -131,8 +111,11 @@ services:
       - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
       - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
       - PORT=${NOTIFICATION_PORT}
-      - KAFKA_SERVER=${KAFKA_SERVER}
       - URL=${URL}
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
     depends_on:
       service-discovery:
         condition: service_started
