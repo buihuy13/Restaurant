@@ -1,6 +1,6 @@
 package com.CNTTK18.user_service.service;
 
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -9,25 +9,36 @@ import com.CNTTK18.Common.Event.MerchantEvent;
 
 @Service
 public class MailService {
-    private final KafkaTemplate kafkaTemplate;
+    private final RabbitTemplate rabbitTemplate;
+    //private final KafkaTemplate kafkaTemplate;
 
-    public MailService(KafkaTemplate kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
+    public MailService(RabbitTemplate rabbitTemplate) {
+        //this.kafkaTemplate = kafkaTemplate;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @Async
     public void sendConfirmationEmail(String email, String verificationCode) {
-        kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(email, 
-                                        "api/users/confirmation?code=" + verificationCode));
+        // kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(email, 
+        //                                 "api/users/confirmation?code=" + verificationCode));
+
+        ConfirmationEvent ce =  new ConfirmationEvent(email, "api/users/confirmation?code=" + verificationCode);
+
+        rabbitTemplate.convertAndSend("Confirmation_exchange", "Confirmation", ce);
     }
 
     @Async
     public void sendConfirmationEmailAgain(String email, String verificationCode) {
-        kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(email, "api/users/confirmation?code=" + verificationCode));
+        //kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(email, "api/users/confirmation?code=" + verificationCode));
+        ConfirmationEvent ce =  new ConfirmationEvent(email, "api/users/confirmation?code=" + verificationCode);
+
+        rabbitTemplate.convertAndSend("Confirmation_exchange", "Confirmation", ce);
     }
 
     @Async
     public void sendMerchantEmail(String email, boolean success) {
-        kafkaTemplate.send("Merchant", new MerchantEvent(email, success));
+        MerchantEvent me = new MerchantEvent(email, success);
+        //kafkaTemplate.send("Merchant", new MerchantEvent(email, success));
+        rabbitTemplate.convertAndSend("Merchant_exchange", "Merchant", me);
     }
 }
