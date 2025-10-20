@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const rateLimit = require("express-rate-limit");
+const connectDB = require("./config/database");
 
 const app = express();
 const PORT = process.env.PORT || 8082;
@@ -38,6 +39,7 @@ app.use((req, res) => {
 // Initialize connections and start server
 const startServer = async () => {
   try {
+    await connectDB();
     // Start server
     app.listen(PORT, () => {
       console.log(`Order Service running on port ${PORT}`);

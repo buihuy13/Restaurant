@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Zookeeper: trình quản lý cho Kafka
@@ -27,7 +27,7 @@ services:
         condition: service_healthy
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
@@ -56,11 +56,22 @@ services:
       - mysql_data:/var/lib/mysql
       - ./main.sql:/docker-entrypoint-initdb.d/main.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "db", "-u", "root", "-p${DB_PASSWORD}"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "db",
+          "-u",
+          "root",
+          "-p${DB_PASSWORD}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 60s
+
   service-discovery:
     build:
       context: .
