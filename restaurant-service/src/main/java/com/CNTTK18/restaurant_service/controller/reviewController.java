@@ -60,10 +60,12 @@ public class reviewController {
                     new ResponseEntity<>(reviewService.createReview(reviewRequest), HttpStatusCode.valueOf(201)));
     }
 
-    public CompletableFuture<String> fallbackMethod(reviewRequest reviewRequest, Throwable ex)
+    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(reviewRequest reviewRequest, Throwable ex)
     {
         System.out.println("Lỗi khi gọi createReview, kích hoạt fallback. Lỗi: " + ex.getMessage());
-        return CompletableFuture.supplyAsync(() -> "Oops! Something went wrong, please wait for 5 more minutes~");
+        return CompletableFuture.completedFuture(
+            ResponseEntity.status(503).body(new MessageResponse(ex.getMessage()))
+        );
     }
 
     @Tag(name = "Delete")

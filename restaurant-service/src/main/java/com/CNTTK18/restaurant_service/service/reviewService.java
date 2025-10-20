@@ -87,7 +87,7 @@ public class reviewService {
         else {
             throw new InvalidRequestException("Review Type phải là PRODUCT hoặc RESTAURANT");
         }
-        reviews rv = new reviews(RandomIdGenerator.generate(254), reviewRequest.getUserId(),
+        reviews rv = new reviews(RandomIdGenerator.generate(200), reviewRequest.getUserId(),
                          rvId, rvType, reviewRequest.getTitle(), reviewRequest.getContent(), reviewRequest.getRating(), null);
 
         return reviewRepo.save(rv);
