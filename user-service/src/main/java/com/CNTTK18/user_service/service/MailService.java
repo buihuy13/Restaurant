@@ -10,35 +10,26 @@ import com.CNTTK18.Common.Event.MerchantEvent;
 @Service
 public class MailService {
     private final RabbitTemplate rabbitTemplate;
-    //private final KafkaTemplate kafkaTemplate;
 
     public MailService(RabbitTemplate rabbitTemplate) {
-        //this.kafkaTemplate = kafkaTemplate;
         this.rabbitTemplate = rabbitTemplate;
     }
 
     @Async
     public void sendConfirmationEmail(String email, String verificationCode) {
-        // kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(email, 
-        //                                 "api/users/confirmation?code=" + verificationCode));
-
         ConfirmationEvent ce =  new ConfirmationEvent(email, "api/users/confirmation?code=" + verificationCode);
-
         rabbitTemplate.convertAndSend("Confirmation_exchange", "Confirmation", ce);
     }
 
     @Async
     public void sendConfirmationEmailAgain(String email, String verificationCode) {
-        //kafkaTemplate.send("confirmationTopic", new ConfirmationEvent(email, "api/users/confirmation?code=" + verificationCode));
         ConfirmationEvent ce =  new ConfirmationEvent(email, "api/users/confirmation?code=" + verificationCode);
-
         rabbitTemplate.convertAndSend("Confirmation_exchange", "Confirmation", ce);
     }
 
     @Async
     public void sendMerchantEmail(String email, boolean success) {
         MerchantEvent me = new MerchantEvent(email, success);
-        //kafkaTemplate.send("Merchant", new MerchantEvent(email, success));
         rabbitTemplate.convertAndSend("Merchant_exchange", "Merchant", me);
     }
 }
