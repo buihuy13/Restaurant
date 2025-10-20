@@ -18,6 +18,15 @@ public class RabbitMQConfig {
         return new Queue("Merchant_queue", false);
     }
     @Bean
+    TopicExchange confirmationExchange() {
+        return new TopicExchange("Confirmation_exchange");
+    }
+    
+    @Bean
+    TopicExchange merchantExchange() {
+        return new TopicExchange("Merchant_exchange");
+    }
+    @Bean
     Binding ConfirmationBinding(Queue confirmationQueue, TopicExchange confirmationExchange) {
         return BindingBuilder.bind(confirmationQueue).to(confirmationExchange).with("Confirmation");
     }
