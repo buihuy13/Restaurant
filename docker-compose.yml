@@ -108,6 +108,7 @@ services:
     ports:
       - "8084:8084"
     environment:
+      - PASSWORD=${PASSWORD}
       - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
       - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
       - PORT=${NOTIFICATION_PORT}
