@@ -13,6 +13,8 @@ public class MerchantEvent {
         this.email = email;
     }
     private boolean success;
+    public MerchantEvent() {
+    }
     public boolean isSuccess() {
         return success;
     }
