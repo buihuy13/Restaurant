@@ -107,7 +107,7 @@ public class UserService {
         if (user.isEnabled()) {
             throw new IllegalStateException("Account is already activated");
         }
-        mailService.sendConfirmationEmailAgain(email, user.getVerficationCode());
+        mailService.sendConfirmationEmail(email, user.getVerficationCode());
     }
 
     public List<String> getRoles() {

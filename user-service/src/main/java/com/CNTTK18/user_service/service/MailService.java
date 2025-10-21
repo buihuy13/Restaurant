@@ -22,12 +22,6 @@ public class MailService {
     }
 
     @Async
-    public void sendConfirmationEmailAgain(String email, String verificationCode) {
-        ConfirmationEvent ce =  new ConfirmationEvent(email, "api/users/confirmation?code=" + verificationCode);
-        rabbitTemplate.convertAndSend("Confirmation_exchange", "Confirmation", ce);
-    }
-
-    @Async
     public void sendMerchantEmail(String email, boolean success) {
         MerchantEvent me = new MerchantEvent(email, success);
         rabbitTemplate.convertAndSend("Merchant_exchange", "Merchant", me);
