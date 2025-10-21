@@ -4,6 +4,9 @@ public class ConfirmationEvent {
     private String email;
     private String url;
 
+    public ConfirmationEvent() {
+    }
+
     public ConfirmationEvent(String email, String url) {
         this.email = email;
         this.url = url;
