@@ -19,7 +19,15 @@ if (process.env.NODE_ENV !== "production") {
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.simple()
+        winston.format.printf(
+          ({ timestamp, level, message, service, ...meta }) => {
+            let msg = `${timestamp} [${service}] ${level}: ${message}`;
+            if (Object.keys(meta).length > 0 && meta.stack) {
+              msg += `\n${meta.stack}`;
+            }
+            return msg;
+          }
+        )
       ),
     })
   );

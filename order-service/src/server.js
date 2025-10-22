@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/database");
+const { connectRabbitMQ } = require("./config/rabbitmq");
 
 const app = express();
 const PORT = process.env.PORT || 8082;
@@ -40,6 +41,8 @@ app.use((req, res) => {
 const startServer = async () => {
   try {
     await connectDB();
+
+    await connectRabbitMQ();
     // Start server
     app.listen(PORT, () => {
       console.log(`Order Service running on port ${PORT}`);

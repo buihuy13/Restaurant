@@ -2,16 +2,15 @@
   "name": "order-service",
   "version": "1.0.0",
   "main": "src/server.js",
+  "description": "Order Microservice for Food Delivery App",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "test": "jest --coverage"
+    "dev": "nodemon src/server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "amqplib": "^0.10.9",
     "axios": "^1.12.2",
