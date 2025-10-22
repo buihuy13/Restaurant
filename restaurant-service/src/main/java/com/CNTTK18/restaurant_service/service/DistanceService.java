@@ -27,7 +27,7 @@ public class DistanceService {
     @Value("${OPENROUTESERVICE_URL}")
     private String apiUrl;
 
-    final int R = 6371;
+    final int R = 6371000;
 
     private WebClient webClientBuilder;
 
