@@ -3,6 +3,7 @@ import Joi from "joi";
 const createOrderSchema = Joi.object({
   userId: Joi.string().required(),
   restaurantId: Joi.string().required(),
+  restaurantName: Joi.string().required(),
   items: Joi.array()
     .items(
       Joi.object({

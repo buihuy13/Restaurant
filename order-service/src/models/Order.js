@@ -26,29 +26,6 @@ const orderItemSchema = new mongoose.Schema({
   },
 });
 
-const deliveryAddressSchema = new mongoose.Schema({
-  street: { type: String, required: true },
-  district: { type: String, required: true },
-  city: { type: String, required: true },
-  phone: { type: String, required: true },
-  notes: { type: String, default: "" },
-});
-
-const timelineSchema = new mongoose.Schema({
-  status: {
-    type: String,
-    required: true,
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
-  },
-  note: {
-    type: String,
-    default: "",
-  },
-});
-
 const orderSchema = new mongoose.Schema(
   {
     orderId: {

@@ -1,3 +1,6 @@
+import logger from "../utils/logger.js";
+import jwt from "jsonwebtoken";
+
 export const authenticate = (req, res, next) => {
   try {
     // Lấy token từ header Authorization
@@ -11,7 +14,7 @@ export const authenticate = (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     // Xác thực token với secret key
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRETKEY);
 
     // Lưu thông tin user đã decode vào request (để các route khác dùng)
     req.user = decoded;

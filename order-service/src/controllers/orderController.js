@@ -1,5 +1,6 @@
 import orderService from "../services/orderService.js";
 import createOrderSchema from "../dtos/createOrderDto.js";
+import logger from "../utils/logger.js";
 
 class OrderController {
   async createOrder(req, res, next) {

@@ -7,6 +7,7 @@ import rabbitmqConnection from "./config/rabbitmq.js";
 import errorHandler from "./middleware/errorHandler.js";
 import logger from "./utils/logger.js";
 import rateLimit from "express-rate-limit";
+import orderRouter from "./routes/orderRoutes.js";
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.get("/health", (req, res) => {
 });
 
 // Routes
+app.use("/api/orders", orderRouter);
 
 // Error handler
 app.use(errorHandler);
@@ -55,6 +57,7 @@ const startServer = async () => {
     // Connect to MongoDB
     await connectDB();
 
+    // Connect to RabbitMQ
     await rabbitmqConnection.connect();
 
     // Start payment consumer

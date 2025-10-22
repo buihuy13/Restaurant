@@ -25,6 +25,22 @@ class OrderService {
     }
   }
 
+  async validateUser(userId, token) {
+    try {
+      const response = await axios.get(
+        `${process.env.USER_SERVICE_URL}/api/users/${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 5000,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      logger.error("User validation error:", error);
+      throw new Error("User validation failed");
+    }
+  }
+
   calculateOrderAmounts(items, deliveryFee = 0, discount = 0) {
     const subtotal = items.reduce((sum, item) => {
       return sum + item.price * item.quantity;
@@ -62,7 +78,7 @@ class OrderService {
         orderId: this.generateOrderId(),
         userId: orderData.userId,
         restaurantId: orderData.restaurantId,
-        restaurantName: restaurant.name,
+        restaurantName: orderData.restaurantName,
         items: orderData.items,
         deliveryAddress: orderData.deliveryAddress,
         ...amounts,
@@ -83,6 +99,7 @@ class OrderService {
           orderId: order.orderId,
           userId: order.userId,
           restaurantId: order.restaurantId,
+          restaurantName: orderData.restaurantName,
           totalAmount: order.finalAmount,
           paymentMethod: order.paymentMethod,
           timestamp: new Date().toISOString(),
