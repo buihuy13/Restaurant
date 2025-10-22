@@ -1,11 +1,11 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const orderItemSchema = new mongoose.Schema({
-  menuItemId: {
+  productId: {
     type: String,
     required: true,
   },
-  name: {
+  productName: {
     type: String,
     required: true,
   },
@@ -71,130 +71,74 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    items: {
-      type: [orderItemSchema],
-      required: true,
-      validate: [
-        (array) => array.length > 0,
-        "Order must have at least one item",
-      ],
+    items: [orderItemSchema],
+    deliveryAddress: {
+      street: String,
+      city: String,
+      state: String,
+      zipCode: String,
     },
-    subtotal: {
+    totalAmount: {
       type: Number,
       required: true,
-      min: 0,
-    },
-    tax: {
-      type: Number,
-      required: true,
-      default: 0,
-      min: 0,
-    },
-    deliveryFee: {
-      type: Number,
-      required: true,
-      default: 0,
       min: 0,
     },
     discount: {
       type: Number,
       default: 0,
-      min: 0,
     },
-    total: {
+    deliveryFee: {
+      type: Number,
+      default: 0,
+    },
+    tax: {
+      type: Number,
+      default: 0,
+    },
+    finalAmount: {
       type: Number,
       required: true,
-      min: 0,
     },
     status: {
       type: String,
       enum: [
-        "PENDING",
-        "CONFIRMED",
-        "PREPARING",
-        "READY",
-        "DELIVERING",
-        "DELIVERED",
-        "CANCELLED",
-        "FAILED",
+        "pending",
+        "confirmed",
+        "preparing",
+        "ready",
+        "delivered",
+        "cancelled",
       ],
-      default: "PENDING",
+      default: "pending",
       index: true,
     },
     paymentStatus: {
       type: String,
-      enum: ["PENDING", "PROCESSING", "COMPLETED", "FAILED", "REFUNDED"],
-      default: "PENDING",
-      index: true,
+      enum: ["pending", "processing", "completed", "failed", "refunded"],
+      default: "pending",
     },
     paymentMethod: {
       type: String,
-      enum: ["CARD", "CASH", "PAYPAL", "WALLET"],
+      enum: ["cash", "card", "wallet"],
       required: true,
     },
-    paymentId: {
-      type: String,
-      index: true,
+    estimatedDeliveryTime: Date,
+    actualDeliveryTime: Date,
+    orderNote: String,
+    cancellationReason: String,
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
     },
-    deliveryAddress: {
-      type: deliveryAddressSchema,
-      required: true,
-    },
-    // thời gian giao hàng dự kiến
-    estimatedDeliveryTime: {
-      type: Date,
-    },
-    // thời gian giao hàng thực tế
-    actualDeliveryTime: {
-      type: Date,
-    },
-    // note của khách hàng về việc giao hàng, địa chỉ, hoặc lời nhắn
-    notes: {
-      type: String,
-      default: "",
-    },
-    cancellationReason: {
-      type: String,
-    },
-    timeline: [timelineSchema],
+    review: String,
   },
   {
     timestamps: true,
   }
 );
 
-// Indexes for better query performance
 orderSchema.index({ createdAt: -1 });
-orderSchema.index({ userId: 1, createdAt: -1 });
-orderSchema.index({ restaurantId: 1, status: 1 });
-orderSchema.index({ status: 1, createdAt: -1 });
+orderSchema.index({ userId: 1, status: 1 });
 
-// Calculate estimated delivery time before saving
-// orderSchema.pre("save", function (next) {
-//   if (this.isNew && !this.estimatedDeliveryTime) {
-//     const now = new Date();
-//     // Estimate 45 minutes for delivery
-//     this.estimatedDeliveryTime = new Date(now.getTime() + 45 * 60000);
-//   }
-//   next();
-// });
-
-// ghi lại lịch sử thay đổi trạng thái đơn hàng.
-orderSchema.methods.addTimelineEntry = function (status, note = "") {
-  this.timeline.push({
-    status,
-    note,
-    timestamp: new Date(),
-  });
-};
-
-// Virtual for order age
-orderSchema.virtual("orderAge").get(function () {
-  return Date.now() - this.createdAt;
-});
-
-// Ensure virtuals are included in JSON
-orderSchema.set("toJSON", { virtuals: true });
-orderSchema.set("toObject", { virtuals: true });
-
-module.exports = mongoose.model("Order", orderSchema);
+export default mongoose.model("Order", orderSchema);
