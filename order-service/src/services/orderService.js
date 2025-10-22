@@ -1,99 +1,107 @@
-const logger = require("../utils/logger");
-const axios = require("axios");
-const Order = require("../models/Order");
-const rabbitmq = require("../config/rabbitmq");
+import rabbitmqConnection from "../config/rabbitmq.js";
+import axios from "axios";
+import logger from "../utils/logger.js";
+import Order from "../models/Order.js";
 
 class OrderService {
-  // Create new order
-  async createOrder(orderData) {
-    logger.info(`Creating order for user: ${orderData.userId}`);
-
-    try {
-      const orderId = `ORD-${Date.now()}-${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
-
-      await this.validateRestaurant(orderData.restaurantId);
-
-      const finalAmount = this.ca;
-
-      const order = new Order({
-        orderId,
-        userId: orderData.userId,
-        restaurantId: orderData.restaurantId,
-        items: orderData.items,
-        totalAmount: orderData.totalAmount,
-        deliveryAddress: orderData.deliveryAddress,
-        deliveryFee: orderData.deliveryFee || 0,
-        discount: orderData.discount || 0,
-        tax: orderData.tax || 0,
-        finalAmount,
-        paymentMethod: orderData.paymentMethod,
-        notes: orderData.notes,
-        deliveryTime: {
-          estimated: new Date(Date.now() + 45 * 60000), // 45 minutes
-        },
-      });
-
-      await order.save();
-
-      // Cache order
-
-      // Publish order create event
-      await rabbitmq.publishMessage(
-        process.env.RABBITMQ_ORDER_EXCHANGE,
-        process.env.RABBITMQ_ROUTING_ORDER_CREATED,
-        {
-          orderId: order.orderId,
-          userId: order.userId,
-          restaurantId: order.restaurantId,
-          finalAmount: order.finalAmount,
-          paymentMethod: order.paymentMethod,
-          createdAt: order.createdAt,
-        }
-      );
-      return order;
-    } catch (error) {}
-
-    // Xác thực nhà hàng có tồn tại hoặc có sẵn không
-
-    // Tính tổng đơn hàng
+  generateOrderId() {
+    return `ORD${Date.now()}${Math.random()
+      .toString(36)
+      .substr(2, 9)
+      .toUpperCase()}`;
   }
-
-  // Get order by ID
-  async getOrderById(orderId, userId) {}
-
-  // Get user orders with pagination
-  async getUserOrders(userId, page = 1, limit = 10, status = null) {}
 
   async validateRestaurant(restaurantId) {
     try {
       const response = await axios.get(
-        `${process.env.RESTAURANT_SERVICE_URL}/api/restaurants/${restaurantId}`,
+        `${process.env.RESTAURANT_SERVICE_URL}/api/restaurant/${restaurantId}`,
         { timeout: 5000 }
       );
 
-      if (!response.data || !response.data.isOpen) {
-        throw new AppError(
-          "Restaurant is currently closed",
-          400,
-          "RESTAURANT_CLOSED"
-        );
-      }
-
       return response.data;
     } catch (error) {
-      if (error.code === "ECONNREFUSED") {
-        logger.error("Restaurant service is not available");
-        throw new AppError(
-          "Restaurant service unavailable",
-          503,
-          "SERVICE_UNAVAILABLE"
-        );
-      }
+      logger.error("Restaurant validation error:", error);
+      throw new Error("Restaurant not found or unavailable");
+    }
+  }
+
+  calculateOrderAmounts(items, deliveryFee = 0, discount = 0) {
+    const subtotal = items.reduce((sum, item) => {
+      return sum + item.price * item.quantity;
+    }, 0);
+
+    const tax = subtotal * 0.1; // 10% tax
+    const finalAmount = subtotal + deliveryFee + tax - discount;
+
+    return {
+      totalAmount: subtotal,
+      tax: parseFloat(tax.toFixed(2)),
+      deliveryFee,
+      discount,
+      finalAmount: parseFloat(finalAmount.toFixed(2)),
+    };
+  }
+
+  async createOrder(orderData, token) {
+    try {
+      // Validate restaurant
+      const restaurant = await this.validateRestaurant(orderData.restaurantId);
+
+      // Validate user
+      await this.validateUser(orderData.userId, token);
+
+      // Calculate amounts
+      const amounts = this.calculateOrderAmounts(
+        orderData.items,
+        restaurant.deliveryFee || 0,
+        orderData.discount || 0
+      );
+
+      // Create Order
+      const order = new Order({
+        orderId: this.generateOrderId(),
+        userId: orderData.userId,
+        restaurantId: orderData.restaurantId,
+        restaurantName: restaurant.name,
+        items: orderData.items,
+        deliveryAddress: orderData.deliveryAddress,
+        ...amounts,
+        paymentMethod: orderData.paymentMethod,
+        orderNote: orderData.orderNote,
+        estimatedDeliveryTime: new Date(Date.now() + 45 * 60000), // 45 minutes
+      });
+
+      await order.save();
+
+      // Cache the order
+
+      // Publish order created event
+      await rabbitmqConnection.publishMessage(
+        process.env.RABBITMQ_ORDER_EXCHANGE,
+        "order.created",
+        {
+          orderId: order.orderId,
+          userId: order.userId,
+          restaurantId: order.restaurantId,
+          totalAmount: order.finalAmount,
+          paymentMethod: order.paymentMethod,
+          timestamp: new Date().toISOString(),
+        }
+      );
+
+      logger.info(`Order created successfully: ${order.orderId}`);
+      return order;
+    } catch (error) {
+      logger.error("Create order error:", error);
       throw error;
     }
   }
+
+  async getOrderById(orderId) {
+    try {
+      // Try cache first
+    } catch (error) {}
+  }
 }
 
-module.exports = new OrderService();
+export default new OrderService();

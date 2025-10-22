@@ -186,3 +186,234 @@
 {"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:05:35.933Z"}
 {"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:05:41.764Z"}
 {"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:05:41.768Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:05:44.409Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:05:48.848Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:05:48.850Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:11:08.788Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:11:19.044Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:11:19.049Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:11:22.935Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:11:26.638Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:11:34.655Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:11:34.660Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:13:08.389Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:13:13.610Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:13:18.889Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:13:18.895Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:13:23.301Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:13:24.236Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:13:30.922Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:13:30.924Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:14:53.388Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:14:59.143Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:14:59.160Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:15:11.859Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:15:15.567Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:15:19.973Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:15:19.975Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:15:25.229Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:15:26.333Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:15:30.721Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:15:30.724Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:16:20.924Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:16:25.375Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:16:25.387Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:20:37.518Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:20:42.018Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:20:42.023Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:20:51.897Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:20:56.286Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:20:56.289Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:34:36.928Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:34:41.665Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:34:41.669Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:34:46.138Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:34:50.636Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:34:50.641Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:35:16.009Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:35:20.865Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:35:20.869Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:35:37.891Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:35:42.370Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:35:42.374Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:35:43.960Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:35:47.034Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:35:49.736Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:35:54.167Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:35:54.170Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:35:57.953Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:36:02.699Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:36:02.702Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:36:16.662Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:36:21.276Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:36:21.279Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:36:22.957Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:36:27.397Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:36:27.401Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:36:33.628Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:36:38.336Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:36:38.338Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:36:43.469Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:36:48.730Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:36:53.202Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:36:53.207Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:36:57.726Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:37:02.967Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:37:02.971Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:37:24.195Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:37:28.581Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:37:28.585Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:37:32.496Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:37:37.269Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:37:37.274Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:37:48.633Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:37:53.093Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:37:53.096Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:38:04.063Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:38:08.783Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:38:08.787Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:38:23.314Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:38:27.697Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:38:27.700Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:38:32.340Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:38:37.124Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:38:37.127Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:38:53.570Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:38:58.110Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:38:58.114Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:39:00.250Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:39:04.232Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:39:08.601Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:39:08.605Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:39:10.722Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:39:15.479Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:39:15.482Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:39:37.865Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:39:42.523Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:39:42.526Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:39:59.934Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:40:05.193Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:40:05.196Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:40:12.709Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:40:17.233Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:40:17.235Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:40:25.692Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:40:28.602Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:40:32.315Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:40:37.604Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:40:42.057Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:40:42.061Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:41:45.113Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:41:50.283Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:41:56.860Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:42:02.045Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:42:02.053Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:42:03.133Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:42:07.553Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:42:07.556Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:42:32.379Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:42:37.076Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:42:37.079Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:42:44.998Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:42:49.512Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:42:49.515Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:42:51.243Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:42:55.640Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:42:55.644Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:43:19.525Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:43:20.502Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:43:25.088Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:43:25.090Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:43:32.925Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:43:37.632Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:43:37.637Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:44:22.171Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:44:26.827Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:44:26.832Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:44:35.126Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:44:39.554Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:44:39.557Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:44:47.181Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:44:49.748Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:44:54.141Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:44:54.147Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:45:03.174Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:45:07.903Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:45:07.906Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:45:10.308Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:45:14.907Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:45:14.909Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:45:38.871Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:45:39.904Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:45:44.586Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:45:44.589Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:46:01.694Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:46:06.200Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:46:06.204Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:46:19.161Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:46:24.185Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:46:24.189Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:47:06.455Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:47:07.377Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:47:11.839Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:47:11.849Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:47:15.041Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:47:19.448Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:47:19.450Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:47:27.886Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:47:32.238Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:47:32.243Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:48:03.979Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:48:08.954Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:48:08.962Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:48:11.884Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:48:17.026Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:48:20.391Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:48:24.877Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:48:24.880Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:48:46.825Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:48:51.642Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:48:51.648Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:49:01.586Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:49:06.223Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:49:06.228Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:49:30.042Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:49:33.003Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:49:37.568Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:49:37.571Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:50:38.416Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:50:40.569Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:50:45.109Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:50:45.114Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:51:03.686Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:51:06.766Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:51:11.152Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:51:11.156Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:52:29.371Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:52:33.922Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:52:33.925Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:54:19.942Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:54:24.635Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:54:24.640Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:54:41.575Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:54:46.052Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:54:46.055Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:54:58.091Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:55:03.376Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:55:03.378Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:55:14.763Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:55:19.431Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:55:19.434Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:55:28.231Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:55:33.090Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:55:33.093Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:55:53.148Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:55:54.697Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:55:59.214Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:55:59.216Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:56:17.805Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:56:22.465Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:56:22.467Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-22T14:56:28.659Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-22T14:56:33.257Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-22T14:56:33.262Z"}

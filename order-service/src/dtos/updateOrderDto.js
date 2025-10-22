@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-export const updateOrderStatusSchema = Joi.object({
+const updateOrderStatusSchema = Joi.object({
   status: Joi.string()
     .valid(
       "pending",
@@ -16,3 +16,5 @@ export const updateOrderStatusSchema = Joi.object({
     then: Joi.required(),
   }),
 });
+
+export default updateOrderStatusSchema;

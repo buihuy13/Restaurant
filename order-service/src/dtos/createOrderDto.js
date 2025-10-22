@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-export const createOrderSchema = Joi.object({
+const createOrderSchema = Joi.object({
   userId: Joi.string().required(),
   restaurantId: Joi.string().required(),
   items: Joi.array()
@@ -24,3 +24,5 @@ export const createOrderSchema = Joi.object({
   paymentMethod: Joi.string().valid("cash", "card", "wallet").required(),
   orderNote: Joi.string().optional(),
 });
+
+export default createOrderSchema;
