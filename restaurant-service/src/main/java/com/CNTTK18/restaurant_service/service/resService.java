@@ -1,6 +1,7 @@
 package com.CNTTK18.restaurant_service.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -50,10 +51,17 @@ public class resService {
         this.distanceService = distanceService;
     }
 
-    public Mono<List<resResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby, String rating) {
+    public Mono<List<resResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
+                                                                String rating, String category) {
         List<restaurants> res = resRepository.findAll();
         if (search != null && !search.isEmpty()) {
             res = res.stream().filter(r -> r.getResName().toLowerCase().contains(search.toLowerCase())).toList();
+        }
+
+        if (category != null && !category.isEmpty()) {
+            List<String> categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
+            res = res.stream().filter(r -> r.getCategories().stream().map(c -> c.getCateName().toLowerCase()).toList()
+                                                    .containsAll(categoryNames)).toList();
         }
 
         if (rating != null && !rating.isEmpty()) {
