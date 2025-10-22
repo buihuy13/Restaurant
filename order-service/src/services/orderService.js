@@ -2,6 +2,7 @@ import rabbitmqConnection from "../config/rabbitmq.js";
 import axios from "axios";
 import logger from "../utils/logger.js";
 import Order from "../models/Order.js";
+import cacheService from "./cacheService.js";
 
 class OrderService {
   generateOrderId() {
@@ -90,6 +91,7 @@ class OrderService {
       await order.save();
 
       // Cache the order
+      await cacheService.setOrder(order.orderId, order.toObject());
 
       // Publish order created event
       await rabbitmqConnection.publishMessage(

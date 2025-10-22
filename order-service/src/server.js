@@ -8,6 +8,7 @@ import errorHandler from "./middleware/errorHandler.js";
 import logger from "./utils/logger.js";
 import rateLimit from "express-rate-limit";
 import orderRouter from "./routes/orderRoutes.js";
+import redisClient from "./config/redis.js";
 
 dotenv.config();
 
@@ -56,6 +57,9 @@ const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectDB();
+
+    // Connect to Redis
+    await redisClient.connect();
 
     // Connect to RabbitMQ
     await rabbitmqConnection.connect();
