@@ -9,6 +9,7 @@ import logger from "./utils/logger.js";
 import rateLimit from "express-rate-limit";
 import orderRouter from "./routes/orderRoutes.js";
 import redisClient from "./config/redis.js";
+import startPaymentConsumer from "./consumers/paymentConsumer.js";
 
 dotenv.config();
 
@@ -65,6 +66,7 @@ const startServer = async () => {
     await rabbitmqConnection.connect();
 
     // Start payment consumer
+    await startPaymentConsumer();
 
     // Start server
     app.listen(PORT, () => {
@@ -79,7 +81,7 @@ const startServer = async () => {
 process.on("SIGTERM", async () => {
   logger.info("SIGTERM received, shutting down gracefully");
   await rabbitmqConnection.close();
-  // await redisClient.close();
+  await redisClient.close();
   process.exit(0);
 });
 
