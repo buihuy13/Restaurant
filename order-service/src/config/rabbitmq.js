@@ -5,7 +5,6 @@ class RabbitMQConnection {
   constructor() {
     this.connection = null;
     this.channel = null;
-    this.exchange = process.env.RABBITMQ_ORDER_EXCHANGE;
     this.queues = {
       ORDER_CREATED: process.env.RABBITMQ_QUEUE_ORDER_CREATED,
       ORDER_UPDATED: process.env.RABBITMQ_QUEUE_ORDER_UPDATED,

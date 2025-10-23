@@ -59,6 +59,23 @@ class OrderService {
     };
   }
 
+  validateStatusTransition(currentStatus, newStatus) {
+    const validTransitions = {
+      pending: ["confirmed", "cancelled"], // đơn hàng mới vừa tạo, có thể xác nhận hoặc hủy
+      confirmed: ["preparing", "cancelled"], // đơn hàng đã xác nhận
+      preparing: ["ready", "cancelled"], // đơn giàng đang chuẩn bị
+      ready: ["cancelled"], // sẵn sàng giao
+      delivered: [],
+      cancelled: [],
+    };
+
+    if (!validTransitions[currentStatus]?.includes(newStatus)) {
+      throw new Error(
+        `Invalid status transition from ${currentStatus} to ${newStatus}`
+      );
+    }
+  }
+
   async createOrder(orderData, token) {
     try {
       // Validate restaurant
@@ -119,7 +136,236 @@ class OrderService {
   async getOrderById(orderId) {
     try {
       // Try cache first
-    } catch (error) {}
+      let order = await cacheService.getOrder(orderId);
+      logger.info("đã lay cache");
+
+      if (!order) {
+        order = await Order.findOne({ orderId });
+        logger.info("khong có lay lay cache");
+        if (order) {
+          await cacheService.setOrder(orderId, order.toObject());
+        }
+      }
+
+      return order;
+    } catch (error) {
+      logger.error("Get order error:", error);
+      throw error;
+    }
+  }
+
+  async getUserOrders(userId, filters = {}) {
+    try {
+      const query = { userId };
+
+      if (filters.status) {
+        query.status = filters.status;
+      }
+
+      if (filters.paymentStatus) {
+        query.paymentStatus = filters.paymentStatus;
+      }
+
+      const page = parseInt(filters.page) || 1;
+      const limit = parseInt(filters.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const orders = await Order.find(query)
+        .sort({ createdAt: -1 }) // sắp xếp theo ngày tạo giảm dần
+        .skip(skip)
+        .limit(limit)
+        .lean(); // trả về plain JS object, không phải mongoose
+
+      const total = await Order.countDocuments(query); // đếm số đơn hàng thỏa dk
+
+      return {
+        orders,
+        pagination: {
+          page,
+          limit,
+          total,
+          page: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      logger.error("Get user orders error:", error);
+      throw error;
+    }
+  }
+
+  async updateOrderStatus(orderId, statusData) {
+    try {
+      const order = await Order.findOne({ orderId });
+
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      this.validateStatusTransition(order.status, statusData.status);
+
+      order.status = statusData.status;
+
+      if (statusData.status === "cancelled") {
+        order.cancellationReason = statusData.cancellationReason;
+      }
+
+      if (statusData.status === "delivered") {
+        order.actualDeliveryTime = new Date();
+      }
+
+      await order.save();
+
+      // Update cache
+      await cacheService.setOrder(orderId, order.toObject());
+      await cacheService.invalidateUserOrders(order.userId);
+
+      // publishMessage
+      await rabbitmqConnection.publishMessage(
+        process.env.RABBITMQ_ORDER_EXCHANGE,
+        "order.status.updated",
+        {
+          orderId: order.orderId,
+          userId: order.userId,
+          previousStatus: order.status,
+          newStatus: statusData.status,
+          timestamp: new Date().toISOString(),
+        }
+      );
+      logger.info(`Order status updated: ${orderId} -> ${statusData.status}`);
+      return order;
+    } catch (error) {
+      logger.error("Update order status error:", error);
+      throw error;
+    }
+  }
+
+  // TODO
+  async updatePaymentStatus(orderId, paymentStatus, paymentData = {}) {
+    try {
+      const order = await Order.findOne({ orderId });
+
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      order.paymentStatus = paymentStatus;
+
+      if (paymentStatus === "completed") {
+        order.status = "confirmed";
+      } else if (paymentStatus === "failed") {
+        order.status = "cancelled";
+        order.cancellationReason = "Payment failed";
+      }
+
+      await order.save();
+    } catch (error) {
+      logger.error("Update payment status error:", error);
+      throw error;
+    }
+  }
+
+  async cancelOrder(orderId, userId, reason) {
+    try {
+      const order = await Order.findOne({ orderId, userId });
+
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      // đơn hàng ở trạng thái pending hoặc confirmed thì mới được hủy
+      if (!["pending", "confirmed"].includes(order.status)) {
+        throw new Error("Order cannot be cancelled at this stage");
+      }
+
+      order.status = "cancelled";
+      order.cancellationReason = reason;
+      await order.save();
+
+      // updated cache
+      await cacheService.deleteOrder(orderId);
+      await cacheService.invalidateUserOrders(userId);
+
+      // Publish cancellation event
+      await rabbitmqConnection.publishMessage(
+        process.env.RABBITMQ_ORDER_EXCHANGE,
+        "order.cancelled",
+        {
+          orderId: order.orderId,
+          userId: order.userId,
+          reason,
+          refundRequired: order.paymentStatus === "completed",
+          timestamp: new Date().toISOString(),
+        }
+      );
+
+      return order;
+    } catch (error) {
+      logger.error("Cancel order error:", error);
+      throw error;
+    }
+  }
+
+  async addRating(orderId, userId, rating, review) {
+    try {
+      const order = await Order.findOne({ orderId, userId });
+
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      if (order.status !== "delivered") {
+        throw new Error("Can only rate delivered orders");
+      }
+
+      order.rating = rating;
+      order.review = review;
+      await order.save();
+
+      await cacheService.setOrder(orderId, order.toObject());
+
+      return order;
+    } catch (error) {
+      logger.error("Add rating error:", error);
+      throw error;
+    }
+  }
+
+  async getRestaurantOrders(restaurantId, filters = {}) {
+    try {
+      // Validate restaurant
+      const restaurant = await this.validateRestaurant(orderData.restaurantId);
+
+      const query = { restaurantId };
+
+      if (filters.status) {
+        query.status = filters.status;
+      }
+
+      const page = parseInt(filters.page) || 1;
+      const limit = parseInt(filters.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const orders = await Order.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      const total = await Order.countDocuments(query);
+
+      return {
+        orders,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      logger.error("Get restaurant orders error:", error);
+      throw error;
+    }
   }
 }
 

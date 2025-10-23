@@ -79,11 +79,11 @@ const orderSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: [
-        "pending",
-        "confirmed",
-        "preparing",
-        "ready",
-        "delivered",
+        "pending", // mới tạo, chờ restaurant xác nhận
+        "confirmed", // restaurant xác nhận
+        "preparing", // restaurant chuẩn bị món
+        "ready", // món ăn sẵn sàng
+        "completed", // khách nhận món
         "cancelled",
       ],
       default: "pending",
