@@ -184,7 +184,7 @@ class OrderService {
           page,
           limit,
           total,
-          page: Math.ceil(total / limit),
+          totalPages: Math.ceil(total / limit),
         },
       };
     } catch (error) {
@@ -209,7 +209,7 @@ class OrderService {
         order.cancellationReason = statusData.cancellationReason;
       }
 
-      if (statusData.status === "delivered") {
+      if (statusData.status === "completed") {
         order.actualDeliveryTime = new Date();
       }
 
@@ -313,7 +313,7 @@ class OrderService {
         throw new Error("Order not found");
       }
 
-      if (order.status !== "delivered") {
+      if (order.status !== "completed") {
         throw new Error("Can only rate delivered orders");
       }
 

@@ -7,7 +7,7 @@ const updateOrderStatusSchema = Joi.object({
       "confirmed",
       "preparing",
       "ready",
-      "delivered",
+      "completed",
       "cancelled"
     )
     .required(),

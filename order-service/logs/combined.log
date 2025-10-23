@@ -1669,3 +1669,17 @@
 {"level":"info","message":"Redis connected successfully","timestamp":"2025-10-23T10:03:10.951Z"}
 {"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-23T10:03:15.701Z"}
 {"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-23T10:03:15.707Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-23T10:03:48.767Z"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-23T10:03:48.806Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-23T10:03:53.322Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-23T10:03:53.328Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-23T10:04:48.493Z"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-23T10:04:48.538Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-23T10:04:53.063Z"}
+{"level":"info","message":"Order Service running on port 8082","timestamp":"2025-10-23T10:04:53.069Z"}
+{"level":"warn","message":"MongoDB disconnected","timestamp":"2025-10-23T10:52:42.613Z"}
+{"code":"ECONNRESET","errno":-4077,"level":"error","message":"RabbitMQ connection error: read ECONNRESET","stack":"Error: read ECONNRESET\n    at TLSWrap.onStreamRead (node:internal/stream_base_commons:216:20)","syscall":"read","timestamp":"2025-10-23T10:52:43.810Z"}
+{"level":"warn","message":"RabbitMQ connection closed. Reconnecting...","timestamp":"2025-10-23T10:52:43.838Z"}
+{"level":"info","message":"RabbitMQ connected successfully","timestamp":"2025-10-23T10:52:54.070Z"}
+{"level":"info","message":"MongoDB connected successfully","timestamp":"2025-10-23T10:56:04.525Z"}
+{"level":"info","message":"Redis connected successfully","timestamp":"2025-10-23T10:56:04.560Z"}
