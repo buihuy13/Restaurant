@@ -17,7 +17,8 @@ public class productUtil {
                             .imageURL(product.getImageURL())
                             .productName(product.getProductName())
                             .productSizes(product.getProductSizes().stream()
-                                            .map(ps -> new ProductSizeResponse(ps.getId(),ps.getSize().getName(),ps.getPrice())).toList())
+                                            .map(ps -> new ProductSizeResponse(ps.getId(),ps.getSize().getName(),
+                                                                                ps.getPrice(),ps.getSize().getId())).toList())
                             .restaurant(resResponse)
                             .rating(product.getRating())
                             .volume(product.getVolume())
@@ -34,7 +35,8 @@ public class productUtil {
                             .imageURL(product.getImageURL())
                             .productName(product.getProductName())
                             .productSizes(product.getProductSizes().stream()
-                                            .map(ps -> new ProductSizeResponse(ps.getId(),ps.getSize().getName(),ps.getPrice())).toList())
+                                            .map(ps -> new ProductSizeResponse(ps.getId(),ps.getSize().getName(),
+                                                                                ps.getPrice(),ps.getSize().getId())).toList())
                             .rating(product.getRating())
                             .volume(product.getVolume())
                             .restaurant(resUtil.mapResToResResponse(product.getRestaurant()))
@@ -51,7 +53,8 @@ public class productUtil {
                             .imageURL(product.getImageURL())
                             .productName(product.getProductName())
                             .productSizes(product.getProductSizes().stream()
-                                            .map(ps -> new ProductSizeResponse(ps.getId(),ps.getSize().getName(),ps.getPrice())).toList())
+                                            .map(ps -> new ProductSizeResponse(ps.getId(),ps.getSize().getName(),
+                                                                                ps.getPrice(),ps.getSize().getId())).toList())
                             .rating(product.getRating())
                             .volume(product.getVolume())
                             .build();

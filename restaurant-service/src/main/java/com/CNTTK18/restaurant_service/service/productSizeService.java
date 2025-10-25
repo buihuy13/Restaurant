@@ -6,12 +6,14 @@ import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.restaurant_service.dto.productSize.request.ProductSizeCreate;
 import com.CNTTK18.restaurant_service.dto.productSize.request.productSizeRequest;
+import com.CNTTK18.restaurant_service.dto.productSize.response.ProductSizeResponse;
 import com.CNTTK18.restaurant_service.model.ProductSize;
 import com.CNTTK18.restaurant_service.model.products;
 import com.CNTTK18.restaurant_service.model.size;
 import com.CNTTK18.restaurant_service.repository.ProductSizeRepository;
 import com.CNTTK18.restaurant_service.repository.productRepository;
 import com.CNTTK18.restaurant_service.repository.sizeRepository;
+import com.CNTTK18.restaurant_service.util.ProductSizeUtil;
 
 @Service
 public class productSizeService {
@@ -26,26 +28,31 @@ public class productSizeService {
         this.sizeRepository = sizeRepository;
     }
 
-    public ProductSize getProductSizeById(String id) {
-        return productSizeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cannot find product details"));
+    public ProductSizeResponse getProductSizeById(String id) {
+        ProductSize ps = productSizeRepository.findById(id)
+                                    .orElseThrow(() -> new ResourceNotFoundException("Cannot find product details"));
+        return ProductSizeUtil.mapProductSizeToProductSizeResponse(ps);
     }
 
-    public ProductSize updateProductSize(String id, productSizeRequest request) {
+    public ProductSizeResponse updateProductSize(String id, productSizeRequest request) {
         ProductSize ps = productSizeRepository.findById(id)
                                     .orElseThrow(() -> new ResourceNotFoundException("Cannot find product details"));
 
         ps.setPrice(request.getPrice());
-        return productSizeRepository.save(ps); 
+        productSizeRepository.save(ps); 
+        return ProductSizeUtil.mapProductSizeToProductSizeResponse(ps);
     }
 
-    public ProductSize createProductSize(ProductSizeCreate productSize) {
+    public ProductSizeResponse createProductSize(ProductSizeCreate productSize) {
         size size = sizeRepository.findById(productSize.getSizeId())
                                     .orElseThrow(() -> new ResourceNotFoundException("Cannot find size"));
 
         products product = productRepository.findById(productSize.getProductId())
                                                 .orElseThrow(() -> new ResourceNotFoundException("Cannot find product"));
 
-        return productSizeRepository.save(new ProductSize(RandomIdGenerator.generate(254), product, size, productSize.getPrice()));
+        ProductSize ps = new ProductSize(RandomIdGenerator.generate(254), product, size, productSize.getPrice());
+        productSizeRepository.save(ps);
+        return ProductSizeUtil.mapProductSizeToProductSizeResponse(ps);
     }
 
     public void deleteProductSize(String id) {
