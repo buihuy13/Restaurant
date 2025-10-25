@@ -1,7 +1,8 @@
 import orderService from "../services/orderService.js";
-import createOrderSchema from "../dtos/createOrderDto.js";
+import { createOrderSchema } from "../dtos/request/createOrderDto.js";
+import { updateOrderStatusSchema } from "../dtos/request/updateOrderDto.js";
+import { orderResponseDTO } from "../dtos/response/orderResponseDto.js";
 import logger from "../utils/logger.js";
-import updateOrderStatusSchema from "../dtos/updateOrderDto.js";
 
 class OrderController {
   async createOrder(req, res, next) {
@@ -21,7 +22,7 @@ class OrderController {
       res.status(201).json({
         success: true,
         message: "Order created successfully",
-        data: order,
+        data: orderResponseDTO(order),
       });
     } catch (error) {
       logger.error("Create order controller error:", error);
@@ -43,7 +44,7 @@ class OrderController {
 
       res.status(200).json({
         success: true,
-        data: order,
+        data: orderResponseDTO(order),
       });
     } catch (error) {
       logger.error("Get order controller error:", error);
@@ -60,7 +61,7 @@ class OrderController {
 
       res.status(200).json({
         success: true,
-        data: result.orders,
+        data: result.orders.map(orderResponseDTO),
         pagination: result.pagination,
       });
     } catch (error) {
@@ -86,7 +87,7 @@ class OrderController {
       res.status(200).json({
         success: true,
         message: "Order status updated successfully",
-        data: order,
+        data: orderResponseDTO(order),
       });
     } catch (error) {
       logger.error("Update order status controller error:", error);
@@ -111,7 +112,7 @@ class OrderController {
       res.status(200).json({
         success: true,
         message: "Order cancelled successfully",
-        data: order,
+        data: orderResponseDTO(order),
       });
     } catch (error) {
       logger.error("Cancel order controller error:", error);
@@ -141,7 +142,7 @@ class OrderController {
       res.status(200).json({
         success: true,
         message: "Rating added successfully",
-        data: order,
+        data: orderResponseDTO(order),
       });
     } catch (error) {
       logger.error("Add rating controller error:", error);
@@ -161,11 +162,29 @@ class OrderController {
 
       res.status(200).json({
         success: true,
-        data: result.orders,
+        data: result.orders.map(orderResponseDTO),
         pagination: result.pagination,
       });
     } catch (error) {
       logger.error("Get restaurant orders controller error:", error);
+      next(error);
+    }
+  }
+
+  async getAllOrders(req, res, next) {
+    try {
+      const filters = req.query;
+      const order = await orderService.getAllOrders(filters);
+
+      res.status(200).json({
+        status: "success",
+        message: "All orders retrieved successfully",
+        data: {
+          orders: order.orders.map(orderResponseDTO),
+          pagination: order.pagination,
+        },
+      });
+    } catch (error) {
       next(error);
     }
   }

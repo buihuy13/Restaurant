@@ -66,7 +66,7 @@ const startServer = async () => {
     await rabbitmqConnection.connect();
 
     // Start payment consumer
-    await startPaymentConsumer();
+    // await startPaymentConsumer();
 
     // Start server
     app.listen(PORT, () => {

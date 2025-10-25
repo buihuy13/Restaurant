@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-const updateOrderStatusSchema = Joi.object({
+export const updateOrderStatusSchema = Joi.object({
   status: Joi.string()
     .valid(
       "pending",
@@ -14,7 +14,11 @@ const updateOrderStatusSchema = Joi.object({
   cancellationReason: Joi.string().when("status", {
     is: "cancelled",
     then: Joi.required(),
+    otherwise: Joi.optional(),
   }),
 });
 
-export default updateOrderStatusSchema;
+export const addRatingSchema = Joi.object({
+  rating: Joi.number().min(1).max(5).required(),
+  review: Joi.string().allow("").optional(),
+});

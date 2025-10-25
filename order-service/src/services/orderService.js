@@ -76,6 +76,44 @@ class OrderService {
     }
   }
 
+  async getAllOrders(filters = {}) {
+    try {
+      const query = {};
+
+      // Bộ lọc tùy chọn
+      if (filters.status) query.status = filters.status;
+      if (filters.paymentStatus) query.paymentStatus = filters.paymentStatus;
+      if (filters.restaurantId) query.restaurantId = filters.restaurantId;
+      if (filters.userId) query.userId = filters.userId;
+
+      const page = parseInt(filters.page) || 1;
+      const limit = parseInt(filters.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      // Truy vấn Mongo
+      const orders = await Order.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      const total = await Order.countDocuments(query);
+
+      return {
+        orders,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    } catch (error) {
+      logger.error("Get all orders error:", error);
+      throw error;
+    }
+  }
+
   async createOrder(orderData, token) {
     try {
       // Validate restaurant
@@ -333,7 +371,7 @@ class OrderService {
   async getRestaurantOrders(restaurantId, filters = {}) {
     try {
       // Validate restaurant
-      const restaurant = await this.validateRestaurant(orderData.restaurantId);
+      const restaurant = await this.validateRestaurant(restaurantId);
 
       const query = { restaurantId };
 

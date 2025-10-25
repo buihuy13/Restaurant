@@ -8,7 +8,7 @@ spring:
       globalcors:
         add-to-simple-url-handler-mapping: true
         cors-configurations:
-          '[/**]':
+          "[/**]":
             allowedOrigins:
               - "http://localhost:3000"
               - "http://localhost:8080"
@@ -76,13 +76,13 @@ spring:
         - id: eureka
           uri: ${EUREKA_SERVER_URI}
           predicates:
-          - Path=/eureka/web
+            - Path=/eureka/web
           filters:
-          - SetPath=/
+            - SetPath=/
         - id: eureka-static
           uri: ${EUREKA_SERVER_URI}
           predicates:
-          - Path=/eureka/** 
+            - Path=/eureka/**
         - id: restaurant-service-size
           uri: lb://restaurant-service
           predicates:
@@ -210,17 +210,15 @@ spring:
           uri: lb://restaurant-service
           predicates:
             - Path=/v3/api-docs/restaurant-service
-        
-
 
 server:
   port: ${PORT}
 
 eureka:
   instance:
-    #hostname: ${spring.application.name}
-    #prefer-ip-address: false
-    #instance-id: ${spring.application.name}:${random.value}
+    hostname: ${spring.application.name}
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${random.value}
   client:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL}
@@ -231,7 +229,7 @@ logging:
 
 #Swagger
 springdoc:
-  swagger-ui: 
+  swagger-ui:
     path: /api-docs/swagger-ui.html
     urls:
       - name: User Service
