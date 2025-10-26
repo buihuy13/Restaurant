@@ -1,0 +1,12 @@
+FROM node:20-alpine
+WORKDIR /app
+
+# Copy package.json
+COPY package*.json ./
+RUN npm install
+
+# Copy source code và .env
+COPY . .
+
+EXPOSE 8082
+CMD ["npm", "start"]

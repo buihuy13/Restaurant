@@ -52,6 +52,23 @@ services:
       retries: 3
       start_period: 60s
 
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   service-discovery:
     build:
       context: .
@@ -187,5 +204,53 @@ services:
       service-discovery:
         condition: service_started
 
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: dockerfile
+    container_name: order-service
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=${ORDER_PORT}
+      - NODE_ENV=${NODE_ENV}
+      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+      - ORDER_SERVICE_DB_URL=mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/order-service?authSource=admin
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_SSL=${REDIS_SSL}
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - USER_SERVICE_URL=${USER_SERVICE_URL}
+      - RESTAURANT_SERVICE_URL=${RESTAURANT_SERVICE_URL}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8082/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
 volumes:
   mysql_data:
+  mongodb_data:
