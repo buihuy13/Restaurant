@@ -16,10 +16,8 @@ public class webSocketConfig implements WebSocketMessageBrokerConfigurer  {
         config.enableSimpleBroker("/topic");
         
         // Set prefix for client messages (server nhận message từ client)
+        // Bất kì tin nhắn nào gửi đến server có tiền tố /app sẽ được xử lý bởi các @MessageMapping
         config.setApplicationDestinationPrefixes("/app");
-        
-        // Set user destination prefix for private messages
-        config.setUserDestinationPrefix("/user");
     }
 
     @Override
