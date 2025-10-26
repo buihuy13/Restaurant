@@ -216,11 +216,9 @@ server:
 
 eureka:
   instance:
-    # hostname: ${spring.application.name}
-    # prefer-ip-address: false
-    hostname: localhost
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${random.value}
+    #hostname: ${spring.application.name}
+    #prefer-ip-address: false
+    #instance-id: ${spring.application.name}:${random.value}
   client:
     service-url:
       defaultZone: ${EUREKA_SERVER_URL}

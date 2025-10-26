@@ -4,7 +4,7 @@ import os from "os";
 const client = new Eureka({
   instance: {
     app: "order-service", // Tên service hiển thị trên Eureka
-    hostName: "localhost", // hostname của máy chạy service
+    hostName: "127.0.0.1", // hostname của máy chạy service
     ipAddr: "127.0.0.1", // ip của máy
     port: { $: process.env.PORT || 8082, "@enabled": true },
     vipAddress: "order-service",
@@ -14,7 +14,7 @@ const client = new Eureka({
     },
   },
   eureka: {
-    host: process.env.EUREKA_SERVER_HOST || "localhost",
+    host: process.env.EUREKA_SERVER_HOST || "127.0.0.1",
     port: process.env.EUREKA_SERVER_PORT || 8761,
     servicePath: process.env.EUREKA_SERVER_PATH,
   },
