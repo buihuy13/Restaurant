@@ -72,10 +72,9 @@ public class productService {
         if (search != null && !search.isEmpty()) {
             products = products.stream().filter(p -> p.getProductName().toLowerCase().contains(search.toLowerCase())).toList();
         }
-        if (category != null) {
-            List<String> categoryNames = Arrays.asList(category.split(","));
-            products = products.stream().filter(p -> categoryNames.stream().map(c -> c.toLowerCase()).toList()
-                                                            .contains(p.getCategory().getCateName().toLowerCase())).toList();
+        if (category != null && !category.isEmpty()) {
+            List<String> categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
+            products = products.stream().filter(p -> categoryNames.contains(p.getCategory().getCateName().toLowerCase())).toList();
         }
 
         if (minPrice != null) {
