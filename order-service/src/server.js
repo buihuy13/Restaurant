@@ -10,6 +10,7 @@ import rateLimit from "express-rate-limit";
 import orderRouter from "./routes/orderRoutes.js";
 import redisClient from "./config/redis.js";
 import startPaymentConsumer from "./consumers/paymentConsumer.js";
+import eurekaClient from "./config/eureka.js";
 
 dotenv.config();
 
@@ -71,6 +72,14 @@ const startServer = async () => {
     // Start server
     app.listen(PORT, () => {
       logger.info(`Order Service running on port ${PORT}`);
+
+      eurekaClient.start((error) => {
+        if (error) {
+          logger.error("Eureka registration failed:", error);
+        } else {
+          logger.info("Order Service successfully registered with Eureka");
+        }
+      });
     });
   } catch (error) {
     process.exit(1);
@@ -82,6 +91,11 @@ process.on("SIGTERM", async () => {
   logger.info("SIGTERM received, shutting down gracefully");
   await rabbitmqConnection.close();
   await redisClient.close();
+
+  eurekaClient.stop(() => {
+    logger.info("Deregistered from Eureka");
+    process.exit(0);
+  });
   process.exit(0);
 });
 
