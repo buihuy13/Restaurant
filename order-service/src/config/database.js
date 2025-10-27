@@ -10,7 +10,7 @@ const connectDB = async () => {
     };
 
     await mongoose.connect(process.env.ORDER_SERVICE_DB_URL, options);
-    logger.info("MongoDB connected successfully");
+    logger.info(`MongoDB Connected: ${conn.connection.host}`);
 
     mongoose.connection.on("error", (err) => {
       logger.error("MongoDB connection error:", err);
