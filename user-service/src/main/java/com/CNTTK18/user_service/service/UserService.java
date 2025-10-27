@@ -64,6 +64,9 @@ public class UserService {
     }
 
     public void register(Register user) {
+        if (!user.getPassword().equals(user.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and Confirm Password do not match");
+        }
         Users newUser = new Users();
         newUser.setId(RandomIdGenerator.generate(99));
         newUser.setUsername(user.getUsername());
