@@ -16,9 +16,11 @@ class RabbitMQConnection {
 
   async connect() {
     try {
-      this.connection = await amqp.connect(process.env.RABBITMQ_URL, {
-        heartbeat: 60, // Mỗi 60 giây, client và RabbitMQ sẽ gửi heartbeat cho nhau.
-      });
+      const url = `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASSWORD}@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}`;
+      
+      logger.info(`Connecting to RabbitMQ at ${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}...`);
+      
+      this.connection = await amqp.connect(url);
       this.channel = await this.connection.createChannel();
 
       // Declare exchange
