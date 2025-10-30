@@ -1,33 +1,17 @@
-# ====== Stage 1: Build ứng dụng ======
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
+
+# Copy package.json và package-lock.json (nếu có)
 COPY package*.json ./
 
-# Cài dependencies đầy đủ (bao gồm devDependencies)
+# Cài dependencies
 RUN npm install
 
-# Copy toàn bộ source code vào image
+# Copy toàn bộ code
 COPY . .
-
-# Build (nếu là React / NestJS / TypeScript)
-RUN npm run build
-
-# ====== Stage 2: Chạy ứng dụng (image nhỏ, nhẹ) ======
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
-# Cài wget (tùy chọn, nếu cần healthcheck)
-RUN apk add --no-cache wget
-
-# Copy file cần thiết từ stage build
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/dist ./dist
-
-# Cài dependency production thôi
-RUN npm install --production
 
 EXPOSE 8082
 
+# Chạy ứng dụng bằng script start
 CMD ["npm", "start"]

@@ -1,209 +1,216 @@
 # version: "3.8"
 
 services:
-  # Zookeeper: trình quản lý cho Kafka
-  rabbitmq:
-    image: "rabbitmq:latest"
-    environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
-    ports:
-      - "5672:5672" #Cho các service kết nối đến
-      - "15672:15672" #Dành cho UI
-  redis:
-    image: "redis:7-alpine"
-    container_name: redis
-    ports:
-      - "6379:6379"
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    command: sh -c "redis-server --requirepass $$REDIS_PASSWORD"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s # Check mỗi 10s
-      timeout: 3s # Không response sau 3s thì timeout
-      retries: 5 # Thử lại 5 lần trước khi mark là unhealthy
-      start_period: 10s # Cho 10s bắt đầu trước khi healthcheck
-  db:
-    image: "mysql:8.0"
-    container_name: mysql_container
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "3307:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./main.sql:/docker-entrypoint-initdb.d/main.sql
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "db",
-          "-u",
-          "root",
-          "-p${DB_PASSWORD}",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 60s
+    # Zookeeper: trình quản lý cho Kafka
+    rabbitmq:
+        image: 'rabbitmq:latest'
+        environment:
+            - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+        ports:
+            - '5672:5672' #Cho các service kết nối đến
+            - '15672:15672' #Dành cho UI
+    redis:
+        image: 'redis:7-alpine'
+        container_name: redis
+        ports:
+            - '6379:6379'
+        environment:
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+        command: sh -c "redis-server --requirepass $$REDIS_PASSWORD"
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            interval: 10s # Check mỗi 10s
+            timeout: 3s # Không response sau 3s thì timeout
+            retries: 5 # Thử lại 5 lần trước khi mark là unhealthy
+            start_period: 10s # Cho 10s bắt đầu trước khi healthcheck
+    db:
+        image: 'mysql:8.0'
+        container_name: mysql_container
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+        ports:
+            - '3307:3306'
+        volumes:
+            - mysql_data:/var/lib/mysql
+            - ./main.sql:/docker-entrypoint-initdb.d/main.sql
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-h', 'db', '-u', 'root', '-p${DB_PASSWORD}']
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 60s
 
-  mongodb:
-    image: mongo:6.0
-    container_name: mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+    mongodb:
+        image: mongo:6.0
+        container_name: mongodb
+        ports:
+            - '27017:27017'
+        volumes:
+            - mongodb_data:/data/db
+        healthcheck:
+            test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
 
-  service-discovery:
-    build:
-      context: .
-      dockerfile: ./service-discovery/dockerfile
-      args:
-        MODULE_PATH: service-discovery
-    ports:
-      - "8761:8761"
-    environment:
-      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
-      - EUREKA_HOST_NAME=${EUREKA_HOST_NAME}
-      - PORT=${SERVICE_DISCOVERY_PORT}
-  zipkin:
-    image: openzipkin/zipkin
-    ports:
-      - "9411:9411"
-  api-gateway:
-    build:
-      context: .
-      dockerfile: ./api-gateway/dockerfile
-      args:
-        MODULE_PATH: api-gateway
-    ports:
-      - "8080:8080"
-    environment:
-      - JWT_SECRETKEY=${JWT_SECRETKEY}
-      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
-      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
-      - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
-      - PORT=${API_GATEWAY_PORT}
-    depends_on:
-      service-discovery:
-        condition: service_started
-  user-service:
-    build:
-      context: .
-      dockerfile: ./user-service/dockerfile
-      args:
-        MODULE_PATH: user-service
-    ports:
-      - "8081:8081"
-    environment:
-      - USER_SERVICE_DB_URL=${USER_SERVICE_DB_URL}
-      - USER_SERVICE_DB_USER=${USER_SERVICE_DB_USER}
-      - USER_SERVICE_DB_PASSWORD=${USER_SERVICE_DB_PASSWORD}
-      - JWT_SECRETKEY=${JWT_SECRETKEY}
-      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
-      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
-      - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
-      - PORT=${USER_PORT}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - RABBITMQ_PORT=${RABBITMQ_PORT}
-    depends_on:
-      db:
-        condition: service_healthy
-      service-discovery:
-        condition: service_started
-  notification-service:
-    build:
-      context: .
-      dockerfile: ./notification-service/dockerfile
-      args:
-        MODULE_PATH: notification-service
-    ports:
-      - "8084:8084"
-    environment:
-      - PASSWORD=${PASSWORD}
-      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
-      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
-      - PORT=${NOTIFICATION_PORT}
-      - URL=${URL}
-      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - RABBITMQ_PORT=${RABBITMQ_PORT}
-    depends_on:
-      service-discovery:
-        condition: service_started
-  chat-service:
-    build:
-      context: .
-      dockerfile: ./chat-service/dockerfile
-      args:
-        - MODULE_PATH=chat-service
-    ports:
-      - "8086:8086"
-    environment:
-      - PORT=${CHAT_PORT}
-      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
-      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
-      - REDIS_HOST=${REDIS_HOST}
-      - REDIS_PORT=${REDIS_PORT}
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - REDIS_SSL=${REDIS_SSL}
-      - CHAT_SERVICE_DB_URL=${CHAT_SERVICE_DB_URL}
-      - CHAT_SERVICE_DB_USER=${CHAT_SERVICE_DB_USER}
-      - CHAT_SERVICE_DB_PASSWORD=${CHAT_SERVICE_DB_PASSWORD}
-    depends_on:
-      db:
-        condition: service_healthy
-      service-discovery:
-        condition: service_started
-      redis:
-        condition: service_healthy
-  restaurant-service:
-    build:
-      context: .
-      dockerfile: ./restaurant-service/dockerfile
-      args:
-        - MODULE_PATH=restaurant-service
-    ports:
-      - "8085:8085"
-    environment:
-      - PORT=${RESTAURANT_PORT}
-      - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
-      - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
-      - RESTAURANT_SERVICE_DB_URL=${RESTAURANT_SERVICE_DB_URL}
-      - RESTAURANT_SERVICE_DB_USER=${RESTAURANT_SERVICE_DB_USER}
-      - RESTAURANT_SERVICE_DB_PASSWORD=${RESTAURANT_SERVICE_DB_PASSWORD}
-      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
-      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
-      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
-      - OPENROUTESERVICE_URL=${OPENROUTESERVICE_URL}
-      - OPENROUTESERVICE_LIST_URL=${OPENROUTESERVICE_LIST_URL}
-      - OPENROUTESERVICE_API_KEY=${OPENROUTESERVICE_API_KEY}
-    depends_on:
-      db:
-        condition: service_healthy
-      service-discovery:
-        condition: service_started
+    service-discovery:
+        build:
+            context: .
+            dockerfile: ./service-discovery/dockerfile
+            args:
+                MODULE_PATH: service-discovery
+        ports:
+            - '8761:8761'
+        environment:
+            - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+            - EUREKA_HOST_NAME=${EUREKA_HOST_NAME}
+            - PORT=${SERVICE_DISCOVERY_PORT}
+    zipkin:
+        image: openzipkin/zipkin
+        ports:
+            - '9411:9411'
+    api-gateway:
+        build:
+            context: .
+            dockerfile: ./api-gateway/dockerfile
+            args:
+                MODULE_PATH: api-gateway
+        ports:
+            - '8080:8080'
+        environment:
+            - JWT_SECRETKEY=${JWT_SECRETKEY}
+            - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+            - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+            - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
+            - PORT=${API_GATEWAY_PORT}
+        depends_on:
+            service-discovery:
+                condition: service_started
+    user-service:
+        build:
+            context: .
+            dockerfile: ./user-service/dockerfile
+            args:
+                MODULE_PATH: user-service
+        ports:
+            - '8081:8081'
+        environment:
+            - USER_SERVICE_DB_URL=${USER_SERVICE_DB_URL}
+            - USER_SERVICE_DB_USER=${USER_SERVICE_DB_USER}
+            - USER_SERVICE_DB_PASSWORD=${USER_SERVICE_DB_PASSWORD}
+            - JWT_SECRETKEY=${JWT_SECRETKEY}
+            - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+            - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+            - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
+            - PORT=${USER_PORT}
+            - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+            - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+            - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
+            - RABBITMQ_PORT=${RABBITMQ_PORT}
+        depends_on:
+            db:
+                condition: service_healthy
+            service-discovery:
+                condition: service_started
+    notification-service:
+        build:
+            context: .
+            dockerfile: ./notification-service/dockerfile
+            args:
+                MODULE_PATH: notification-service
+        ports:
+            - '8084:8084'
+        environment:
+            - PASSWORD=${PASSWORD}
+            - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+            - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+            - PORT=${NOTIFICATION_PORT}
+            - URL=${URL}
+            - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
+            - RABBITMQ_PORT=${RABBITMQ_PORT}
+        depends_on:
+            service-discovery:
+                condition: service_started
+    chat-service:
+        build:
+            context: .
+            dockerfile: ./chat-service/dockerfile
+            args:
+                - MODULE_PATH=chat-service
+        ports:
+            - '8086:8086'
+        environment:
+            - PORT=${CHAT_PORT}
+            - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+            - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - REDIS_SSL=${REDIS_SSL}
+            - CHAT_SERVICE_DB_URL=${CHAT_SERVICE_DB_URL}
+            - CHAT_SERVICE_DB_USER=${CHAT_SERVICE_DB_USER}
+            - CHAT_SERVICE_DB_PASSWORD=${CHAT_SERVICE_DB_PASSWORD}
+        depends_on:
+            db:
+                condition: service_healthy
+            service-discovery:
+                condition: service_started
+            redis:
+                condition: service_healthy
+    restaurant-service:
+        build:
+            context: .
+            dockerfile: ./restaurant-service/dockerfile
+            args:
+                - MODULE_PATH=restaurant-service
+        ports:
+            - '8085:8085'
+        environment:
+            - PORT=${RESTAURANT_PORT}
+            - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
+            - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
+            - RESTAURANT_SERVICE_DB_URL=${RESTAURANT_SERVICE_DB_URL}
+            - RESTAURANT_SERVICE_DB_USER=${RESTAURANT_SERVICE_DB_USER}
+            - RESTAURANT_SERVICE_DB_PASSWORD=${RESTAURANT_SERVICE_DB_PASSWORD}
+            - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+            - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+            - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+            - OPENROUTESERVICE_URL=${OPENROUTESERVICE_URL}
+            - OPENROUTESERVICE_LIST_URL=${OPENROUTESERVICE_LIST_URL}
+            - OPENROUTESERVICE_API_KEY=${OPENROUTESERVICE_API_KEY}
+        depends_on:
+            db:
+                condition: service_healthy
+            service-discovery:
+                condition: service_started
+
+    order-service:
+        build:
+            context: ./order-service # build context là folder chứa package.json
+            dockerfile: Dockerfile
+            args:
+                - MODULE_PATH=order-service
+        ports:
+            - '8082:8082'
+        environment:
+            - ./order-service/.env
+        depends_on:
+            mongodb:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+            rabbitmq:
+                condition: service_started
+            service-discovery:
+                condition: service_started
 
 volumes:
-  mysql_data:
-  mongodb_data:
+    mysql_data:
+    mongodb_data:
