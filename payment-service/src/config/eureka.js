@@ -1,3 +1,4 @@
+import os from 'os';
 import EurekaClient from 'eureka-js-client';
 import logger from '../utils/logger.js';
 import os from 'os';
@@ -19,30 +20,30 @@ const getLocalIp = () => {
 
 const eurekaClient = new Eureka({
     instance: {
-        instanceId: `${getLocalIp()}:order-service:${process.env.ORDER_SERVICE_URL || 'http://order-service:8082'}`,
-        app: 'ORDER-SERVICE',
-        hostName: process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service',
+        instanceId: `${getLocalIp()}:payment-service:${process.env.ORDER_SERVICE_URL || 'http://payment-service:8083'}`,
+        app: 'PAYMENT-SERVICE',
+        hostName: process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service',
         ipAddr: getLocalIp(),
         port: {
-            $: parseInt(process.env.ORDER_PORT) || 8082,
+            $: parseInt(process.env.PAYMENT_PORT) || 8083,
             '@enabled': true,
         },
         vipAddress: 'order-service',
         statusPageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
-            process.env.ORDER_PORT || 8082
+            process.env.PAYMENT_PORT || 8083
         }/health`,
         healthCheckUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
-            process.env.ORDER_PORT || 8082
+            process.env.PAYMENT_PORT || 8083
         }/health`,
         homePageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
-            process.env.ORDER_PORT || 8082
+            process.env.PAYMENT_PORT || 8083
         }`,
         dataCenterInfo: {
             '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
             name: 'MyOwn',
         },
         metadata: {
-            'management.port': process.env.ORDER_PORT || 8082,
+            'management.port': process.env.PAYMENT_PORT || 8083,
         },
     },
     eureka: {
@@ -56,26 +57,3 @@ const eurekaClient = new Eureka({
     },
     logger: eurekaLogger,
 });
-
-export const startEurekaClient = () => {
-    eurekaClient.start((error) => {
-        if (error) {
-            logger.error('Eureka registration failed:', error);
-        } else {
-            logger.info('Order Service registered with Eureka successfully');
-        }
-    });
-
-    const shutdown = () => {
-        logger.info('Deregistering from Eureka...');
-        eurekaClient.stop(() => {
-            logger.info('Eureka client stopped');
-            process.exit(0);
-        });
-    };
-
-    process.on('SIGINT', shutdown);
-    process.on('SIGTERM', shutdown);
-};
-
-export default eurekaClient;
