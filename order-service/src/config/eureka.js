@@ -19,11 +19,12 @@ const getLocalIp = () => {
 
 const eurekaClient = new Eureka({
     instance: {
+        instanceId: `${getLocalIp()}:order-service:${process.env.ORDER_SERVICE_URL || 'http://order-service:8082'}`,
         app: 'ORDER-SERVICE',
         hostName: process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service',
         ipAddr: getLocalIp(),
         port: {
-            $: parseInt(process.env.PORT) || 8082,
+            $: parseInt(process.env.ORDER_PORT) || 8082,
             '@enabled': true,
         },
         vipAddress: 'order-service',
@@ -33,13 +34,15 @@ const eurekaClient = new Eureka({
         healthCheckUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
             process.env.PORT || 8082
         }/health`,
-        homePageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${process.env.PORT || 8082}`,
+        homePageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
+            process.env.ORDER_PORT || 8082
+        }`,
         dataCenterInfo: {
             '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
             name: 'MyOwn',
         },
         metadata: {
-            'management.port': process.env.PORT || 8082,
+            'management.port': process.env.ORDER_PORT || 8082,
         },
     },
     eureka: {
