@@ -1,0 +1,13 @@
+# Bỏ qua node_modules của tất cả service
+**/node_modules
+**/npm-debug.log*
+**/yarn-debug.log*
+**/.env
+**/dist
+**/build
+**/target
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+README.md

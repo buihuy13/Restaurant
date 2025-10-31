@@ -19,7 +19,7 @@ const getLocalIp = () => {
 
 const eurekaClient = new Eureka({
     instance: {
-        instanceId: `${getLocalIp()}:order-service:${process.env.ORDER_SERVICE_URL || 'http://order-service:8082'}`,
+        instanceId: `${getLocalIp()}:order-service:${process.env.ORDER_PORT || 8082}`,
         app: 'ORDER-SERVICE',
         hostName: process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service',
         ipAddr: getLocalIp(),

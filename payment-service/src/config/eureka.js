@@ -28,14 +28,14 @@ const eurekaClient = new Eureka({
             $: parseInt(process.env.PAYMENT_PORT) || 8083,
             '@enabled': true,
         },
-        vipAddress: 'order-service',
-        statusPageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
+        vipAddress: 'payment-service',
+        statusPageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service'}:${
             process.env.PAYMENT_PORT || 8083
         }/health`,
-        healthCheckUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
+        healthCheckUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service'}:${
             process.env.PAYMENT_PORT || 8083
         }/health`,
-        homePageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
+        homePageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service'}:${
             process.env.PAYMENT_PORT || 8083
         }`,
         dataCenterInfo: {
