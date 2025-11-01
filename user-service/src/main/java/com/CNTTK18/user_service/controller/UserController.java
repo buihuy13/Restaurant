@@ -3,6 +3,7 @@ package com.CNTTK18.user_service.controller;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +16,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.CNTTK18.user_service.dto.request.AddressRequest;
 import com.CNTTK18.user_service.dto.request.Login;
+import com.CNTTK18.user_service.dto.request.Password;
 import com.CNTTK18.user_service.dto.request.Register;
 import com.CNTTK18.user_service.dto.request.Rejection;
 import com.CNTTK18.user_service.dto.request.UserRequest;
 import com.CNTTK18.user_service.dto.request.UserUpdateAfterLogin;
+import com.CNTTK18.user_service.dto.response.AddressResponse;
 import com.CNTTK18.user_service.dto.response.TokenResponse;
 import com.CNTTK18.user_service.dto.response.UserResponse;
 import com.CNTTK18.user_service.model.Address;
@@ -116,6 +120,21 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @Tag(name = "Post")
+    @Operation(summary = "Added new address for user")
+    @PostMapping("/address/{id}")
+    public ResponseEntity<AddressResponse> addNewAddress(@PathVariable String id, @RequestBody @Valid AddressRequest addressRequest) {
+        return new ResponseEntity<>(userService.addNewAddress(id, addressRequest), HttpStatusCode.valueOf(201));
+    }
+
+    @Tag(name = "Delete")
+    @Operation(summary = "Delete address")
+    @DeleteMapping("/address/{id}")
+    public ResponseEntity<MessageResponse> deleteAddress(@PathVariable String id) {
+        userService.deleteAddress(id);
+        return ResponseEntity.ok(new MessageResponse("Delete successfully"));
+    }
+
     @Tag(name = "Get")
     @Operation(summary = "Get roles")
     @GetMapping("/roles")
@@ -144,6 +163,14 @@ public class UserController {
     @PutMapping("/profile/{id}")
     public ResponseEntity<UserResponse> updateUserAfterLogin(@PathVariable String id, @RequestBody @Valid UserUpdateAfterLogin userUpdate) {
         UserResponse updatedUser = userService.updateUserAfterLogin(userUpdate, id);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @Tag(name = "Put")
+    @Operation(summary = "Update password")
+    @PutMapping("/password/{id}")
+    public ResponseEntity<UserResponse> resetPassword(@PathVariable String id, @RequestBody @Valid Password password) {
+        UserResponse updatedUser = userService.resetPassword(password, id);
         return ResponseEntity.ok(updatedUser);
     }
 
