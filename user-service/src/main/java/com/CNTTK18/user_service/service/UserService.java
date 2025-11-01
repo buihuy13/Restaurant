@@ -53,9 +53,8 @@ public class UserService {
     public UserResponse updateUser(String id, UserRequest user) {
         Users existingUser = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         existingUser.setUsername(user.getUsername());
-        existingUser.setEmail(user.getEmail());
         userRepository.save(existingUser);
-        return new UserResponse(existingUser.getId(),user.getUsername(),user.getEmail(), 
+        return new UserResponse(existingUser.getId(),user.getUsername(),existingUser.getEmail(), 
                                 existingUser.isEnabled(), existingUser.getRole(), existingUser.getPhone());
     }
 
