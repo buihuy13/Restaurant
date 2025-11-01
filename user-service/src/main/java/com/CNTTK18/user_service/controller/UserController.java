@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,6 +61,20 @@ public class UserController {
     @GetMapping("")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get user by access token")
+    @GetMapping("/accesstoken")
+    public ResponseEntity<UserResponse> getUserByAccessToken(@RequestHeader("Authorization") String authHeader) throws Exception {
+        return ResponseEntity.ok(userService.getUserByAccessToken(authHeader));
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get new access token by refresh token")
+    @GetMapping("/refreshtoken")
+    public ResponseEntity<MessageResponse> getNewAccessToken(@RequestHeader("Refresh-Token") String authHeader) throws Exception {
+        return ResponseEntity.ok(new MessageResponse(userService.refreshAccessToken(authHeader)));
     }
 
     @Tag(name = "Get")
