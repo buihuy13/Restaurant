@@ -17,4 +17,5 @@ public class ProductSizeResponse {
     private String id;
     private String sizeName;
     private BigDecimal price;
+    private String sizeId;
 }

@@ -1,7 +1,9 @@
 package com.CNTTK18.restaurant_service.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,24 +51,41 @@ public class resService {
         this.distanceService = distanceService;
     }
 
-    public Mono<List<resResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby) {
+    public Mono<List<resResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
+                                                                String rating, String category) {
         List<restaurants> res = resRepository.findAll();
         if (search != null && !search.isEmpty()) {
             res = res.stream().filter(r -> r.getResName().toLowerCase().contains(search.toLowerCase())).toList();
         }
+
+        if (category != null && !category.isEmpty()) {
+            List<String> categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
+            res = res.stream().filter(r -> r.getCategories().stream().map(c -> c.getCateName().toLowerCase()).toList()
+                                                    .containsAll(categoryNames)).toList();
+        }
+
+        if (rating != null && !rating.isEmpty()) {
+            if (rating.equals("asc")) {
+                res = res.stream().sorted(Comparator.comparing(restaurants::getRating)).toList();
+            } 
+            else if (rating.equals("desc")) {
+                res = res.stream().sorted(Comparator.comparing(restaurants::getRating).reversed()).toList();
+            }
+        }
         
         // Lấy các res trong bán kính nearby (theo đường chim bay)
         if (location != null) {
-            if (nearby != null) {
-                res = res.stream().filter(
+            res = res.stream().filter(
                     r -> {
                         Double distance = distanceService.calculateHaversineDistance(location.getLongitude(), location.getLatitude(),
                                                                                     r.getLongitude(), r.getLatitude());
-                                                                            
+                        
+                        if (nearby == null || nearby > 20000) {
+                            return distance <= 20000;
+                        }
                         return distance <= nearby;
                     }
-                ).toList();
-            }
+            ).toList();
 
             if (res.isEmpty()) {
                 return Mono.just(Collections.emptyList());

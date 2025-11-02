@@ -27,11 +27,11 @@ public class DistanceService {
     @Value("${OPENROUTESERVICE_URL}")
     private String apiUrl;
 
-    final int R = 6371;
+    final int R = 6371000;
 
-    private WebClient.Builder webClientBuilder;
+    private WebClient webClientBuilder;
 
-    public DistanceService(WebClient.Builder webClientBuilder) {
+    public DistanceService(WebClient webClientBuilder) {
         this.webClientBuilder = webClientBuilder;
     }
 
@@ -43,7 +43,7 @@ public class DistanceService {
 
         distanceRequest distanceRequest = new distanceRequest(allPoints);
 
-        return webClientBuilder.build()
+        return webClientBuilder
                 .post()
                 .uri(apiListUrl) // Endpoint của ORS Matrix API
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -58,7 +58,7 @@ public class DistanceService {
             "coordinates", List.of(start,end)
         );
 
-        return webClientBuilder.build()
+        return webClientBuilder
                 .post()
                 .uri(apiUrl) 
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

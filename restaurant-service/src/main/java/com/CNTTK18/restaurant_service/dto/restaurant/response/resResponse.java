@@ -1,6 +1,9 @@
 package com.CNTTK18.restaurant_service.dto.restaurant.response;
 
 import java.time.LocalTime;
+import java.util.List;
+
+import com.CNTTK18.restaurant_service.dto.cate.response.cateResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,4 +32,5 @@ public class resResponse {
     private int totalReview;
     private double distance;
     private double duration;
+    private List<cateResponse> cate;
 }

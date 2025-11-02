@@ -72,9 +72,9 @@ public class productService {
         if (search != null && !search.isEmpty()) {
             products = products.stream().filter(p -> p.getProductName().toLowerCase().contains(search.toLowerCase())).toList();
         }
-        List<String> categoryNames = Arrays.asList(category.split(","));
-        if (category != null) {
-            products = products.stream().filter(p -> categoryNames.contains(p.getCategory().getCateName())).toList();
+        if (category != null && !category.isEmpty()) {
+            List<String> categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
+            products = products.stream().filter(p -> categoryNames.contains(p.getCategory().getCateName().toLowerCase())).toList();
         }
 
         if (minPrice != null) {
@@ -106,18 +106,18 @@ public class productService {
         }
 
         List<restaurants> res = products.stream().map(r -> r.getRestaurant()).distinct().toList();
-
+        
         // Lấy các res trong bán kính nearby (theo đường chim bay)
-        if (nearby != null) {
-            res = res.stream().filter(
-                r -> {
-                    Double distance = distanceService.calculateHaversineDistance(location.getLongitude(), location.getLatitude(),
-                                                                                r.getLongitude(), r.getLatitude());
-                                                                        
-                    return distance <= nearby;
-                }
-            ).toList();
-        }
+        res = res.stream().filter(
+            r -> {
+                Double distance = distanceService.calculateHaversineDistance(location.getLongitude(), location.getLatitude(),
+                                                                            r.getLongitude(), r.getLatitude());
+                if (nearby == null || nearby > 20000) {
+                    return distance <= 20000;
+                }                                         
+                return distance <= nearby;
+            }
+        ).toList();
 
         if (res.isEmpty()) {
             return Mono.just(Collections.emptyList());
@@ -339,5 +339,12 @@ public class productService {
             return new ArrayList<>();
         }
         return products.get().stream().map(productUtil::mapProductToProductResponseWitoutResParam).toList();
+    }
+
+    public restaurants getRestaurantByProductId(String id) {
+        products product = productRepo.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                        
+        return product.getRestaurant();
     }
 }

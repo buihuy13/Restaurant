@@ -35,8 +35,15 @@ public class reviewService {
         this.resRepository = resRepository;
     }
 
-    public List<reviews> getAllReviews() {
-        return reviewRepo.findAll();
+    public List<reviews> getAllReviews(String resId, String productId) {
+        List<reviews> rv = reviewRepo.findAll();
+        if (resId != null && !resId.isEmpty()) {
+            rv = rv.stream().filter(r -> r.getReviewId().equals(resId)).toList();
+        }
+        else if (productId != null && !productId.isEmpty()) {
+            rv = rv.stream().filter(r -> r.getReviewId().equals(productId)).toList();
+        }
+        return rv;
     }
 
     public reviews getReviewById(String id) {
@@ -80,7 +87,7 @@ public class reviewService {
         else {
             throw new InvalidRequestException("Review Type phải là PRODUCT hoặc RESTAURANT");
         }
-        reviews rv = new reviews(RandomIdGenerator.generate(254), reviewRequest.getUserId(),
+        reviews rv = new reviews(RandomIdGenerator.generate(200), reviewRequest.getUserId(),
                          rvId, rvType, reviewRequest.getTitle(), reviewRequest.getContent(), reviewRequest.getRating(), null);
 
         return reviewRepo.save(rv);
