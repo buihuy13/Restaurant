@@ -101,8 +101,8 @@ public class UserService {
     }
 
     public UserResponse getUserByAccessToken(String accessToken) throws Exception {
-        String username = jwtService.extractUserName(accessToken);
-        Users user = userRepository.findById(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        String email = jwtService.extractUserName(accessToken);
+        Users user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return UserUtil.mapUsersToUserResponse(user);
     }
 
