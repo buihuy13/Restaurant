@@ -71,6 +71,10 @@ public class UserController {
     @Operation(summary = "Get user by access token")
     @GetMapping("/accesstoken")
     public ResponseEntity<UserResponse> getUserByAccessToken(@RequestHeader("Authorization") String authHeader) throws Exception {
+        if (authHeader.startsWith("Bearer"))
+        {
+            authHeader = authHeader.substring(7);
+        }
         return ResponseEntity.ok(userService.getUserByAccessToken(authHeader));
     }
 
@@ -78,6 +82,10 @@ public class UserController {
     @Operation(summary = "Get new access token by refresh token")
     @GetMapping("/refreshtoken")
     public ResponseEntity<MessageResponse> getNewAccessToken(@RequestHeader("Refresh-Token") String authHeader) throws Exception {
+        if (authHeader.startsWith("Bearer"))
+        {
+            authHeader = authHeader.substring(7);
+        }
         return ResponseEntity.ok(new MessageResponse(userService.refreshAccessToken(authHeader)));
     }
 
