@@ -88,8 +88,6 @@ spring:
           predicates:
             - Path=/api/size/**
             - Method=GET
-          filters:
-            - name: JwtAuthentication
         - id: restaurant-service-size-ADMIN
           uri: lb://restaurant-service
           predicates:
@@ -104,8 +102,6 @@ spring:
           predicates:
             - Path=/api/category/**
             - Method=GET
-          filters:
-            - name: JwtAuthentication
         - id: restaurant-service-cate-ADMIN
           uri: lb://restaurant-service
           predicates:
@@ -119,7 +115,12 @@ spring:
           uri: lb://restaurant-service
           predicates:
             - Path=/api/review/**
-            - Method=GET, POST, PUT, DELETE
+            - Method=GET
+        - id: restaurant-service-review-jwt
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/review/**
+            - Method=POST, PUT, DELETE
           filters:
             - name: JwtAuthentication
         - id: restaurant-service-res
@@ -127,8 +128,6 @@ spring:
           predicates:
             - Path=/api/restaurant/**
             - Method=GET
-          filters:
-            - name: JwtAuthentication
         - id: restaurant-service-res-enable
           uri: lb://restaurant-service
           predicates:
@@ -161,8 +160,6 @@ spring:
           predicates:
             - Path=/api/products/**
             - Method=GET
-          filters:
-            - name: JwtAuthentication
         - id: restaurant-service-product
           uri: lb://restaurant-service
           predicates:
@@ -195,8 +192,6 @@ spring:
           predicates:
             - Path=/api/productsize/**
             - Method=GET
-          filters:
-            - name: JwtAuthentication
         - id: restaurant-service-productsize
           uri: lb://restaurant-service
           predicates:
