@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import logger from '../utils/logger';
+import logger from '../utils/logger.js';
 
 class StripeService {
     constructor() {

@@ -1,7 +1,8 @@
 import Payment from '../models/Payment.js';
-import logger from '../utils/logger';
+import logger from '../utils/logger.js';
 import stripeService from '../services/stripeService.js';
 import rabbitmqConnection from '../config/rabbitmq.js';
+// import { Error } from 'sequelize';
 
 class PaymentService {
     generatePaymentId() {
@@ -32,10 +33,12 @@ class PaymentService {
                 case 'wallet':
                     return await this.processWalletPayment(payment);
                 case 'cash':
-                default:
                     payment.status = 'pending';
                     await payment.save();
+                    await this.publishPaymentPending(payment);
                     return payment;
+                default:
+                    throw new Error(`Unsupported payment method: ${payment.paymentMethod}`);
             }
         } catch (error) {
             logger.error(`Create payment failed: ${error.message}`);
@@ -123,7 +126,76 @@ class PaymentService {
         }
     }
 
-    async completePayment(paymentId, transactionId) {}
+    async completePayment(paymentId, transactionId) {
+        try {
+            const payment = await Payment.findOne({ where: { paymentId } });
+
+            if (!payment) {
+                throw new Error('Payment not foud');
+            }
+
+            payment.status = 'completed';
+            payment.transactionId = transactionId;
+            payment.processedAt = new Date();
+            await payment.save();
+
+            await this.publishPaymentCompleted(payment);
+
+            logger.info(`Payment completed: ${paymentId}`);
+            return payment;
+        } catch (error) {
+            logger.error('Complete payment error:', error);
+            throw error;
+        }
+    }
+
+    async getPaymentByOrderId(orderId) {
+        try {
+            const payment = await Payment.findOne({
+                where: { orderId },
+                order: [['createdAt', 'DESC']],
+            });
+
+            return payment;
+        } catch (error) {
+            logger.error('Get payment error:', error);
+            throw error;
+        }
+    }
+
+    async getPaymentById(paymentId) {
+        try {
+            const payment = await Payment.findOne({ where: { paymentId } });
+            return payment;
+        } catch (error) {
+            logger.error('Get payment by ID error:', error);
+            throw error;
+        }
+    }
+
+    async getUserPayments(userId, filters = {}) {
+        try {
+            const where = { userId };
+
+            if (filters.status) {
+                where.status = filters.status;
+            }
+
+            const page = parseInt(filters.status.page) || 1;
+            const limit = parseInt(filters.limit) || 10;
+            const offset = (page - 1) * limit;
+
+            const { count, rows } = await Payment.findAndCountAll({
+                where,
+                order: [['createdAt', 'DESC']],
+                limit,
+                offset,
+            });
+        } catch (error) {
+            logger.error('Get user payments error:', error);
+            throw error;
+        }
+    }
 
     // Xử lý webhook từ Stripe
     async handleStripeWebhook(event) {
@@ -165,16 +237,96 @@ class PaymentService {
     }
 
     // Hoàn tiền
-    async refundPayment(paymentId, refundData) {}
+    async refundPayment(paymentId, refundData) {
+        try {
+            // Kiểm tra tính hợp lệ của giao dịch
+            const payment = await Payment.findOne({ where: { paymentId } });
+            if (!payment) throw new Error('Payment not found');
+            if (payment.status !== 'completed') throw new Error('Only completed payments can be refunded');
 
-    async publishPaymentCompleted(payment) {}
+            const refundAmount = refundData.amount || payment.amount;
+            if (refundAmount > payment.amount) throw new Error('Refund exceeds original payment');
 
-    async publishPaymentFailed(payment) {}
+            let refundId = null;
+            if (payment.paymentMethod === 'card') {
+                const refund = await stripeService.createRefund(payment.transactionId, refundAmount, refundData.reason);
+                refundId = refund.id;
+            }
 
-    async publishPaymentRefunded(payment) {}
+            payment.status = 'refunded';
+            payment.refundAmount = refundAmount;
+            payment.refundReason = refundData.reason;
+            payment.refundedAt = new Date();
+            payment.refundTransactionId = refundId;
+            await payment.save();
+
+            await this.publishPaymentRefunded(payment);
+            logger.info(`Payment refunded: ${payment.paymentId}`);
+            return payment;
+        } catch (error) {
+            logger.error(`Refund payment error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async publishPaymentCompleted(payment) {
+        await this.publishEvent('payment.completed', {
+            paymentId: payment.paymentId,
+            orderId: payment.orderId,
+            userId: payment.userId,
+            amount: parseFloat(payment.amount),
+            transactionId: payment.transactionId,
+            timestamp: new Date().toISOString(),
+        });
+    }
+
+    async publishPaymentFailed(payment) {
+        await this.publishEvent('payment.pending', {
+            paymentId: payment.paymentId,
+            orderId: payment.orderId,
+            userId: payment.userId,
+            amount: parseFloat(payment.amount),
+            timestamp: new Date().toISOString(),
+        });
+    }
+
+    async publishPaymentRefunded(payment) {
+        await this.publishEvent('payment.refunded', {
+            paymentId: payment.paymentId,
+            orderId: payment.orderId,
+            userId: payment.userId,
+            refundAmount: parseFloat(payment.refundAmount),
+            refundReason: payment.refundReason,
+            timestamp: new Date().toISOString(),
+        });
+    }
+
+    async publishEvent(eventType, payload) {
+        try {
+            await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.PAYMENT, eventType, payload);
+            logger.info(`Published event: ${eventType}`);
+        } catch (error) {
+            logger.error(`Failed to publish ${eventType}: ${error.message}`);
+        }
+    }
 
     // Khi nhận được event "order.created" từ RabbitMQ -> Tự động tạo giao dịch thanh toán tương ứng
-    async handleOrderCreated(orderData) {}
+    async handleOrderCreated(orderData) {
+        try {
+            logger.info(`Received order.created for ${orderData.orderId}`);
+            const paymentData = {
+                orderId: orderData.orderId,
+                userId: orderData.userId,
+                amount: orderData.totalAmout,
+                paymentMethod: orderData.paymentMethod,
+                currency: 'VND',
+            };
+
+            this.createPayment(paymentData);
+        } catch (error) {
+            logger.error(`handleOrderCreated failed: ${error.message}`);
+        }
+    }
 }
 
 export default new PaymentService();

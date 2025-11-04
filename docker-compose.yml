@@ -211,6 +211,22 @@ services:
             service-discovery:
                 condition: service_started
 
+    payment-service:
+        build:
+            context: ./payment-service
+            dockerfile: Dockerfile
+        ports:
+            - '8083:8083'
+        environment:
+            - ./payment-service/.env
+        depends_on:
+            db:
+                condition: service_healthy
+            rabbitmq:
+                condition: service_started
+            service-discovery:
+                condition: service_started
+
 volumes:
     mysql_data:
     mongodb_data:

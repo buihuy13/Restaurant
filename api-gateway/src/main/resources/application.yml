@@ -265,6 +265,53 @@ spring:
                       - Path=/order-service/v3/api-docs/order-service/**
                   filters:
                       - RewritePath=/order-service/v3/api-docs/order-service/(?<segment>.*), /v3/api-docs/order-service/${segment}
+
+                # Payment-Service
+                - id: payment-service-get
+                  uri: lb://payment-service
+                  predicates:
+                      - Path=/api/payments/**
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,MERCHANT,ADMIN
+
+                - id: payment-service-create
+                  uri: lb://payment-service
+                  predicates:
+                      - Path=/api/payments
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: payment-service-refund
+                  uri: lb://payment-service
+                  predicates:
+                      - Path=/api/payments/*/refund
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN,MERCHANT
+
+                - id: payment-service-update
+                  uri: lb://payment-service
+                  predicates:
+                      - Path=/api/payments/*
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
+                - id: payment-service-docs
+                  uri: lb://payment-service
+                  predicates:
+                      - Path=/v3/api-docs/payment-service
+
 server:
     port: ${PORT}
 
@@ -292,3 +339,5 @@ springdoc:
               url: /v3/api-docs/restaurant-service
             - name: Order Service
               url: /order-service/v3/api-docs/order-service
+            - name: Payment Service
+              url: /v3/api-docs/payment-service
