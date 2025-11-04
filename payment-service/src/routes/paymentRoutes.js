@@ -13,9 +13,9 @@ router.get('/order/:orderId', paymentController.getPaymentByOrderId);
 router.get('/:paymentId', paymentController.getPaymentById);
 
 // Get user payments
-router.get('/user/:userId', authenticate, paymentController.getUserPayments);
+router.get('/user/:userId', paymentController.getUserPayments);
 
 // Refund payment
-router.post('/:paymentId/refund', authenticate, paymentController.refundPayment);
+router.post('/:paymentId/refund', paymentController.refundPayment);
 
 export default router;

@@ -1,7 +1,6 @@
 import os from 'os';
 import EurekaClient from 'eureka-js-client';
 import logger from '../utils/logger.js';
-import os from 'os';
 import eurekaLogger from '../utils/eurekaLogger.js';
 
 const { Eureka } = EurekaClient;
@@ -57,3 +56,5 @@ const eurekaClient = new Eureka({
     },
     logger: eurekaLogger,
 });
+
+export default eurekaClient;

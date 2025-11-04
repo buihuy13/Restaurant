@@ -10,6 +10,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import rabbitmqConnection from './config/rabbitmq.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { startOrderConsumer } from './consumers/orderConsumer.js';
+import eurekaClient from './config/eureka.js';
 
 const app = express();
 const PORT = process.env.PAYMENT_PORT || 8083;
@@ -29,6 +30,23 @@ app.get('/health', (req, res) => {
         status: 'healthy',
         timestamp: new Date().toISOString(),
     });
+});
+
+// Swagger Documentation
+app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+        explorer: true,
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Payment Service API Docs',
+    }),
+);
+
+// Swagger JSON endpoint
+app.get('/api-docs.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
 });
 
 // API Info
@@ -68,14 +86,17 @@ const startServer = async () => {
         await startOrderConsumer();
 
         app.listen(PORT, () => {
-            logger.info(`Payment Service running on port ${PAYMENT_PORT}`);
-            logger.info(`Swagger Docs: http://localhost:${PAYMENT_PORT}/api-docs`);
-        });
+            logger.info(`Payment Service running on port ${PORT}`);
+            logger.info(`Swagger Docs: http://localhost:${PORT}/api-docs`);
 
-        setTimeout(() => {
-            logger.info('Registering with Eureka...');
-            startEurekaClient();
-        }, 5000);
+            eurekaClient.start((error) => {
+                if (error) {
+                    logger.error('Eureka registration failed:', error);
+                } else {
+                    logger.info('Order Service successfully registered with Eureka');
+                }
+            });
+        });
     } catch (error) {
         logger.error('Failed to start server:', error);
         process.exit(1);

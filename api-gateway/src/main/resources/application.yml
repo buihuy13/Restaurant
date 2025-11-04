@@ -258,7 +258,6 @@ spring:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER
-
                 - id: order-service-docs
                   uri: lb://order-service
                   predicates:
@@ -310,7 +309,9 @@ spring:
                 - id: payment-service-docs
                   uri: lb://payment-service
                   predicates:
-                      - Path=/v3/api-docs/payment-service
+                      - Path=/payment-service/v3/api-docs/payment-service/**
+                  filters:
+                      - RewritePath=/payment-service/v3/api-docs/payment-service/(?<segment>.*), /v3/api-docs/payment-service/${segment}
 
 server:
     port: ${PORT}
@@ -340,4 +341,4 @@ springdoc:
             - name: Order Service
               url: /order-service/v3/api-docs/order-service
             - name: Payment Service
-              url: /v3/api-docs/payment-service
+              url: /payment-service/v3/api-docs/payment-service

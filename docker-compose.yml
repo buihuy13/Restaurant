@@ -3,7 +3,7 @@
 services:
     # Zookeeper: trình quản lý cho Kafka
     rabbitmq:
-        image: 'rabbitmq:latest'
+        image: 'rabbitmq:3-management'
         environment:
             - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
             - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
@@ -217,7 +217,7 @@ services:
             dockerfile: Dockerfile
         ports:
             - '8083:8083'
-        environment:
+        env_file:
             - ./payment-service/.env
         depends_on:
             db:
