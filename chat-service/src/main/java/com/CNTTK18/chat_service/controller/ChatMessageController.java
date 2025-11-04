@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.chat_service.dto.request.roomDTO;
@@ -26,8 +27,11 @@ public class ChatMessageController {
         this.chatMessageService = chatMessageService;
     }
 
-    @GetMapping("/roomId")
-    public ResponseEntity<roomIdResponse> getRoomId(roomDTO roomDTO) {
+    private final int LIMIT_MESSAGE = 20;
+
+    @GetMapping("/roomId/{userId1}/{userId2}")
+    public ResponseEntity<roomIdResponse> getRoomId(@PathVariable String userId1, @PathVariable String userId2) {
+        roomDTO roomDTO = new roomDTO(userId1, userId2);
         String roomId = chatMessageService.getRoomId(roomDTO);
         return ResponseEntity.ok(new roomIdResponse(roomId));
     }
@@ -57,8 +61,9 @@ public class ChatMessageController {
     }
 
     @GetMapping("/rooms/{roomId}/messages")
-    public ResponseEntity<List<Message>> getAllMessageDescInRoom(@PathVariable String roomId) {
-        List<Message> messages = chatMessageService.getAllMessageDescInRoom(roomId);
+    public ResponseEntity<List<Message>> getAllMessageDescInRoom(@PathVariable String roomId,
+                                                                @RequestParam(defaultValue = "0") int page) {
+        List<Message> messages = chatMessageService.getRecentMessageByPagination(roomId, page, LIMIT_MESSAGE);
         return ResponseEntity.ok(messages);
     }
 }
