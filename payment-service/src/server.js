@@ -11,6 +11,8 @@ import rabbitmqConnection from './config/rabbitmq.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { startOrderConsumer } from './consumers/orderConsumer.js';
 import eurekaClient from './config/eureka.js';
+import swaggerSpec from './config/swagger.js';
+import swaggerUi from 'swagger-ui-express';
 
 const app = express();
 const PORT = process.env.PAYMENT_PORT || 8083;
