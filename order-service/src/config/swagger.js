@@ -79,8 +79,15 @@ const options = {
 const swaggerSpec = swaggerJSDoc(options);
 
 export const setupSwagger = (app) => {
+    // JSON endpoint cho API Gateway fetch
+    app.get('/v3/api-docs/order-service', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(swaggerSpec);
+    });
+
+    // Swagger UI viewer (nếu bạn mở trực tiếp)
     app.use(
-        '/swagger.json',
+        '/api-docs',
         swaggerUi.serve,
         swaggerUi.setup(swaggerSpec, {
             explorer: true,
@@ -88,8 +95,4 @@ export const setupSwagger = (app) => {
             customSiteTitle: 'Order Service API Docs',
         }),
     );
-
-    app.get('/v3/api-docs/order-service', (req, res) => {
-        res.json(swaggerSpec);
-    });
 };
