@@ -46,9 +46,9 @@ const eurekaClient = new Eureka({
         },
     },
     eureka: {
-        serviceUrls: {
-            default: [process.env.EUREKA_SERVER_URL || 'http://service-discovery:8761/eureka/'],
-        },
+        host: process.env.EUREKA_HOST || 'service-discovery',
+        port: parseInt(process.env.EUREKA_PORT) || 8761,
+        servicePath: '/eureka/apps/',
         maxRetries: 10,
         requestRetryDelay: 5000,
         heartbeatInterval: 30000,

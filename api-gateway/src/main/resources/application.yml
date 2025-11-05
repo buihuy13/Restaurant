@@ -309,7 +309,7 @@ spring:
                 - id: payment-service-docs
                   uri: lb://payment-service
                   predicates:
-                      - Path=/v3/api-docs/payment-service/**
+                      - Path=/payment-service/v3/api-docs/payment-service/**
                   filters:
                       - RewritePath=/v3/api-docs/payment-service/(?<segment>.*), /v3/api-docs/payment-service/${segment}
 
@@ -335,7 +335,7 @@ springdoc:
               url: /v3/api-docs/user-service
             - name: Restaurant Service
               url: /v3/api-docs/restaurant-service
-            - name: Order Service
-              url: /order-service/v3/api-docs/order-service
             - name: Payment Service
-              url: /payment-service/v3/api-docs/payment-service
+              url: http://payment-service:8083/v3/api-docs/payment-service
+            - name: Order Service
+              url: http://order-service:8082/v3/api-docs/order-service

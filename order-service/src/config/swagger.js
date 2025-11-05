@@ -79,5 +79,17 @@ const options = {
 const swaggerSpec = swaggerJSDoc(options);
 
 export const setupSwagger = (app) => {
-    app.use('/v3/api-docs/order-service', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    app.use(
+        '/swagger.json',
+        swaggerUi.serve,
+        swaggerUi.setup(swaggerSpec, {
+            explorer: true,
+            customCss: '.swagger-ui .topbar { display: none }',
+            customSiteTitle: 'Order Service API Docs',
+        }),
+    );
+
+    app.get('/v3/api-docs/order-service', (req, res) => {
+        res.json(swaggerSpec);
+    });
 };

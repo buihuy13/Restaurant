@@ -10,6 +10,12 @@ services:
         ports:
             - '5672:5672' #Cho các service kết nối đến
             - '15672:15672' #Dành cho UI
+        healthcheck:
+            test: ['CMD', 'rabbitmqctl', 'status']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
     redis:
         image: 'redis:7-alpine'
         container_name: redis
@@ -68,6 +74,11 @@ services:
             - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
             - EUREKA_HOST_NAME=${EUREKA_HOST_NAME}
             - PORT=${SERVICE_DISCOVERY_PORT}
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:8761/actuator/health']
+            interval: 5s
+            retries: 10
+            start_period: 20s
     zipkin:
         image: openzipkin/zipkin
         ports:
@@ -207,9 +218,9 @@ services:
             redis:
                 condition: service_healthy
             rabbitmq:
-                condition: service_started
+                condition: service_healthy
             service-discovery:
-                condition: service_started
+                condition: service_healthy
 
     payment-service:
         build:
@@ -223,9 +234,9 @@ services:
             db:
                 condition: service_healthy
             rabbitmq:
-                condition: service_started
+                condition: service_healthy
             service-discovery:
-                condition: service_started
+                condition: service_healthy
 
 volumes:
     mysql_data:

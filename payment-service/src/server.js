@@ -20,7 +20,13 @@ const PORT = process.env.PAYMENT_PORT || 8083;
 // Middlewares
 app.use(express.json());
 app.use(helmet());
-app.use(cors());
+app.use(
+    cors({
+        origin: ['http://localhost:8080', 'http://api-gateway:8080'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -46,9 +52,8 @@ app.use(
 );
 
 // Swagger JSON endpoint
-app.get('/api-docs.json', (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpec);
+app.get('/v3/api-docs/payment-service', (req, res) => {
+    res.json(swaggerSpec);
 });
 
 // API Info

@@ -20,7 +20,13 @@ const PORT = process.env.PORT || 8082;
 
 // Middlewares
 app.use(helmet());
-app.use(cors());
+app.use(
+    cors({
+        origin: ['http://localhost:8080', 'http://api-gateway:8080'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -71,7 +77,7 @@ const startServer = async () => {
         await rabbitmqConnection.connect();
 
         // Start payment consumer
-        // await startPaymentConsumer();
+        startPaymentConsumer();
 
         // Start server
         app.listen(PORT, () => {
