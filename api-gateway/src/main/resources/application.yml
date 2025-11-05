@@ -5,6 +5,11 @@ spring:
     gateway:
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 100    # tokens/second
+            redis-rate-limiter.burstCapacity: 200    # max tokens
+            key-resolver: "#{@ipKeyResolver}"
       globalcors:
         add-to-simple-url-handler-mapping: true
         cors-configurations:
@@ -233,3 +238,4 @@ springdoc:
         url: /v3/api-docs/user-service
       - name: Restaurant Service
         url: /v3/api-docs/restaurant-service
+
