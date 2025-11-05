@@ -1,240 +1,294 @@
 spring:
-  application:
-    name: api-gateway
-  cloud:
-    gateway:
-      default-filters:
-        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
-      globalcors:
-        add-to-simple-url-handler-mapping: true
-        cors-configurations:
-          '[/**]':
-            allowedOrigins:
-              - "http://localhost:3000"
-              - "http://localhost:8080"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders:
-              - Content-Type
-              - Authorization
-              - X-Requested-With
-              - Refresh-Token
-            allowCredentials: true
-            maxAge: 3600
-      discovery:
-        locator:
-          enabled: true
-          #lower-case-service-id: true
-      routes:
-        - id: user-service-approvement
-          uri: lb://user-service
-          predicates:
-            - Path=/api/users/approvement/**
-            - Method=PUT
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: ADMIN
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/api/users/**
-            - Method=GET, PUT
-          filters:
-            - name: JwtAuthentication
-        - id: user-service-put
-          uri: lb://user-service
-          predicates:
-            - Path=/api/users/*
-            - Method=PUT
-          filters:
-            - name: JwtAuthentication
-        - id: user-service-profile-put
-          uri: lb://user-service
-          predicates:
-            - Path=/api/users/profile/**
-            - Method=PUT
-          filters:
-            - name: JwtAuthentication
-        - id: user-service-auth
-          uri: lb://user-service
-          predicates:
-            - Path=/api/users/**
-            - Method=POST, DELETE
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: ADMIN
-        - id: user-service-docs
-          uri: lb://user-service
-          predicates:
-            - Path=/v3/api-docs/user-service
-        - id: eureka
-          uri: ${EUREKA_SERVER_URI}
-          predicates:
-          - Path=/eureka/web
-          filters:
-          - SetPath=/
-        - id: eureka-static
-          uri: ${EUREKA_SERVER_URI}
-          predicates:
-          - Path=/eureka/** 
-        - id: restaurant-service-size
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/size/**
-            - Method=GET
-          filters:
-            - name: JwtAuthentication
-        - id: restaurant-service-size-ADMIN
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/size/**
-            - Method=POST, PUT, DELETE
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: ADMIN
-        - id: restaurant-service-cate
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/category/**
-            - Method=GET
-          filters:
-            - name: JwtAuthentication
-        - id: restaurant-service-cate-ADMIN
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/category/**
-            - Method=POST, PUT, DELETE
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: ADMIN
-        - id: restaurant-service-review
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/review/**
-            - Method=GET, POST, PUT, DELETE
-          filters:
-            - name: JwtAuthentication
-        - id: restaurant-service-res
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/restaurant/**
-            - Method=GET
-          filters:
-            - name: JwtAuthentication
-        - id: restaurant-service-res-enable
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/restaurant/enable/**
-            - Method=PUT
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: ADMIN
-        - id: restaurant-service-res-put
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/restaurant/*
-            - Method=PUT
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: MERCHANT
-        - id: restaurant-service-res-ADMIN
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/restaurant/**
-            - Method=POST, DELETE
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: ADMIN,MERCHANT
-        - id: restaurant-service-product-get
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/products/**
-            - Method=GET
-          filters:
-            - name: JwtAuthentication
-        - id: restaurant-service-product
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/products/**
-            - Method=POST, DELETE
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: ADMIN,MERCHANT
-        - id: restaurant-service-product-availability
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/products/availability/**
-            - Method=PUT
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: ADMIN
-        - id: restaurant-service-product-put
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/products/*
-            - Method=PUT
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: MERCHANT
-        - id: restaurant-service-productsize-get
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/productsize/**
-            - Method=GET
-          filters:
-            - name: JwtAuthentication
-        - id: restaurant-service-productsize
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/productsize/**
-            - Method=POST, DELETE, PUT
-          filters:
-            - name: JwtAuthentication
-              args:
-                requiredRole: ADMIN,MERCHANT
-        - id: restaurant-service-docs
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/v3/api-docs/restaurant-service
-        
+    application:
+        name: api-gateway
+    cloud:
+        gateway:
+            default-filters:
+                - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+            globalcors:
+                add-to-simple-url-handler-mapping: true
+                cors-configurations:
+                    '[/**]':
+                        allowedOrigins:
+                            - 'http://localhost:3000'
+                            - 'http://localhost:8080'
+                        allowedMethods:
+                            - GET
+                            - POST
+                            - PUT
+                            - DELETE
+                            - OPTIONS
+                        allowedHeaders:
+                            - Content-Type
+                            - Authorization
+                            - X-Requested-With
+                            - Refresh-Token
+                        allowCredentials: true
+                        maxAge: 3600
+            discovery:
+                locator:
+                    enabled: true
+                    #lower-case-service-id: true
+            routes:
+                - id: user-service-approvement
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/approvement/**
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+                - id: user-service
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/**
+                      - Method=GET, PUT
+                  filters:
+                      - name: JwtAuthentication
+                - id: user-service-put
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/*
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                - id: user-service-profile-put
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/profile/**
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                - id: user-service-auth
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/**
+                      - Method=POST, DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+                - id: user-service-docs
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/v3/api-docs/user-service
+                - id: eureka
+                  uri: ${EUREKA_SERVER_URI}
+                  predicates:
+                      - Path=/eureka/web
+                  filters:
+                      - SetPath=/
+                - id: eureka-static
+                  uri: ${EUREKA_SERVER_URI}
+                  predicates:
+                      - Path=/eureka/**
+                - id: restaurant-service-size
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/size/**
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                - id: restaurant-service-size-ADMIN
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/size/**
+                      - Method=POST, PUT, DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+                - id: restaurant-service-cate
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/category/**
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                - id: restaurant-service-cate-ADMIN
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/category/**
+                      - Method=POST, PUT, DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+                - id: restaurant-service-review
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/review/**
+                      - Method=GET, POST, PUT, DELETE
+                  filters:
+                      - name: JwtAuthentication
+                - id: restaurant-service-res
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/restaurant/**
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                - id: restaurant-service-res-enable
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/restaurant/enable/**
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+                - id: restaurant-service-res-put
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/restaurant/*
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+                - id: restaurant-service-res-ADMIN
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/restaurant/**
+                      - Method=POST, DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN,MERCHANT
+                - id: restaurant-service-product-get
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/products/**
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                - id: restaurant-service-product
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/products/**
+                      - Method=POST, DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN,MERCHANT
+                - id: restaurant-service-product-availability
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/products/availability/**
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+                - id: restaurant-service-product-put
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/products/*
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+                - id: restaurant-service-productsize-get
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/productsize/**
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                - id: restaurant-service-productsize
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/productsize/**
+                      - Method=POST, DELETE, PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN,MERCHANT
+                - id: restaurant-service-docs
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/v3/api-docs/restaurant-service
+                # Order Service
+                - id: order-service
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders**
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
 
+                - id: order-service-create
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
 
+                - id: order-service-status
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/*/status
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT,ADMIN
+
+                - id: order-service-cancel
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/*/cancel
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,MERCHANT,ADMIN
+
+                - id: order-service-rating
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/*/rating
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: order-service-docs
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/order-service/v3/api-docs/order-service/**
+                  filters:
+                      - RewritePath=/order-service/v3/api-docs/order-service/(?<segment>.*), /v3/api-docs/order-service/${segment}
 server:
-  port: ${PORT}
+    port: ${PORT}
 
 eureka:
-  instance:
-    #hostname: ${spring.application.name}
-    #prefer-ip-address: false
-    #instance-id: ${spring.application.name}:${random.value}
-  client:
-    service-url:
-      defaultZone: ${EUREKA_SERVER_URL}
+    instance:
+        #hostname: ${spring.application.name}
+        #prefer-ip-address: false
+        #instance-id: ${spring.application.name}:${random.value}
+    client:
+        service-url:
+            defaultZone: ${EUREKA_SERVER_URL}
 
 logging:
-  level:
-    root: TRACE
+    level:
+        root: TRACE
 
 #Swagger
 springdoc:
-  swagger-ui: 
-    path: /api-docs/swagger-ui.html
-    urls:
-      - name: User Service
-        url: /v3/api-docs/user-service
-      - name: Restaurant Service
-        url: /v3/api-docs/restaurant-service
+    swagger-ui:
+        path: /api-docs/swagger-ui.html
+        urls:
+            - name: User Service
+              url: /v3/api-docs/user-service
+            - name: Restaurant Service
+              url: /v3/api-docs/restaurant-service
+            - name: Order Service
+              url: /order-service/v3/api-docs/order-service

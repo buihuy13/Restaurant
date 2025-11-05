@@ -48,13 +48,15 @@ public class resController {
     public Mono<ResponseEntity<List<resResponseWithProduct>>> getAllRestaurants(@RequestParam(required = false) Double lat,
                                                                @RequestParam(required = false) Double lon,
                                                                @RequestParam(required = false) String search, 
-                                                               @RequestParam(required = false) Integer nearby) {
+                                                               @RequestParam(required = false) Integer nearby,
+                                                               @RequestParam(required = false) String rating,
+                                                               @RequestParam(required = false) String category) {
 
         Coordinates location = null;
         if (lon != null && lat != null) {
             location = new Coordinates(lon, lat);
         }
-        return resService.getAllRestaurants(location, search, nearby).map(
+        return resService.getAllRestaurants(location, search, nearby, rating, category).map(
             resList -> ResponseEntity.ok(resList)
         );
     }

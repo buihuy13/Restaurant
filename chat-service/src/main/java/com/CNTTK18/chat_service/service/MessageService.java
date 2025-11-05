@@ -3,8 +3,8 @@ package com.CNTTK18.chat_service.service;
 import java.time.LocalDateTime;
 
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
@@ -36,16 +36,16 @@ public class MessageService {
         this.chatRoomRepository = chatRoomRepository;
     }
     
+    @Transactional
     public void processMessage(MessageDTO message) {
         // Sử dụng async để không block luồng chính
-        saveMessageAsync(message);
+        saveMessageSync(message);
         
         // Step 2: Publish to Redis
         publishToRedis(message);
     }
     
-    @Async
-    public void saveMessageAsync(MessageDTO message) {
+    public void saveMessageSync(MessageDTO message) {
         ChatRoom chatroom = chatRoomRepository.findById(message.getRoomId()).orElseThrow(() -> 
             new ResourceNotFoundException("Chat room not found: " + message.getRoomId()));
         // Lưu tin nhắn vào database với read = false

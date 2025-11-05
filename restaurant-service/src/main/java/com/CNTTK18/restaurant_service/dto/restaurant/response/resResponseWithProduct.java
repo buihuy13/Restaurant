@@ -4,7 +4,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 import com.CNTTK18.restaurant_service.dto.cate.response.cateResponse;
-import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
+import com.CNTTK18.restaurant_service.dto.product.response.productResponseWithoutRes;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +33,6 @@ public class resResponseWithProduct {
     private int totalReview;
     private double distance;
     private double duration;
-    private List<productResponse> products;
+    private List<productResponseWithoutRes> products;
     private List<cateResponse> cate;
 }

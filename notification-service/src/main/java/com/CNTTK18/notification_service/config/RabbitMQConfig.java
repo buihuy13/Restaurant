@@ -6,16 +6,31 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 
 @Configuration
 public class RabbitMQConfig {
     @Bean
-    Queue ConfirmationQueue() {
+    public MessageConverter jsonMessageConverter() {
+        return new Jackson2JsonMessageConverter();
+    }
+    @Bean
+    Queue confirmationQueue() {
         return new Queue("Confirmation_queue", false);
     }
     @Bean
-    Queue MerchantQueue() {
+    Queue merchantQueue() {
         return new Queue("Merchant_queue", false);
+    }
+    @Bean
+    TopicExchange confirmationExchange() {
+        return new TopicExchange("Confirmation_exchange");
+    }
+    
+    @Bean
+    TopicExchange merchantExchange() {
+        return new TopicExchange("Merchant_exchange");
     }
     @Bean
     Binding ConfirmationBinding(Queue confirmationQueue, TopicExchange confirmationExchange) {
@@ -23,6 +38,6 @@ public class RabbitMQConfig {
     }
     @Bean
     Binding MerchantBinding(Queue merchantQueue, TopicExchange merchantExchange) {
-        return BindingBuilder.bind(merchantExchange).to(merchantExchange).with("Merchant");
+        return BindingBuilder.bind(merchantQueue).to(merchantExchange).with("Merchant");
     }
 }
