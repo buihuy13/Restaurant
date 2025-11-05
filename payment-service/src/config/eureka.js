@@ -19,7 +19,7 @@ const getLocalIp = () => {
 
 const eurekaClient = new Eureka({
     instance: {
-        instanceId: `${getLocalIp()}:payment-service:${process.env.ORDER_SERVICE_URL || 'http://payment-service:8083'}`,
+        instanceId: `${getLocalIp()}:${process.env.PAYMENT_SERVICE_URL || 'http://payment-service:8083'}`,
         app: 'PAYMENT-SERVICE',
         hostName: process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service',
         ipAddr: getLocalIp(),
@@ -46,9 +46,9 @@ const eurekaClient = new Eureka({
         },
     },
     eureka: {
-        host: process.env.EUREKA_HOST || 'service-discovery',
-        port: parseInt(process.env.EUREKA_PORT) || 8761,
-        servicePath: '/eureka/apps/',
+        serviceUrls: {
+            default: [process.env.EUREKA_SERVER_URL || 'http://service-discovery:8761/eureka/'],
+        },
         maxRetries: 10,
         requestRetryDelay: 5000,
         heartbeatInterval: 30000,

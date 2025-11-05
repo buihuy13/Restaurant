@@ -44,6 +44,9 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/orders', orderRouter);
 
+// Setup swagger
+setupSwagger(app);
+
 // Error handler
 app.use(errorHandler);
 
@@ -66,9 +69,6 @@ const startServer = async () => {
 
         // Connect to RabbitMQ
         await rabbitmqConnection.connect();
-
-        // Setup swagger
-        setupSwagger(app);
 
         // Start payment consumer
         // await startPaymentConsumer();
