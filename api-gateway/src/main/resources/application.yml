@@ -5,6 +5,11 @@ spring:
         gateway:
             default-filters:
                 - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+                - name: RequestRateLimiter
+                  args:
+                      redis-rate-limiter.replenishRate: 100 # tokens/second
+                      redis-rate-limiter.burstCapacity: 200 # max tokens
+                      key-resolver: '#{@ipKeyResolver}'
             globalcors:
                 add-to-simple-url-handler-mapping: true
                 cors-configurations:
@@ -88,8 +93,6 @@ spring:
                   predicates:
                       - Path=/api/size/**
                       - Method=GET
-                  filters:
-                      - name: JwtAuthentication
                 - id: restaurant-service-size-ADMIN
                   uri: lb://restaurant-service
                   predicates:
@@ -104,8 +107,6 @@ spring:
                   predicates:
                       - Path=/api/category/**
                       - Method=GET
-                  filters:
-                      - name: JwtAuthentication
                 - id: restaurant-service-cate-ADMIN
                   uri: lb://restaurant-service
                   predicates:
@@ -119,7 +120,12 @@ spring:
                   uri: lb://restaurant-service
                   predicates:
                       - Path=/api/review/**
-                      - Method=GET, POST, PUT, DELETE
+                      - Method=GET
+                - id: restaurant-service-review-jwt
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/review/**
+                      - Method=POST, PUT, DELETE
                   filters:
                       - name: JwtAuthentication
                 - id: restaurant-service-res
@@ -127,8 +133,6 @@ spring:
                   predicates:
                       - Path=/api/restaurant/**
                       - Method=GET
-                  filters:
-                      - name: JwtAuthentication
                 - id: restaurant-service-res-enable
                   uri: lb://restaurant-service
                   predicates:
@@ -161,8 +165,6 @@ spring:
                   predicates:
                       - Path=/api/products/**
                       - Method=GET
-                  filters:
-                      - name: JwtAuthentication
                 - id: restaurant-service-product
                   uri: lb://restaurant-service
                   predicates:
@@ -195,8 +197,6 @@ spring:
                   predicates:
                       - Path=/api/productsize/**
                       - Method=GET
-                  filters:
-                      - name: JwtAuthentication
                 - id: restaurant-service-productsize
                   uri: lb://restaurant-service
                   predicates:
@@ -210,7 +210,6 @@ spring:
                   uri: lb://restaurant-service
                   predicates:
                       - Path=/v3/api-docs/restaurant-service
-                # Order Service
                 - id: order-service
                   uri: lb://order-service
                   predicates:
@@ -303,8 +302,8 @@ spring:
                       - Method=PUT
                   filters:
                       - name: JwtAuthentication
-                        args:
-                            requiredRole: ADMIN
+                  args:
+                      requiredRole: ADMIN
 
                 - id: payment-service-docs
                   uri: lb://payment-service

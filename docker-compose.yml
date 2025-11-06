@@ -97,6 +97,10 @@ services:
             - EUREKA_SERVER_URL=${EUREKA_SERVER_URL}
             - EUREKA_SERVER_URI=${EUREKA_SERVER_URI}
             - PORT=${API_GATEWAY_PORT}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - REDIS_SSL=${REDIS_SSL}
         depends_on:
             service-discovery:
                 condition: service_started

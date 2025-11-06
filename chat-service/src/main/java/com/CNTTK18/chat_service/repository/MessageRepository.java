@@ -29,7 +29,7 @@ public interface MessageRepository extends JpaRepository<Message, String> {
     long countByRoomId(String roomId);
 
     // Đếm tin nhắn chưa đọc trong room cho receiverId
-    @Query("SELECT COUNT(m) FROM Message m WHERE m.roomId = :roomId AND m.receiverId = :receiverId AND m.read = false")
+    @Query("SELECT COUNT(m) FROM Message m WHERE m.room.id = :roomId AND m.receiverId = :receiverId AND m.read = false")
     Long countUnreadMessagesByRoomIdAndReceiverId(String roomId, String receiverId);
 
     @Query("SELECT COUNT(m) FROM Message m WHERE m.receiverId = :receiverId AND m.read = false")
@@ -37,7 +37,7 @@ public interface MessageRepository extends JpaRepository<Message, String> {
 
     // Cập nhật tất cả tin nhắn trong room cho receiverId thành đã đọc
     @Modifying
-    @Query("UPDATE Message m SET m.read = true WHERE m.roomId = :roomId " +
+    @Query("UPDATE Message m SET m.read = true WHERE m.room.id = :roomId " +
            "AND m.receiverId = :receiverId AND m.read = false")
     void updateReadByRoomIdAndReceiverId(String roomId, String receiverId);
 }

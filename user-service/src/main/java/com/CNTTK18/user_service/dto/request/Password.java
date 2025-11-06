@@ -10,10 +10,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRequest {
-    @NotBlank(message = "Username is mandatory")
-    private String username;
-
-    @NotBlank(message = "Phone is mandatory")
-    private String phone;
+public class Password {
+    @NotBlank(message = "Password is required")
+    private String password;
+    @NotBlank(message = "Confirm Password is required")
+    private String confirmPassword;
 }

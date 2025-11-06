@@ -51,10 +51,13 @@ public class productController {
                                                                @RequestParam(required = false) String locationsorted,
                                                                @RequestParam(required = false) String search,
                                                                @RequestParam(required = false) Integer nearby,
-                                                               @RequestParam(required = true) Double lat,
-                                                               @RequestParam(required = true) Double lon) {
+                                                               @RequestParam(required = false) Double lat,
+                                                               @RequestParam(required = false) Double lon) {
                                                             
-        Coordinates location = new Coordinates(lon, lat);
+        Coordinates location = null;
+        if (lon != null && lat != null) {
+            location = new Coordinates(lon, lat);
+        }
         return productService.getAllProducts(rating, category, minPrice, maxPrice, order, 
                                                                 locationsorted, search, nearby, location)
                             .map(productList -> ResponseEntity.ok(productList));

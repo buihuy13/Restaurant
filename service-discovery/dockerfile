@@ -1,5 +1,6 @@
 #Stage 1: Builder
 FROM eclipse-temurin:21-jdk-jammy AS builder
+WORKDIR /app
 
 WORKDIR /app
 COPY build.gradle.kts settings.gradle.kts gradlew ./

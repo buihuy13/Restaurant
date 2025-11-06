@@ -11,16 +11,20 @@ import org.springframework.stereotype.Service;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.user_service.data.Role;
+import com.CNTTK18.user_service.dto.request.AddressRequest;
 import com.CNTTK18.user_service.dto.request.Login;
+import com.CNTTK18.user_service.dto.request.Password;
 import com.CNTTK18.user_service.dto.request.Register;
 import com.CNTTK18.user_service.dto.request.Rejection;
 import com.CNTTK18.user_service.dto.request.UserRequest;
 import com.CNTTK18.user_service.dto.request.UserUpdateAfterLogin;
+import com.CNTTK18.user_service.dto.response.AddressResponse;
 import com.CNTTK18.user_service.dto.response.TokenResponse;
 import com.CNTTK18.user_service.dto.response.UserResponse;
 import com.CNTTK18.user_service.exception.InactivateException;
 import com.CNTTK18.user_service.model.Address;
 import com.CNTTK18.user_service.model.Users;
+import com.CNTTK18.user_service.repository.AddressRepository;
 import com.CNTTK18.user_service.repository.UserRepository;
 import com.CNTTK18.user_service.util.UserUtil;
 
@@ -31,14 +35,17 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final MailService mailService;
+    private final AddressRepository addressRepository;
 
     public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, 
-                       AuthenticationManager authenticationManager, JwtService jwtService, MailService mailService) {
+                       AuthenticationManager authenticationManager, JwtService jwtService, 
+                       MailService mailService, AddressRepository addressRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.mailService = mailService;
+        this.addressRepository = addressRepository;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -53,10 +60,10 @@ public class UserService {
     public UserResponse updateUser(String id, UserRequest user) {
         Users existingUser = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         existingUser.setUsername(user.getUsername());
-        existingUser.setEmail(user.getEmail());
+        existingUser.setPhone(user.getPhone());
         userRepository.save(existingUser);
-        return new UserResponse(existingUser.getId(),user.getUsername(),user.getEmail(), 
-                                existingUser.isEnabled(), existingUser.getRole(), existingUser.getPhone());
+        return new UserResponse(existingUser.getId(),user.getUsername(),existingUser.getEmail(), 
+                                existingUser.isEnabled(), existingUser.getRole(), user.getPhone());
     }
 
     public void deleteUserById(String id) {
@@ -64,6 +71,9 @@ public class UserService {
     }
 
     public void register(Register user) {
+        if (!user.getPassword().equals(user.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and Confirm Password do not match");
+        }
         Users newUser = new Users();
         newUser.setId(RandomIdGenerator.generate(99));
         newUser.setUsername(user.getUsername());
@@ -91,8 +101,8 @@ public class UserService {
     }
 
     public UserResponse getUserByAccessToken(String accessToken) throws Exception {
-        String username = jwtService.extractUserName(accessToken);
-        Users user = userRepository.findById(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        String email = jwtService.extractUserName(accessToken);
+        Users user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return UserUtil.mapUsersToUserResponse(user);
     }
 
@@ -150,5 +160,32 @@ public class UserService {
     public List<Address> getUserAddresses(String id) {
         Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return user.getAddressList();
+    }
+
+    public UserResponse resetPassword(Password password, String id) {
+        if (!password.getPassword().equals(password.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and Confirm Password do not match"); 
+        }
+        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setPassword(passwordEncoder.encode(password.getPassword()));
+        userRepository.save(user);
+        return UserUtil.mapUsersToUserResponse(user);
+    }
+
+    public AddressResponse addNewAddress(String id, AddressRequest addressRequest) {
+        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Address address = new Address(RandomIdGenerator.generate(250), addressRequest.getLocation(),
+                                     addressRequest.getLongitude(),addressRequest.getLatitude());
+
+        user.addAddress(address);
+        userRepository.save(user);
+        return new AddressResponse(address.getId(),address.getLocation(),address.getLongitude(),
+                                    address.getLatitude(), UserUtil.mapUsersToUserResponse(user));
+    }
+
+    public void deleteAddress(String id) {
+        Address address = addressRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+
+        addressRepository.delete(address);
     }
 }

@@ -104,6 +104,9 @@ public class productService {
                                             .toList();
             }
         }
+        if (location == null) {
+            return Mono.just(products.stream().map(productUtil::mapProductToProductResponseWitoutResParam).toList());
+        }
 
         List<restaurants> res = products.stream().map(r -> r.getRestaurant()).distinct().toList();
         

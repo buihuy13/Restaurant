@@ -43,12 +43,12 @@ public class Users {
     @Column(name = "authprovider")
     private String authProvider;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Address> addressList;
 
     public List<Address> getAddressList() {
-        if (addressList == null) {
-            return new ArrayList<Address>();
+        if (this.addressList == null) {
+            this.addressList = new ArrayList<Address>();
         }
         return addressList;
     }
