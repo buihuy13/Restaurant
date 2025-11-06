@@ -14,7 +14,7 @@ RUN npm install --production
 COPY . .
 
 # Expose port
-EXPOSE 3004
+EXPOSE 8083
 
 # Set NODE_ENV để tối ưu
 ENV NODE_ENV=production

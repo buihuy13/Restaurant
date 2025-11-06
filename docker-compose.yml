@@ -75,10 +75,11 @@ services:
             - EUREKA_HOST_NAME=${EUREKA_HOST_NAME}
             - PORT=${SERVICE_DISCOVERY_PORT}
         healthcheck:
-            test: ['CMD', 'curl', '-f', 'http://localhost:8761/actuator/health']
-            interval: 5s
+            test: ['CMD-SHELL', 'curl -f http://localhost:8761/actuator/health | grep UP || exit 1']
+            interval: 10s
+            timeout: 10s
             retries: 10
-            start_period: 20s
+            start_period: 60s
     zipkin:
         image: openzipkin/zipkin
         ports:
@@ -230,6 +231,8 @@ services:
         build:
             context: ./payment-service
             dockerfile: Dockerfile
+            args:
+                - MODULE_PATH=payment-service
         ports:
             - '8083:8083'
         env_file:

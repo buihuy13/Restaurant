@@ -1,6 +1,6 @@
-import os from 'os';
 import EurekaClient from 'eureka-js-client';
 import logger from '../utils/logger.js';
+import os from 'os';
 import eurekaLogger from '../utils/eurekaLogger.js';
 
 const { Eureka } = EurekaClient;
@@ -19,7 +19,7 @@ const getLocalIp = () => {
 
 const eurekaClient = new Eureka({
     instance: {
-        instanceId: `${getLocalIp()}:${process.env.PAYMENT_SERVICE_URL || 'http://payment-service:8083'}`,
+        instanceId: `${getLocalIp()}:payment-service:${process.env.PAYMENT_PORT || 8082}`,
         app: 'PAYMENT-SERVICE',
         hostName: process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service',
         ipAddr: getLocalIp(),
@@ -56,5 +56,26 @@ const eurekaClient = new Eureka({
     },
     logger: eurekaLogger,
 });
+
+export const startEurekaClient = () => {
+    eurekaClient.start((error) => {
+        if (error) {
+            logger.error('Eureka registration failed:', error);
+        } else {
+            logger.info('Order Service registered with Eureka successfully');
+        }
+    });
+
+    const shutdown = () => {
+        logger.info('Deregistering from Eureka...');
+        eurekaClient.stop(() => {
+            logger.info('Eureka client stopped');
+            process.exit(0);
+        });
+    };
+
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+};
 
 export default eurekaClient;

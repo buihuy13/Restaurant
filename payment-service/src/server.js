@@ -100,7 +100,7 @@ const startServer = async () => {
                 if (error) {
                     logger.error('Eureka registration failed:', error);
                 } else {
-                    logger.info('Order Service successfully registered with Eureka');
+                    logger.info('Payment Service successfully registered with Eureka');
                 }
             });
         });

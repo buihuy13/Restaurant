@@ -3,6 +3,7 @@ import logger from '../utils/logger.js';
 import stripeService from '../services/stripeService.js';
 import rabbitmqConnection from '../config/rabbitmq.js';
 // import { Error } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 
 class PaymentService {
     generatePaymentId() {
@@ -131,7 +132,7 @@ class PaymentService {
             const payment = await Payment.findOne({ where: { paymentId } });
 
             if (!payment) {
-                throw new Error('Payment not foud');
+                throw new Error('Payment not found');
             }
 
             payment.status = 'completed';
@@ -181,7 +182,7 @@ class PaymentService {
                 where.status = filters.status;
             }
 
-            const page = parseInt(filters.status.page) || 1;
+            const page = parseInt(filters.page) || 1;
             const limit = parseInt(filters.limit) || 10;
             const offset = (page - 1) * limit;
 
@@ -191,6 +192,8 @@ class PaymentService {
                 limit,
                 offset,
             });
+
+            return { count, rows };
         } catch (error) {
             logger.error('Get user payments error:', error);
             throw error;
@@ -281,6 +284,16 @@ class PaymentService {
     }
 
     async publishPaymentFailed(payment) {
+        await this.publishEvent('payment.failed', {
+            paymentId: payment.paymentId,
+            orderId: payment.orderId,
+            userId: payment.userId,
+            amount: parseFloat(payment.amount),
+            timestamp: new Date().toISOString(),
+        });
+    }
+
+    async publishPaymentPending(payment) {
         await this.publishEvent('payment.pending', {
             paymentId: payment.paymentId,
             orderId: payment.orderId,
@@ -317,12 +330,12 @@ class PaymentService {
             const paymentData = {
                 orderId: orderData.orderId,
                 userId: orderData.userId,
-                amount: orderData.totalAmout,
+                amount: orderData.totalAmount,
                 paymentMethod: orderData.paymentMethod,
                 currency: 'VND',
             };
 
-            this.createPayment(paymentData);
+            await this.createPayment(paymentData);
         } catch (error) {
             logger.error(`handleOrderCreated failed: ${error.message}`);
         }

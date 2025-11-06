@@ -1,5 +1,6 @@
 import { createPaymentSchema } from '../dtos/createPaymentDto.js';
 import paymentService from '../services/paymentService.js';
+import logger from '../utils/logger.js';
 
 /**
  * @swagger
