@@ -2,16 +2,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package.json và package-lock.json (nếu có)
+# Chỉ copy file package.json (để cache npm install)
 COPY package*.json ./
 
-# Cài dependencies
 RUN npm install
 
-# Copy toàn bộ code
+# Copy phần code còn lại (sau khi cài dependencies)
 COPY . .
 
 EXPOSE 8082
 
-# Chạy ứng dụng bằng script start
 CMD ["npm", "start"]

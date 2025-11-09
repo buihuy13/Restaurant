@@ -19,30 +19,30 @@ const getLocalIp = () => {
 
 const eurekaClient = new Eureka({
     instance: {
-        instanceId: `${getLocalIp()}:order-service:${process.env.ORDER_PORT || 8082}`,
-        app: 'ORDER-SERVICE',
-        hostName: process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service',
+        instanceId: `${getLocalIp()}:payment-service:${process.env.PAYMENT_PORT || 8082}`,
+        app: 'PAYMENT-SERVICE',
+        hostName: process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service',
         ipAddr: getLocalIp(),
         port: {
-            $: parseInt(process.env.ORDER_PORT) || 8082,
+            $: parseInt(process.env.PAYMENT_PORT) || 8083,
             '@enabled': true,
         },
-        vipAddress: 'order-service',
-        statusPageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
-            process.env.ORDER_PORT || 8082
+        vipAddress: 'payment-service',
+        statusPageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service'}:${
+            process.env.PAYMENT_PORT || 8083
         }/health`,
-        healthCheckUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
-            process.env.ORDER_PORT || 8082
+        healthCheckUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service'}:${
+            process.env.PAYMENT_PORT || 8083
         }/health`,
-        homePageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
-            process.env.ORDER_PORT || 8082
+        homePageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service'}:${
+            process.env.PAYMENT_PORT || 8083
         }`,
         dataCenterInfo: {
             '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
             name: 'MyOwn',
         },
         metadata: {
-            'management.port': process.env.ORDER_PORT || 8082,
+            'management.port': process.env.PAYMENT_PORT || 8083,
         },
     },
     eureka: {
