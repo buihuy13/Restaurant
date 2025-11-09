@@ -18,7 +18,8 @@ public class RouterValidator {
         "/v3/api-docs/**",
         "/swagger-ui.html",
         "/swagger-ui/**",
-        "/api-docs/swagger-ui.html"
+        "/api-docs/swagger-ui.html",
+        "/api/users/email"
     );
 
     public Predicate<ServerHttpRequest> isSecured =
