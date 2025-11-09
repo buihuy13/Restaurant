@@ -8,6 +8,10 @@ class RedisConnection {
 
   async connect() {
     try {
+      logger.info(
+        `Connecting to Redis at ${process.env.REDIS_HOST}:${process.env.REDIS_PORT}...`
+      );
+
       this.client = createClient({
         socket: {
           host: process.env.REDIS_HOST,

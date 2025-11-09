@@ -23,6 +23,8 @@ class RabbitMQConnection {
         try {
             const url = `amqp://${process.env.RABBITMQ_USER}:${process.env.RABBITMQ_PASSWORD}@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}`;
 
+            logger.info(`Connecting to RabbitMQ at ${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}...`);
+
             this.connection = await amqp.connect(url);
             this.channel = await this.connection.createChannel();
 

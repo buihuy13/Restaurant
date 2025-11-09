@@ -79,5 +79,20 @@ const options = {
 const swaggerSpec = swaggerJSDoc(options);
 
 export const setupSwagger = (app) => {
-    app.use('/v3/api-docs/order-service', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    // JSON endpoint cho API Gateway fetch
+    app.get('/v3/api-docs/order-service', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(swaggerSpec);
+    });
+
+    // Swagger UI viewer (nếu bạn mở trực tiếp)
+    app.use(
+        '/api-docs',
+        swaggerUi.serve,
+        swaggerUi.setup(swaggerSpec, {
+            explorer: true,
+            customCss: '.swagger-ui .topbar { display: none }',
+            customSiteTitle: 'Order Service API Docs',
+        }),
+    );
 };

@@ -145,3 +145,35 @@ create index idx_receiverid on messages(receiver_id);
 
 -- Hiệu quả khi truy vấn tin nhắn trong một phòng theo thời gian gần nhất
 CREATE INDEX idx_messages_room_timestamp ON messages(room_id, `timestamp` DESC);
+
+
+CREATE DATABASE IF NOT EXISTS `payment-service`;
+
+CREATE TABLE payments (
+  id CHAR(36) NOT NULL PRIMARY KEY, -- UUID dạng string
+  paymentId VARCHAR(100) NOT NULL UNIQUE,
+  orderId VARCHAR(100) NOT NULL,
+  userId VARCHAR(100) NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL CHECK (amount >= 0),
+  currency CHAR(3) DEFAULT 'USD',
+  paymentMethod ENUM('cash', 'card', 'wallet') NOT NULL,
+  paymentGateway VARCHAR(50) DEFAULT 'stripe',
+  transactionId VARCHAR(200),
+  status ENUM('pending', 'processing', 'completed', 'failed', 'refunded') DEFAULT 'pending',
+  failureReason TEXT,
+  refundAmount DECIMAL(10, 2) DEFAULT 0,
+  refundReason TEXT,
+  refundTransactionId VARCHAR(200),
+  metadata JSON,
+  processedAt DATETIME,
+  refundedAt DATETIME,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  -- Indexes
+  INDEX idx_orderId (orderId),
+  INDEX idx_userId (userId),
+  INDEX idx_status (status),
+  INDEX idx_createdAt (createdAt)
+);
+
