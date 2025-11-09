@@ -26,7 +26,6 @@ import com.CNTTK18.user_service.dto.request.UserUpdateAfterLogin;
 import com.CNTTK18.user_service.dto.response.AddressResponse;
 import com.CNTTK18.user_service.dto.response.TokenResponse;
 import com.CNTTK18.user_service.dto.response.UserResponse;
-import com.CNTTK18.user_service.model.Address;
 import com.CNTTK18.user_service.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -185,8 +184,8 @@ public class UserController {
     @Tag(name = "Get")
     @Operation(summary = "Get user addresses")
     @GetMapping("/addresses/{id}")
-    public ResponseEntity<List<Address>> getUserAddresses(@PathVariable String id) {
-        List<Address> addresses = userService.getUserAddresses(id);
+    public ResponseEntity<List<AddressResponse>> getUserAddresses(@PathVariable String id) {
+        List<AddressResponse> addresses = userService.getUserAddresses(id);
         return ResponseEntity.ok(addresses);
     }
 }

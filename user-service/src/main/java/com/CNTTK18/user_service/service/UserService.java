@@ -26,6 +26,7 @@ import com.CNTTK18.user_service.model.Address;
 import com.CNTTK18.user_service.model.Users;
 import com.CNTTK18.user_service.repository.AddressRepository;
 import com.CNTTK18.user_service.repository.UserRepository;
+import com.CNTTK18.user_service.util.AddressUtil;
 import com.CNTTK18.user_service.util.UserUtil;
 
 @Service
@@ -157,9 +158,10 @@ public class UserService {
         return UserUtil.mapUsersToUserResponse(updatedUser);
     }
 
-    public List<Address> getUserAddresses(String id) {
+    public List<AddressResponse> getUserAddresses(String id) {
         Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return user.getAddressList();
+        List<Address> addresses = user.getAddressList();
+        return addresses.stream().map(AddressUtil::mapAddressToAddressResponseWithUserNull).toList();
     }
 
     public UserResponse resetPassword(Password password, String id) {
@@ -179,8 +181,7 @@ public class UserService {
 
         user.addAddress(address);
         userRepository.save(user);
-        return new AddressResponse(address.getId(),address.getLocation(),address.getLongitude(),
-                                    address.getLatitude(), UserUtil.mapUsersToUserResponse(user));
+        return AddressUtil.mapAddressToAddressResponse(address, user);
     }
 
     public void deleteAddress(String id) {
