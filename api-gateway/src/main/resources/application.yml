@@ -81,6 +81,13 @@ spring:
             - Method=POST
           filters:
             - name: JwtAuthentication
+        - id: user-service-email
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/email/**
+            - Method=POST
+          filters:
+            - name: JwtAuthentication
         - id: user-service-docs
           uri: lb://user-service
           predicates:
