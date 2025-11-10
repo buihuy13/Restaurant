@@ -33,7 +33,6 @@ public class Users {
     @Email
     @NotBlank(message = "Email is mandatory")
     private String email;
-    @NotBlank(message = "Password is mandatory")
     private String password;
     private boolean enabled;
     @Column(name = "verificationcode")
