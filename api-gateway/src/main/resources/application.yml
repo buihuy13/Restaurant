@@ -81,6 +81,14 @@ spring:
                       - Method=POST
                   filters:
                       - name: JwtAuthentication
+                - id: oauth2-authorization
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/oauth2/authorization/**
+                - id: oauth2-callback
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/login/oauth2/code/**
                 - id: user-service-docs
                   uri: lb://user-service
                   predicates:
