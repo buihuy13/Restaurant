@@ -276,9 +276,10 @@ class PaymentService {
         await this.publishEvent('payment.completed', {
             paymentId: payment.paymentId,
             orderId: payment.orderId,
-            userId: payment.userId,
+            email: payment.userEmail,
             amount: parseFloat(payment.amount),
             transactionId: payment.transactionId,
+            url: `/api/orders/user/${payment.userId}`,
             timestamp: new Date().toISOString(),
         });
     }
