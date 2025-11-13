@@ -57,8 +57,8 @@ class OrderService {
             pending: ['confirmed', 'cancelled'], // đơn hàng mới vừa tạo, có thể xác nhận hoặc hủy
             confirmed: ['preparing', 'cancelled'], // đơn hàng đã xác nhận
             preparing: ['ready', 'cancelled'], // đơn giàng đang chuẩn bị
-            ready: ['cancelled'], // sẵn sàng giao
-            delivered: [],
+            ready: ['completed', 'cancelled'], // sẵn sàng giao
+            completed: [],
             cancelled: [],
         };
 
@@ -256,7 +256,6 @@ class OrderService {
         }
     }
 
-    // TODO
     async updatePaymentStatus(orderId, paymentStatus, paymentData = {}) {
         try {
             const order = await Order.findOne({ orderId });
@@ -275,6 +274,13 @@ class OrderService {
             }
 
             await order.save();
+
+            // Update cache
+            await cacheService.setOrder(orderId, order.toObject());
+            await cacheService.invalidateUserOrders(order.userId);
+
+            logger.info(`Payment status updated: ${orderId} -> ${paymentStatus}`);
+            return order;
         } catch (error) {
             logger.error('Update payment status error:', error);
             throw error;
