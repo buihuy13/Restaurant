@@ -41,6 +41,7 @@ public class Users {
     private String phone;
     @Column(name = "authprovider")
     private String authProvider;
+    private String slug;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Address> addressList;

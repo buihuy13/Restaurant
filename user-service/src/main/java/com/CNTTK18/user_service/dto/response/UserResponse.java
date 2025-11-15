@@ -16,4 +16,5 @@ public class UserResponse {
     private boolean enabled;
     private String role;
     private String phone;
+    private String slug;
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
+import com.CNTTK18.Common.Util.SlugGenerator;
 import com.CNTTK18.user_service.data.Role;
 import com.CNTTK18.user_service.dto.request.AddressRequest;
 import com.CNTTK18.user_service.dto.request.Login;
@@ -64,7 +65,12 @@ public class UserService {
         existingUser.setPhone(user.getPhone());
         userRepository.save(existingUser);
         return new UserResponse(existingUser.getId(),user.getUsername(),existingUser.getEmail(), 
-                                existingUser.isEnabled(), existingUser.getRole(), user.getPhone());
+                                existingUser.isEnabled(), existingUser.getRole(), user.getPhone(), existingUser.getSlug());
+    }
+
+    public UserResponse getUserBySlug(String slug) {
+        return userRepository.findBySlug(slug).map(UserUtil::mapUsersToUserResponse)
+                                          .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     public void deleteUserById(String id) {
@@ -83,6 +89,7 @@ public class UserService {
         newUser.setEnabled(false);
         newUser.setVerficationCode(java.util.UUID.randomUUID().toString());
         newUser.setRole(user.getRole());
+        newUser.setSlug(SlugGenerator.generate(user.getUsername()));
         userRepository.save(newUser);
         mailService.sendConfirmationEmail(newUser.getEmail(),newUser.getVerficationCode());
     }

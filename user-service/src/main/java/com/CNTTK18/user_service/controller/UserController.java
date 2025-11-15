@@ -90,9 +90,16 @@ public class UserController {
 
     @Tag(name = "Get")
     @Operation(summary = "Get user by ID")
-    @GetMapping("/{id}")
+    @GetMapping("/admin/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable String id) {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get user by slug")
+    @GetMapping("/{slug}")
+    public ResponseEntity<UserResponse> getUserBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok(userService.getUserBySlug(slug));
     }
 
     @Tag(name = "Put")
