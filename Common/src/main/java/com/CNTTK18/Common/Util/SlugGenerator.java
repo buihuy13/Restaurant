@@ -33,6 +33,10 @@ public class SlugGenerator {
         
         // 6. (Tùy chọn) Loại bỏ gạch nối ở đầu hoặc cuối
         slug = EDGES_HYPHENS.matcher(slug).replaceAll("");
+
+        if (!slug.isEmpty()) {
+            slug = slug + "-" + RandomIdGenerator.generate(5);
+        }
         
         return slug;
     }
