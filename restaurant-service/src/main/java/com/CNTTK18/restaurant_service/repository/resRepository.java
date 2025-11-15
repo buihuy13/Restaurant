@@ -17,4 +17,6 @@ public interface resRepository extends JpaRepository<restaurants, String> {
     Optional<restaurants> findRestaurantById(String id);
 
     Optional<List<restaurants>>  findRestaurantsByMerchantId(String id);
+
+    Optional<restaurants> findBySlug(String slug);
 }

@@ -51,6 +51,7 @@ public class restaurants {
 
     @Column(name = "total_review")
     private int totalReview;
+    private String slug;
 
     @ManyToMany
     @JoinTable(

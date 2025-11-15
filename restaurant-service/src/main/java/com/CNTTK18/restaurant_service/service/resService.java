@@ -17,6 +17,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
+import com.CNTTK18.Common.Util.SlugGenerator;
 import com.CNTTK18.restaurant_service.data.reviewType;
 import com.CNTTK18.restaurant_service.dto.api.UserResponse;
 import com.CNTTK18.restaurant_service.dto.distance.response.Summary;
@@ -136,6 +137,11 @@ public class resService {
         return Mono.just(resUtil.mapResToResResponseWithProduct(res));
     }
 
+    public resResponseWithProduct getRestaurantBySlug(String slug) {
+        restaurants res = resRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        return resUtil.mapResToResResponseWithProduct(res);
+    }
+
     @Transactional
     public Mono<restaurants> createRestaurant(resRequest resRequest, MultipartFile imageFile) {
         return webClientBuilder.build()
@@ -165,6 +171,7 @@ public class resService {
                                                             .rating(0)
                                                             .longitude(resRequest.getLongitude())
                                                             .latitude(resRequest.getLatitude())
+                                                            .slug(SlugGenerator.generate(resRequest.getResName()))
                                                             .build();
 
                                         if (imageFile != null && !imageFile.isEmpty()) {
@@ -183,10 +190,13 @@ public class resService {
         res.setAddress(updateRes.getAddress());
         res.setOpeningTime(updateRes.getOpeningTime());
         res.setClosingTime(updateRes.getClosingTime());
-        res.setResName(updateRes.getResName());
         res.setPhone(updateRes.getPhone());
         res.setLongitude(updateRes.getLongitude());
         res.setLatitude(updateRes.getLatitude());
+        if (!res.getResName().equals(updateRes.getResName())) {
+            res.setResName(updateRes.getResName());
+            res.setSlug(updateRes.getResName());
+        }
         if (imageFile != null && !imageFile.isEmpty()) {
             String oldPublicId = res.getPublicID();
             Map<String, String> image = imageService.saveImageFile(imageFile);
