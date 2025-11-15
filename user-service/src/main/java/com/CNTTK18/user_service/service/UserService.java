@@ -61,7 +61,10 @@ public class UserService {
 
     public UserResponse updateUser(String id, UserRequest user) {
         Users existingUser = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        existingUser.setUsername(user.getUsername());
+        if (!existingUser.getUsername().equals(user.getUsername())) {
+            existingUser.setUsername(user.getUsername());
+            existingUser.setSlug(SlugGenerator.generate(user.getUsername()));
+        }
         existingUser.setPhone(user.getPhone());
         userRepository.save(existingUser);
         return new UserResponse(existingUser.getId(),user.getUsername(),existingUser.getEmail(), 
