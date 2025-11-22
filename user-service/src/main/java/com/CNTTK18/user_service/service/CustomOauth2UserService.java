@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import com.CNTTK18.Common.Util.RandomIdGenerator;
+import com.CNTTK18.Common.Util.SlugGenerator;
 import com.CNTTK18.user_service.data.Provider;
 import com.CNTTK18.user_service.data.Role;
 import com.CNTTK18.user_service.model.Users;
@@ -39,6 +40,7 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
                     .role(Role.USER.toString())
                     .enabled(true)
                     .authProvider(Provider.GOOGLE.toString())
+                    .slug(SlugGenerator.generate(name))
                     .build();
             userRepository.save(user);
         }
