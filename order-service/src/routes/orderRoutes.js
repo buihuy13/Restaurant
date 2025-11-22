@@ -64,6 +64,24 @@ router.get('/:orderId', orderController.getOrderById);
 
 /**
  * @swagger
+ * /api/orders/{slug}:
+ *   get:
+ *     summary: Lấy chi tiết đơn hàng theo slug
+ *     tags: [Orders]
+ *     parameters:
+ *       - name: slug
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Chi tiết đơn hàng
+ */
+router.get('/:slug', orderController.getOrderBySlug);
+
+/**
+ * @swagger
  * /api/orders/user/{userId}:
  *   get:
  *     summary: Lấy tất cả đơn hàng của user
@@ -100,12 +118,12 @@ router.get('/restaurant/:restaurantId', orderController.getRestaurantOrders);
 
 /**
  * @swagger
- * /api/orders/{orderId}/status:
+ * /api/orders/{slug}/status:
  *   patch:
  *     summary: Cập nhật trạng thái đơn hàng
  *     tags: [Orders]
  *     parameters:
- *       - name: orderId
+ *       - name: slug
  *         in: path
  *         required: true
  *         schema:
@@ -120,34 +138,40 @@ router.get('/restaurant/:restaurantId', orderController.getRestaurantOrders);
  *       200:
  *         description: Cập nhật thành công
  */
-router.patch('/:orderId/status', validateRequest(updateOrderStatusSchema), orderController.updateOrderStatus);
+router.patch('/:slug/status', validateRequest(updateOrderStatusSchema), orderController.updateOrderStatus);
 
 /**
  * @swagger
- * /api/orders/{orderId}/cancel:
+ * /api/orders/{slug}/cancel:
  *   patch:
  *     summary: Hủy đơn hàng
  *     tags: [Orders]
  *     parameters:
- *       - name: orderId
+ *       - name: slug
  *         in: path
  *         required: true
  *         schema:
  *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CancelOrderRequest'
  *     responses:
  *       200:
  *         description: Hủy đơn hàng thành công
  */
-router.patch('/:orderId/cancel', orderController.cancelOrder);
+router.patch('/:slug/cancel', orderController.cancelOrder);
 
 /**
  * @swagger
- * /api/orders/{orderId}/rating:
+ * /api/orders/{slug}/rating:
  *   post:
  *     summary: Thêm đánh giá cho đơn hàng
  *     tags: [Orders]
  *     parameters:
- *       - name: orderId
+ *       - name: slug
  *         in: path
  *         required: true
  *         schema:
@@ -162,6 +186,6 @@ router.patch('/:orderId/cancel', orderController.cancelOrder);
  *       201:
  *         description: Thêm đánh giá thành công
  */
-router.post('/:orderId/rating', validateRequest(addRatingSchema), orderController.addRating);
+router.post('/:slug/rating', validateRequest(addRatingSchema), orderController.addRating);
 
 export default router;

@@ -136,7 +136,7 @@ class OrderService {
             await order.save();
 
             // Cache the order
-            await cacheService.setOrder(order.orderId, order.toObject());
+            await cacheService.setOrder(order.slug, order.toObject());
 
             // Publish order created event
             await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.created', {
@@ -174,6 +174,24 @@ class OrderService {
             return order;
         } catch (error) {
             logger.error('Get order error:', error);
+            throw error;
+        }
+    }
+
+    async getOrderBySlug(slug) {
+        try {
+            // Try cache first
+            let order = await cacheService.getOrder(slug);
+
+            if (!order) {
+                order = await Order.findOne({ slug });
+                if (order) {
+                    await cacheService.setOrder(slug, order.toObject());
+                }
+            }
+            return order;
+        } catch (error) {
+            logger.error('Get order by slug error:', error);
             throw error;
         }
     }
@@ -217,9 +235,9 @@ class OrderService {
         }
     }
 
-    async updateOrderStatus(orderId, statusData) {
+    async updateOrderStatus(slug, statusData) {
         try {
-            const order = await Order.findOne({ orderId });
+            const order = await Order.findOne({ slug });
 
             if (!order) {
                 throw new Error('Order not found');
@@ -227,6 +245,7 @@ class OrderService {
 
             this.validateStatusTransition(order.status, statusData.status);
 
+            const prevStatus = order.status;
             order.status = statusData.status;
 
             if (statusData.status === 'cancelled') {
@@ -240,14 +259,15 @@ class OrderService {
             await order.save();
 
             // Update cache
-            await cacheService.setOrder(orderId, order.toObject());
+            await cacheService.setOrder(order.slug, order.toObject());
             await cacheService.invalidateUserOrders(order.userId);
 
             // publishMessage
             await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.status.updated', {
                 orderId: order.orderId,
+                slug: order.slug,
                 userId: order.userId,
-                previousStatus: order.status,
+                previousStatus: prevStatus,
                 newStatus: statusData.status,
                 timestamp: new Date().toISOString(),
             });
@@ -259,9 +279,9 @@ class OrderService {
         }
     }
 
-    async updatePaymentStatus(orderId, paymentStatus, paymentData = {}) {
+    async updatePaymentStatus(slug, paymentStatus, paymentData = {}) {
         try {
-            const order = await Order.findOne({ orderId });
+            const order = await Order.findOne({ slug });
 
             if (!order) {
                 throw new Error('Order not found');
@@ -279,10 +299,10 @@ class OrderService {
             await order.save();
 
             // Update cache
-            await cacheService.setOrder(orderId, order.toObject());
+            await cacheService.setOrder(order.slug, order.toObject());
             await cacheService.invalidateUserOrders(order.userId);
 
-            logger.info(`Payment status updated: ${orderId} -> ${paymentStatus}`);
+            logger.info(`Payment status updated: ${slug} -> ${paymentStatus}`);
             return order;
         } catch (error) {
             logger.error('Update payment status error:', error);
@@ -290,9 +310,9 @@ class OrderService {
         }
     }
 
-    async cancelOrder(orderId, userId, reason) {
+    async cancelOrder(slug, userId, reason) {
         try {
-            const order = await Order.findOne({ orderId, userId });
+            const order = await Order.findOne({ slug, userId });
 
             if (!order) {
                 throw new Error('Order not found');
@@ -308,7 +328,7 @@ class OrderService {
             await order.save();
 
             // updated cache
-            await cacheService.deleteOrder(orderId);
+            await cacheService.deleteOrder(order.slug);
             await cacheService.invalidateUserOrders(userId);
 
             // Publish cancellation event
@@ -343,7 +363,7 @@ class OrderService {
             order.review = review;
             await order.save();
 
-            await cacheService.setOrder(orderId, order.toObject());
+            await cacheService.setOrder(order.slug, order.toObject());
 
             return order;
         } catch (error) {
