@@ -11,9 +11,12 @@ class OrderService {
 
     async validateRestaurant(restaurantId) {
         try {
-            const response = await axios.get(`${process.env.RESTAURANT_SERVICE_URL}/api/restaurant/${restaurantId}`, {
-                timeout: 5000,
-            });
+            const response = await axios.get(
+                `${process.env.RESTAURANT_SERVICE_URL}/api/restaurant/admin/${restaurantId}`,
+                {
+                    timeout: 5000,
+                },
+            );
 
             return response.data;
         } catch (error) {
@@ -24,7 +27,7 @@ class OrderService {
 
     async validateUser(userId, token) {
         try {
-            const response = await axios.get(`${process.env.USER_SERVICE_URL}/api/users/${userId}`, {
+            const response = await axios.get(`${process.env.USER_SERVICE_URL}/api/users/admin/${userId}`, {
                 headers: { Authorization: `Bearer ${token}` },
                 timeout: 5000,
             });
