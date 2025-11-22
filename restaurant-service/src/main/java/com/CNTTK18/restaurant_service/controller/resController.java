@@ -93,7 +93,7 @@ public class resController {
     @Tag(name = "Put")
     @Operation(summary = "Update restaurant")
     @PutMapping("/{id}")
-    public ResponseEntity<restaurants> updateRestaurant(@PathVariable String id, 
+    public ResponseEntity<resResponseWithProduct> updateRestaurant(@PathVariable String id, 
                     @RequestPart(value = "restaurant", required = true) @Valid updateRes updateRes,
                     @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         return ResponseEntity.ok(resService.updateRestaurant(id, updateRes, imageFile));

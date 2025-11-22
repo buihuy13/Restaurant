@@ -184,7 +184,7 @@ public class resService {
     }
 
     @Transactional
-    public restaurants updateRestaurant(String id, updateRes updateRes, MultipartFile imageFile) {
+    public resResponseWithProduct updateRestaurant(String id, updateRes updateRes, MultipartFile imageFile) {
         restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
         res.setAddress(updateRes.getAddress());
@@ -206,7 +206,8 @@ public class resService {
                 imageService.deleteImage(oldPublicId);
             }
         }
-        return resRepository.save(res);
+        resRepository.save(res);
+        return resUtil.mapResToResResponseWithProduct(res);
     }
 
     @Transactional
