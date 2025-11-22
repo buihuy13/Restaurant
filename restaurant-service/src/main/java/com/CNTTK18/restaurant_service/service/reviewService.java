@@ -55,7 +55,7 @@ public class reviewService {
     public reviews createReview(reviewRequest reviewRequest) {
         UserResponse user = webClientBuilder.build()
                                 .get()
-                                .uri("lb://user-service/api/users/{id}", reviewRequest.getUserId())
+                                .uri("lb://user-service/api/users/admin/{id}", reviewRequest.getUserId())
                                 .retrieve()
                                 .bodyToMono(UserResponse.class)
                                 .block();

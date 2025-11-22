@@ -146,7 +146,7 @@ public class resService {
     public Mono<restaurants> createRestaurant(resRequest resRequest, MultipartFile imageFile) {
         return webClientBuilder.build()
                             .get()
-                            .uri("lb://user-service/api/users/{id}", resRequest.getMerchantId())
+                            .uri("lb://user-service/api/users/admin/{id}", resRequest.getMerchantId())
                             .retrieve()
                             .bodyToMono(UserResponse.class)
                             .flatMap(user -> {
@@ -243,7 +243,7 @@ public class resService {
     public List<resResponseWithProduct> getRestaurantsByMerchantId(String id) {
         UserResponse user = webClientBuilder.build()
                                 .get()
-                                .uri("lb://user-service/api/users/{id}", id)
+                                .uri("lb://user-service/api/users/admin/{id}", id)
                                 .retrieve()
                                 .bodyToMono(UserResponse.class)
                                 .block();
