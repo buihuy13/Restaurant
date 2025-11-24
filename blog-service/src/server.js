@@ -1,34 +1,66 @@
 import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
-import helmet from 'helmet';
-import cors from 'cors';
-import logger from './utils/logger.js';
+import swaggerUi from 'swagger-ui-express';
+import connectDB from './config/database.js';
+import blogRoutes from './routes/blogRoutes.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 import { startEurekaClient } from './config/eureka.js';
+import { swaggerSpec } from './config/swagger.js';
+import logger from './utils/logger.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8087;
 
+// Rate limiting
 const limiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // mỗi 15p, limit sẽ được reset
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // số lượng request tối đa được phép gửi từ 1 IP
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
     message: 'Too many requests from this IP, please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
 });
 
+// Middlewares
 app.use(helmet());
-app.use(cors());
-app.use(express.json({ limit: '10mb' })); // parse dữ liệu JSON từ body của request -> chuyển thành object của JS
-app.use(express.urlencoded({ extended: true, limit: '10mb' })); // xử lý dữ liệu gửi từ form
+app.use(
+    cors({
+        origin: ['http://localhost:8080', 'http://api-gateway:8080'],
+        credentials: true,
+    }),
+);
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api/', limiter);
 
 // Request logging
 app.use((req, res, next) => {
     logger.info(`${req.method} ${req.url}`);
     next();
+});
+
+// Swagger Documentation
+app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+        explorer: true,
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Blog Service API Docs',
+        swaggerOptions: {
+            persistAuthorization: true,
+        },
+    }),
+);
+
+// Swagger JSON endpoint
+app.get('/api-docs.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
 });
 
 // Health check
@@ -65,6 +97,10 @@ app.get('/', (req, res) => {
     });
 });
 
+// Routes
+app.use('/api/blogs', blogRoutes);
+
+// 404 handler
 app.use((req, res) => {
     res.status(404).json({
         success: false,
@@ -72,10 +108,18 @@ app.use((req, res) => {
     });
 });
 
+// Error handler
+app.use(errorHandler);
+
+// Initialize and start server
 const startServer = async () => {
     try {
         logger.info('Starting Blog Service...');
 
+        // Connect to MongoDB
+        await connectDB();
+
+        // Start server
         app.listen(PORT, () => {
             logger.info(`Blog Service running on port ${PORT}`);
             logger.info(`Environment: ${process.env.NODE_ENV}`);
@@ -83,9 +127,9 @@ const startServer = async () => {
 
             // Register with Eureka
             setTimeout(() => {
-                logger.info('🔗 Registering with Eureka...');
+                logger.info('Registering with Eureka...');
                 startEurekaClient();
-            }, 3000);
+            }, 5000);
         });
     } catch (error) {
         logger.error('Failed to start server:', error);
@@ -99,15 +143,15 @@ const gracefulShutdown = async () => {
 
     try {
         logger.info('All connections closed');
-        process.exit(0); // 0 -> success
+        process.exit(0);
     } catch (error) {
         logger.error('Error during shutdown:', error);
-        process.exit(1); // 1 -> error
+        process.exit(1);
     }
 };
 
-process.on('SIGTERM', gracefulShutdown); // do docker
-process.on('SIGINT', gracefulShutdown); // tắt do Ctrl + C
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
 
 process.on('unhandledRejection', (reason, promise) => {
     logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
