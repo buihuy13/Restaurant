@@ -11,7 +11,7 @@ const options = {
         },
         servers: [
             {
-                url: process.env.ORDER_SERVICE_URL,
+                url: process.env.ORDER_SERVICE_URL || 'http://localhost:3000', // fallback local
             },
         ],
         components: {
@@ -48,8 +48,19 @@ const options = {
                         deliveryFee: { type: 'number' },
                         paymentMethod: { type: 'string', enum: ['cash', 'card', 'wallet'] },
                         orderNote: { type: 'string', nullable: true },
+                        userLat: { type: 'number', description: 'Latitude of the user', example: 10.762622 },
+                        userLon: { type: 'number', description: 'Longitude of the user', example: 106.660172 },
                     },
-                    required: ['userId', 'restaurantId', 'restaurantName', 'items', 'deliveryAddress', 'paymentMethod'],
+                    required: [
+                        'userId',
+                        'restaurantId',
+                        'restaurantName',
+                        'items',
+                        'deliveryAddress',
+                        'paymentMethod',
+                        'userLat',
+                        'userLon',
+                    ],
                 },
                 UpdateOrderStatusRequest: {
                     type: 'object',
@@ -70,22 +81,45 @@ const options = {
                     },
                     required: ['rating'],
                 },
+                OrderResponse: {
+                    // thêm schema response có slug
+                    type: 'object',
+                    properties: {
+                        orderId: { type: 'string' },
+                        slug: { type: 'string' },
+                        userId: { type: 'string' },
+                        restaurant: {
+                            type: 'object',
+                            properties: { id: { type: 'string' }, name: { type: 'string' } },
+                        },
+                        items: { type: 'array', items: { $ref: '#/components/schemas/OrderItem' } },
+                        totalAmount: { type: 'number' },
+                        discount: { type: 'number' },
+                        deliveryFee: { type: 'number' },
+                        tax: { type: 'number' },
+                        finalAmount: { type: 'number' },
+                        paymentMethod: { type: 'string' },
+                        status: { type: 'string' },
+                        paymentStatus: { type: 'string' },
+                        estimatedDeliveryTime: { type: 'string' },
+                        actualDeliveryTime: { type: 'string', nullable: true },
+                        orderNote: { type: 'string' },
+                        rating: { type: 'number', nullable: true },
+                        review: { type: 'string', nullable: true },
+                        createdAt: { type: 'string' },
+                        updatedAt: { type: 'string' },
+                    },
+                },
             },
         },
     },
-    apis: ['./src/routes/*.js'], // đường dẫn đến file routes có comment Swagger
+    apis: ['./src/routes/*.js'], // đường dẫn file routes có comment Swagger
 };
 
 const swaggerSpec = swaggerJSDoc(options);
 
 export const setupSwagger = (app) => {
-    // JSON endpoint cho API Gateway fetch
-    app.get('/v3/api-docs/order-service', (req, res) => {
-        res.setHeader('Content-Type', 'application/json');
-        res.send(swaggerSpec);
-    });
-
-    // Swagger UI viewer (nếu bạn mở trực tiếp)
+    // Swagger UI
     app.use(
         '/api-docs',
         swaggerUi.serve,
