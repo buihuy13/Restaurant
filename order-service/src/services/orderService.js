@@ -9,11 +9,12 @@ class OrderService {
         return `ORD${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
     }
 
-    async validateRestaurant(restaurantId) {
+    async validateRestaurant(restaurantId, userLat, userLon) {
         try {
             const response = await axios.get(
                 `${process.env.RESTAURANT_SERVICE_URL}/api/restaurant/admin/${restaurantId}`,
                 {
+                    params: userLat && userLon ? { lat: userLat, lon: userLon } : {},
                     timeout: 5000,
                 },
             );
@@ -107,7 +108,11 @@ class OrderService {
     async createOrder(orderData, token) {
         try {
             // Validate restaurant
-            const restaurant = await this.validateRestaurant(orderData.restaurantId);
+            const restaurant = await this.validateRestaurant(
+                orderData.restaurantId,
+                orderData.userLat,
+                orderData.userLon,
+            );
 
             // Validate user
             await this.validateUser(orderData.userId, token);
@@ -118,6 +123,8 @@ class OrderService {
                 restaurant.deliveryFee || 0,
                 orderData.discount || 0,
             );
+
+            const estimatedTime = restaurant.duration || 45;
 
             // Create Order
             const order = new Order({
@@ -130,7 +137,7 @@ class OrderService {
                 ...amounts,
                 paymentMethod: orderData.paymentMethod,
                 orderNote: orderData.orderNote,
-                estimatedDeliveryTime: new Date(Date.now() + 45 * 60000), // 45 minutes
+                estimatedDeliveryTime: new Date(Date.now() + estimatedTime * 60000), // 45 minutes
             });
 
             await order.save();
