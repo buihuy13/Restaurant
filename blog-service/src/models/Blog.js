@@ -35,10 +35,7 @@ const blogSchema = new mongoose.Chema(
             },
             avatar: String,
         },
-        featuredImage: {
-            url: String,
-            alt: String,
-        },
+        featuredImage: String,
         category: {
             type: String,
             ennum: ['recipe', 'review', 'tips', 'news', 'health', 'other'],
@@ -65,20 +62,13 @@ const blogSchema = new mongoose.Chema(
             type: Number,
             default: 0,
         },
-        likes: [
-            {
-                userId: String,
-                likedAt: {
-                    type: Date,
-                    default: Date.now,
-                },
-            },
-        ],
+        likes: [{ type: String }], // Array of user IDs who liked the post
         commentsCount: {
             type: Number,
             default: 0,
         },
         publishedAt: Date,
+        comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
         seo: {
             metaTitle: String,
             metaDescription: String,
@@ -115,5 +105,15 @@ blogSchema.index({ title: 'text', content: 'text', tags: 'text' });
 blogSchema.index({ status: 1, publishedAt: -1 });
 blogSchema.index({ 'author.userId': 1, status: 1 });
 blogSchema.index({ category: 1, status: 1 });
+
+// Virtuals
+BlogSchema.virtual('likesCount').get(function () {
+    return this.likes.length;
+});
+BlogSchema.virtual('commentsCount').get(function () {
+    return this.comments.length;
+});
+
+BlogSchema.set('toJSON', { virtuals: true });
 
 export default mongoose.model('Blog', blogSchema);

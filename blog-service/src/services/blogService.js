@@ -21,58 +21,31 @@ class BlogService {
 
     async getBlogs(filters = {}) {
         try {
-            const query = {};
-
-            if (filters.status) {
-                query.status = filters.status;
-            } else {
-                query.status = 'published';
-            }
-
-            if (filters.category) {
-                query.category = filters.category;
-            }
-
-            if (filters.authorId) {
-                query['author.userId'] = filters.authorId;
-            }
-
-            if (filters.tag) {
-                query.tags = filters.tag;
-            }
-
-            if (filters.search) {
-                query.$text = { $search: filters.search };
-            }
+            const query = { status: filters.status || 'published' };
+            if (filters.category) query.category = filters.category;
+            if (filters.authorId) query['author.userId'] = filters.authorId;
+            if (filters.tag) query.tags = filters.tag;
+            if (filters.search) query.$text = { $search: filters.search };
 
             const page = parseInt(filters.page) || 1;
             const limit = parseInt(filters.limit) || 10;
             const skip = (page - 1) * limit;
 
             let sort = { createdAt: -1 };
-            if (filters.sortBy === 'views') {
-                sort = { views: -1 };
-            } else if (filters.sortBy === 'likes') {
-                sort = { 'likes.length': -1 };
-            } else if (filters.sortBy === 'oldest') {
-                sort = { createdAt: 1 };
-            }
+            if (filters.sortBy === 'views') sort = { views: -1 };
+            else if (filters.sortBy === 'likes') sort = { likes: -1 };
 
-            const blogs = await Blog.find(query).sort(sort).skip(skip).limit(limit).select('-likes').lean();
+            const blogs = await Blog.find(query).sort(sort).skip(skip).limit(limit).select('-content').lean();
 
             const total = await Blog.countDocuments(query);
 
             return {
-                blogs: blogs.map((blog) => ({
-                    ...blog,
-                    likesCount: blog.likes?.length || 0,
+                blogs: blogs.map((b) => ({
+                    ...b,
+                    likesCount: b.likes?.length || 0,
+                    commentsCount: b.comments?.length || 0,
                 })),
-                pagination: {
-                    page,
-                    limit,
-                    total,
-                    pages: Math.ceil(total / limit),
-                },
+                pagination: { page, limit, total, pages: Math.ceil(total / limit) },
             };
         } catch (error) {
             logger.error('Get blogs error:', error);
@@ -113,9 +86,41 @@ class BlogService {
             return {
                 ...blogObj,
                 likesCount: blogObj.likes?.length || 0,
+                commentsCount: blogObj.comments?.length || 0,
             };
         } catch (error) {
             logger.error('Get blog by slug error:', error);
+            throw error;
+        }
+    }
+
+    async toggleLikeBlog(blogId, userId) {
+        try {
+            // Tìm blog theo Id
+            const blog = await Blog.findById(blogId);
+
+            if (!blog) {
+                throw new Error('Blog not found');
+            }
+
+            // Kiểm tra nếu userId đã có trong mảng likes thì bỏ ra, nếu chưa có thì thêm vào
+            const index = blog.likes.indexOf(userId);
+            if (index === -1) {
+                // Nếu chưa like (index = -1) → thêm userId vào mảng likes
+                blog.likes.push(userId);
+            } else {
+                // Nếu đã like (index >= 0) → xóa userId khỏi mảng likes
+                blog.likes.splice(index, 1);
+            }
+            await blog.save();
+
+            logger.info(`Blog like toggled: ${blogId} by user ${userId}`);
+            return {
+                likesCount: blog.likes.length,
+                liked: index === -1, // true nếu vừa like, false nếu vừa un-like
+            };
+        } catch (error) {
+            logger.error('Toggle like blog error:', error);
             throw error;
         }
     }
