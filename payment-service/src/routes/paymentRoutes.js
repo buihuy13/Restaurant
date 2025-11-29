@@ -18,4 +18,10 @@ router.get('/user/:userId', paymentController.getUserPayments);
 // Refund payment
 router.post('/:paymentId/refund', paymentController.refundPayment);
 
+router.post(
+    '/webhook/stripe',
+    express.raw({ type: 'application/json' }), // QUAN TRỌNG: nhận raw body
+    paymentController.handleWebhook, // controller xử lý webhook
+);
+
 export default router;
