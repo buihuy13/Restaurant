@@ -1,5 +1,6 @@
 import { createPaymentSchema } from '../dtos/createPaymentDto.js';
 import paymentService from '../services/paymentService.js';
+import stripeService from '../services/stripeService.js';
 import logger from '../utils/logger.js';
 
 /**
@@ -9,6 +10,52 @@ import logger from '../utils/logger.js';
  *   description: Payment management API
  */
 class PaymentController {
+    /**
+     * @swagger
+     * /api/payments/webhook:
+     *   post:
+     *     summary: Stripe Webhook - Không cần auth
+     *     tags: [Payments]
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *     responses:
+     *       200:
+     *         description: Webhook received
+     */
+    async handleWebhook(req, res) {
+        const sig = req.headers['stripe-signature'];
+        const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+        // Kiểm tra cấu hình webhook secret
+        if (!webhookSecret) {
+            logger.error('STRIPE_WEBHOOK_SECRET is not set');
+            return res.status(500).send('Server configuration error');
+        }
+
+        let event;
+        // Xác thực webhook từ Stripe
+        try {
+            event = stripeService.stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+            logger.info(`Webhook received: ${event.type}`);
+        } catch (err) {
+            logger.error(`Webhook signature verification failed: ${err.message}`);
+            return res.status(400).send(`Webhook Error: ${err.message}`);
+        }
+
+        // Trả 200 NGAY LẬP TỨC để Stripe không retry
+        res.status(200).json({ received: true });
+
+        // Xử lý bất đồng bộ - không block response
+        try {
+            await paymentService.handleStripeWebhook(event);
+        } catch (err) {
+            logger.error(`Error in handleStripeWebhook: ${err.message}`);
+            // Không trả lỗi về Stripe vì đã 200 rồi
+        }
+    }
+
     /**
      * @swagger
      * /api/payments:
