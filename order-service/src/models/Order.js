@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import slugify from 'slugify';
 const orderItemSchema = new mongoose.Schema({
     productId: {
         type: String,

@@ -11,18 +11,165 @@ class OrderService {
 
     async validateRestaurant(restaurantId, userLat, userLon) {
         try {
-            const response = await axios.get(
-                `${process.env.RESTAURANT_SERVICE_URL}/api/restaurant/admin/${restaurantId}`,
-                {
-                    params: userLat && userLon ? { lat: userLat, lon: userLon } : {},
-                    timeout: 5000,
-                },
-            );
+            if (!restaurantId) {
+                throw new Error('restaurantId is required');
+            }
 
-            return response.data;
+            logger.info(`Validating restaurant: ${restaurantId}`);
+            logger.info(`RESTAURANT_SERVICE_URL: ${process.env.RESTAURANT_SERVICE_URL}`);
+
+            const url = `${process.env.RESTAURANT_SERVICE_URL}/api/restaurant/admin/${restaurantId}`;
+            logger.info(`Request URL: ${url}`);
+
+            // Build params object
+            const params = {};
+            if (userLat && userLon) {
+                params.lat = userLat;
+                params.lon = userLon;
+                logger.info(`Location params: lat=${userLat}, lon=${userLon}`);
+            }
+
+            const response = await axios.get(url, {
+                params,
+                timeout: 5000,
+                validateStatus: (status) => status < 500,
+            });
+
+            logger.info(`Restaurant API response status: ${response.status}`);
+            logger.debug(`Restaurant raw data:`, JSON.stringify(response.data));
+
+            // Check response status
+            if (response.status === 404) {
+                throw new Error(`Restaurant not found: ${restaurantId} (404)`);
+            }
+
+            if (response.status === 403) {
+                throw new Error(`Access forbidden for restaurant: ${restaurantId} (403)`);
+            }
+
+            if (response.status >= 500) {
+                throw new Error(`Restaurant Service error: ${response.status}`);
+            }
+
+            const restaurantData = response.data.data || response.data;
+
+            //Check data field exists
+            if (!restaurantData) {
+                throw new Error('Restaurant data is missing in response');
+            }
+
+            // NORMALIZE restaurant data to standard format
+            const restaurant = this.normalizeRestaurantData(restaurantData);
+
+            // Validate required normalized fields
+            if (!restaurant.id) {
+                throw new Error('Restaurant ID missing');
+            }
+
+            if (!restaurant.name) {
+                throw new Error('Restaurant name missing');
+            }
+
+            // Check if restaurant is enabled
+            // if (restaurant.enabled === false) {
+            //     logger.warn(`Restaurant is disabled: ${restaurant.name}`);
+            //     throw new Error(`Restaurant is currently unavailable: ${restaurant.name}`);
+            // }
+
+            // Check opening time (optional)
+            if (restaurant.openingTime && restaurant.closingTime) {
+                const isOpen = this.checkRestaurantOpen(restaurant.openingTime, restaurant.closingTime);
+                if (!isOpen) {
+                    logger.warn(`Restaurant is closed. Hours: ${restaurant.openingTime} - ${restaurant.closingTime}`);
+                    throw new Error(`Restaurant is currently closed: ${restaurant.name}`);
+                }
+            }
+
+            logger.info(`Restaurant validated: ${restaurant.name} (${restaurant.id})`);
+            logger.debug(`Normalized restaurant:`, JSON.stringify(restaurant));
+
+            return restaurant;
         } catch (error) {
-            logger.error('Restaurant validation error:', error);
-            throw new Error('Restaurant not found or unavailable');
+            logger.error(`Restaurant validation error: ${error.message}`);
+            logger.error(`Error code: ${error.code}`);
+            logger.error(`Error response status: ${error.response?.status}`);
+            logger.error(`Error response data:`, error.response?.data);
+
+            if (error.code === 'ECONNREFUSED') {
+                throw new Error(
+                    `Cannot connect to Restaurant Service at ${process.env.RESTAURANT_SERVICE_URL}. Make sure the service is running.`,
+                );
+            }
+
+            if (error.code === 'ENOTFOUND') {
+                throw new Error(
+                    `Restaurant Service host not found: ${process.env.RESTAURANT_SERVICE_URL}. Check RESTAURANT_SERVICE_URL in .env`,
+                );
+            }
+
+            if (error.code === 'ETIMEDOUT') {
+                throw new Error(
+                    `Restaurant Service timeout. URL: ${process.env.RESTAURANT_SERVICE_URL}. Check if service is responding.`,
+                );
+            }
+
+            throw new Error(`Restaurant validation failed: ${error.message}`);
+        }
+    }
+
+    // NORMALIZE restaurant data từ API response
+    normalizeRestaurantData(rawData) {
+        // Map field names từ API response sang standard format
+        return {
+            // ID & Basic Info
+            id: rawData.id || rawData.restaurantId,
+            name: rawData.resName || rawData.name || rawData.restaurantName,
+            slug: rawData.slug,
+            description: rawData.description || '',
+
+            // Contact & Location
+            phone: rawData.phone,
+            address: rawData.address,
+            latitude: rawData.latitude,
+            longitude: rawData.longitude,
+
+            // Business Info
+            merchantId: rawData.merchantId,
+            enabled: rawData.enabled !== undefined ? rawData.enabled : true,
+            openingTime: rawData.openingTime,
+            closingTime: rawData.closingTime,
+
+            // Media
+            image: rawData.imageURL || rawData.image || rawData.image,
+            imageURL: rawData.imageURL || rawData.image,
+
+            // Ratings & Reviews
+            rating: parseFloat(rawData.rating) || 0,
+            totalReview: rawData.totalReview || 0,
+
+            // Delivery Info
+            deliveryFee: parseFloat(rawData.deliveryFee) || 0,
+            duration: parseInt(rawData.duration) || 45,
+            distance: parseFloat(rawData.distance) || 0,
+
+            // Products & Categories
+            products: rawData.products || [],
+            categories: rawData.cate || rawData.categories || [],
+        };
+    }
+
+    //Check if restaurant is open
+    checkRestaurantOpen(openingTime, closingTime) {
+        try {
+            const now = new Date();
+            const currentTime =
+                String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+            // Compare time strings (HH:mm format)
+            return currentTime >= openingTime && currentTime <= closingTime;
+        } catch (error) {
+            logger.warn(`Error checking restaurant hours: ${error.message}`);
+            return true; // Allow if can't check
         }
     }
 
@@ -107,15 +254,49 @@ class OrderService {
 
     async createOrder(orderData, token) {
         try {
-            // Validate restaurant
-            const restaurant = await this.validateRestaurant(
-                orderData.restaurantId,
-                orderData.userLat,
-                orderData.userLon,
-            );
+            logger.info('Creating order with data:', {
+                restaurantId: orderData.restaurantId,
+                userId: orderData.userId,
+                items: orderData.items?.length,
+            });
+
+            // Validate input
+            if (!orderData.restaurantId) {
+                throw new Error('restaurantId is required');
+            }
+            if (!orderData.userId) {
+                throw new Error('userId is required');
+            }
+            if (!orderData.items || orderData.items.length === 0) {
+                throw new Error('items cannot be empty');
+            }
+            if (!orderData.deliveryAddress) {
+                throw new Error('deliveryAddress is required');
+            }
+
+            // Validate restaurant (normalized)
+            let restaurant;
+            try {
+                restaurant = await this.validateRestaurant(
+                    orderData.restaurantId,
+                    orderData.userLat,
+                    orderData.userLon,
+                );
+                logger.info(`Restaurant validated: ${restaurant.name}`);
+            } catch (restaurantError) {
+                logger.error(`Restaurant validation failed: ${restaurantError.message}`);
+                throw restaurantError;
+            }
 
             // Validate user
-            await this.validateUser(orderData.userId, token);
+            let user;
+            try {
+                user = await this.validateUser(orderData.userId, token);
+                logger.info(`User validated: ${user.email || user.id}`);
+            } catch (userError) {
+                logger.error(`User validation failed: ${userError.message}`);
+                throw userError;
+            }
 
             // Calculate amounts
             const amounts = this.calculateOrderAmounts(
@@ -126,40 +307,59 @@ class OrderService {
 
             const estimatedTime = restaurant.duration || 45;
 
+            logger.info('Order amounts calculated:', amounts);
+
             // Create Order
             const order = new Order({
                 orderId: this.generateOrderId(),
                 userId: orderData.userId,
-                restaurantId: orderData.restaurantId,
-                restaurantName: orderData.restaurantName,
+                restaurantId: restaurant.id,
+                restaurantName: restaurant.name,
+                restaurantSlug: restaurant.slug,
+                restaurantImage: restaurant.imageURL,
                 items: orderData.items,
                 deliveryAddress: orderData.deliveryAddress,
                 ...amounts,
                 paymentMethod: orderData.paymentMethod,
-                orderNote: orderData.orderNote,
-                estimatedDeliveryTime: new Date(Date.now() + estimatedTime * 60000), // 45 minutes
+                orderNote: orderData.orderNote || '',
+                estimatedDeliveryTime: new Date(Date.now() + estimatedTime * 60000),
+                status: 'pending',
+                paymentStatus: 'pending',
             });
 
             await order.save();
+            logger.info(`Order saved to database: ${order.orderId}`);
 
             // Cache the order
-            await cacheService.setOrder(order.slug, order.toObject());
+            try {
+                await cacheService.setOrder(order.orderId, order.toObject());
+                logger.info(`Order cached: ${order.orderId}`);
+            } catch (cacheError) {
+                logger.warn(`Cache error (non-critical): ${cacheError.message}`);
+            }
 
             // Publish order created event
-            await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.created', {
-                orderId: order.orderId,
-                userId: order.userId,
-                restaurantId: order.restaurantId,
-                restaurantName: orderData.restaurantName,
-                totalAmount: order.finalAmount,
-                paymentMethod: order.paymentMethod,
-                timestamp: new Date().toISOString(),
-            });
+            try {
+                await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.created', {
+                    orderId: order.orderId,
+                    userId: order.userId,
+                    restaurantId: restaurant.id,
+                    restaurantName: restaurant.name,
+                    totalAmount: order.finalAmount,
+                    paymentMethod: order.paymentMethod,
+                    items: orderData.items,
+                    deliveryAddress: orderData.deliveryAddress,
+                    timestamp: new Date().toISOString(),
+                });
+                logger.info(`Order event published: ${order.orderId}`);
+            } catch (rabbitError) {
+                logger.error(`RabbitMQ publish error: ${rabbitError.message}`);
+                // Order already created, so don't throw
+            }
 
-            logger.info(`Order created successfully: ${order.orderId}`);
             return order;
         } catch (error) {
-            logger.error('Create order error:', error);
+            logger.error('Create order error:', error.message);
             throw error;
         }
     }
