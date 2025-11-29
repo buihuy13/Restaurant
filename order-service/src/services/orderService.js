@@ -6,7 +6,7 @@ import cacheService from './cacheService.js';
 
 class OrderService {
     generateOrderId() {
-        return `ORD${Date.now()}${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        return `ORD${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     }
 
     async validateRestaurant(restaurantId, userLat, userLon) {
@@ -478,7 +478,7 @@ class OrderService {
                 newStatus: statusData.status,
                 timestamp: new Date().toISOString(),
             });
-            logger.info(`Order status updated: ${orderId} -> ${statusData.status}`);
+            logger.info(`Order status updated: ${order.orderId} -> ${statusData.status}`);
             return order;
         } catch (error) {
             logger.error('Update order status error:', error);
