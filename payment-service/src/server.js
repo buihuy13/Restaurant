@@ -2,24 +2,26 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
-import { connectDB } from './config/database.js';
-import logger from './utils/logger.js';
 import helmet from 'helmet';
 import cors from 'cors';
+import { connectDB } from './config/database.js';
+import logger from './utils/logger.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import rabbitmqConnection from './config/rabbitmq.js';
+import eurekaClient from './config/eureka.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import { startOrderConsumer } from './consumers/orderConsumer.js';
-import eurekaClient from './config/eureka.js';
-import { swaggerSpec } from './config/swagger.js';
-import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec, setupSwagger } from './config/swagger.js';
 
 const app = express();
 const PORT = process.env.PAYMENT_PORT || 8083;
 
 // Middlewares
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
+
+// CORS
 app.use(
     cors({
         origin: ['http://localhost:8080', 'http://api-gateway:8080'],
@@ -27,8 +29,6 @@ app.use(
         allowedHeaders: ['Content-Type', 'Authorization'],
     }),
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -40,21 +40,8 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Swagger Documentation
-app.use(
-    '/api-docs',
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerSpec, {
-        explorer: true,
-        customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: 'Payment Service API Docs',
-    }),
-);
-
-// Swagger JSON endpoint
-app.get('/v3/api-docs/payment-service', (req, res) => {
-    res.json(swaggerSpec);
-});
+// Swagger setup
+setupSwagger(app);
 
 // API Info
 app.get('/', (req, res) => {
@@ -85,6 +72,7 @@ app.use((req, res) => {
 // Error handler
 app.use(errorHandler);
 
+// Start server
 const startServer = async () => {
     try {
         logger.info('Starting Payment Service...');
@@ -97,11 +85,8 @@ const startServer = async () => {
             logger.info(`Swagger Docs: http://localhost:${PORT}/api-docs`);
 
             eurekaClient.start((error) => {
-                if (error) {
-                    logger.error('Eureka registration failed:', error);
-                } else {
-                    logger.info('Payment Service successfully registered with Eureka');
-                }
+                if (error) logger.error('Eureka registration failed:', error);
+                else logger.info('Payment Service successfully registered with Eureka');
             });
         });
     } catch (error) {

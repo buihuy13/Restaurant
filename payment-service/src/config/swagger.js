@@ -1,6 +1,5 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import express from 'express';
 
 const options = {
     swaggerDefinition: {
@@ -14,7 +13,7 @@ const options = {
                 email: 'support@foodeats.com',
             },
         },
-        host: 'process.env.PAYMENT_SERVICE_URL',
+        host: process.env.PAYMENT_SERVICE_URL || 'localhost:8083',
         basePath: '/api',
         schemes: ['http', 'https'],
         consumes: ['application/json'],
@@ -57,30 +56,23 @@ const options = {
     apis: ['./src/routes/*.js', './src/controllers/*.js'], // nơi khai báo các JSDoc comment
 };
 
-const swaggerSpec = swaggerJsdoc(options);
+export const swaggerSpec = swaggerJsdoc(options);
 
 export const setupSwagger = (app) => {
+    // Swagger UI
     app.use(
         '/api-docs',
         swaggerUi.serve,
         swaggerUi.setup(swaggerSpec, {
             explorer: true,
-            swaggerOptions: {
-                persistAuthorization: true,
-                displayOperationId: false,
-            },
             customSiteTitle: 'Payment Service API Docs',
+            customCss: '.swagger-ui .topbar { display: none }',
         }),
     );
 
     // Optional: endpoint JSON cho Swagger 2.0
     app.get('/v3/api-docs/payment-service', (req, res) => {
         res.setHeader('Content-Type', 'application/json');
-        res.send(swaggerSpec);
-    });
-
-    // Health check
-    app.get('/swagger-health', (req, res) => {
-        res.json({ status: 'ok', swaggerVersion: '2.0', url: '/api-docs' });
+        res.json(swaggerSpec);
     });
 };
