@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.user_service.dto.request.AddressRequest;
 import com.CNTTK18.user_service.dto.request.Login;
+import com.CNTTK18.user_service.dto.request.ManagerRequest;
 import com.CNTTK18.user_service.dto.request.Password;
 import com.CNTTK18.user_service.dto.request.Register;
 import com.CNTTK18.user_service.dto.request.Rejection;
@@ -56,6 +57,14 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<MessageResponse> register(@RequestBody @Valid Register user) {
         userService.register(user);
+        return ResponseEntity.ok(new MessageResponse("User created successfully"));
+    }
+
+    @Tag(name = "Post")
+    @Operation(summary = "Create manager")
+    @PostMapping("/manager")
+    public ResponseEntity<MessageResponse> createManager(@RequestBody @Valid ManagerRequest user) {
+        userService.createManagerUser(user);
         return ResponseEntity.ok(new MessageResponse("User created successfully"));
     }
 

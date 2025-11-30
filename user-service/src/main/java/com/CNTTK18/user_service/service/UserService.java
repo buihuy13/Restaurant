@@ -14,6 +14,7 @@ import com.CNTTK18.Common.Util.SlugGenerator;
 import com.CNTTK18.user_service.data.Role;
 import com.CNTTK18.user_service.dto.request.AddressRequest;
 import com.CNTTK18.user_service.dto.request.Login;
+import com.CNTTK18.user_service.dto.request.ManagerRequest;
 import com.CNTTK18.user_service.dto.request.Password;
 import com.CNTTK18.user_service.dto.request.Register;
 import com.CNTTK18.user_service.dto.request.Rejection;
@@ -198,5 +199,21 @@ public class UserService {
         Address address = addressRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
         addressRepository.delete(address);
+    }
+
+    public void createManagerUser(ManagerRequest user) {
+        if (!user.getPassword().equals(user.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and Confirm Password do not match");
+        }
+        Users newUser = new Users();
+        newUser.setId(RandomIdGenerator.generate(99));
+        newUser.setUsername(user.getUsername());
+        newUser.setEmail(user.getEmail());
+        newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        newUser.setEnabled(true);
+        newUser.setVerficationCode(java.util.UUID.randomUUID().toString());
+        newUser.setRole(Role.MANAGER.toString());
+        newUser.setSlug(SlugGenerator.generate(user.getUsername()));
+        userRepository.save(newUser);
     }
 }
