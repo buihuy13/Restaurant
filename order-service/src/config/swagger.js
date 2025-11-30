@@ -96,7 +96,7 @@ const options = {
                 ],
             },
 
-            // ✅ Update Order Status Request
+            // Update Order Status Request
             UpdateOrderStatusRequest: {
                 type: 'object',
                 properties: {
@@ -109,7 +109,7 @@ const options = {
                 required: ['status'],
             },
 
-            // ✅ Cancel Order Request
+            // Cancel Order Request
             CancelOrderRequest: {
                 type: 'object',
                 properties: {
@@ -119,7 +119,7 @@ const options = {
                 required: ['userId'],
             },
 
-            // ✅ Add Rating Request
+            // Add Rating Request
             AddRatingRequest: {
                 type: 'object',
                 properties: {
@@ -134,7 +134,7 @@ const options = {
                 required: ['userId', 'rating'],
             },
 
-            // ✅ Restaurant
+            // Restaurant
             Restaurant: {
                 type: 'object',
                 properties: {
@@ -146,7 +146,7 @@ const options = {
                 },
             },
 
-            // ✅ Order Response
+            // Order Response
             OrderResponse: {
                 type: 'object',
                 properties: {
@@ -188,7 +188,54 @@ const options = {
                 },
             },
 
-            // ✅ API Response
+            CartItem: {
+                type: 'object',
+                properties: {
+                    productId: { type: 'string' },
+                    productName: { type: 'string' },
+                    price: { type: 'number' },
+                    quantity: { type: 'integer' },
+                    customizations: { type: 'string' },
+                    subtotal: { type: 'number' },
+                },
+                required: ['productId', 'productName', 'price', 'quantity'],
+            },
+
+            RestaurantCart: {
+                type: 'object',
+                properties: {
+                    restaurantId: { type: 'string' },
+                    restaurantName: { type: 'string' },
+                    restaurantSlug: { type: 'string' },
+                    restaurantImage: { type: 'string' },
+                    items: {
+                        type: 'array',
+                        items: { $ref: '#/definitions/CartItem' },
+                    },
+                    subtotal: { type: 'number' },
+                    tax: { type: 'number' },
+                    deliveryFee: { type: 'number' },
+                    discount: { type: 'number' },
+                    totalAmount: { type: 'number' },
+                    notes: { type: 'string' },
+                    deliveryAddress: { type: 'string' },
+                },
+            },
+
+            CartResponse: {
+                type: 'object',
+                properties: {
+                    userId: { type: 'string' },
+                    restaurants: {
+                        type: 'array',
+                        items: { $ref: '#/definitions/RestaurantCart' },
+                    },
+                    createdAt: { type: 'string' },
+                    updatedAt: { type: 'string' },
+                },
+            },
+
+            // API Response
             ApiResponse: {
                 type: 'object',
                 properties: {
@@ -209,7 +256,7 @@ const options = {
                 },
             },
 
-            // ✅ Error Response
+            // Error Response
             ErrorResponse: {
                 type: 'object',
                 properties: {

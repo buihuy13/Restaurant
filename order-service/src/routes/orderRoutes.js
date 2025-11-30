@@ -435,4 +435,93 @@ router.patch('/:orderId/cancel', orderController.cancelOrder);
  */
 router.post('/:orderId/rating', validateRequest(addRatingSchema), orderController.addRating);
 
+/**
+ * @swagger
+ * /api/orders/checkout/cart:
+ *   post:
+ *     summary: Batch checkout - Create orders from multi-restaurant cart
+ *     description: Convert entire cart (multiple restaurants) into multiple orders
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - Bearer: []
+ *     parameters:
+ *       - name: checkout
+ *         in: body
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             userId:
+ *               type: string
+ *               example: "USER123"
+ *             paymentMethod:
+ *               type: string
+ *               enum: ['cash', 'card', 'wallet']
+ *               example: "card"
+ *           required:
+ *             - userId
+ *             - paymentMethod
+ *     responses:
+ *       201:
+ *         description: Orders created from cart
+ *         schema:
+ *           type: object
+ *           properties:
+ *             status:
+ *               type: string
+ *               example: success
+ *             ordersCreated:
+ *               type: integer
+ *               example: 2
+ *             orders:
+ *               type: array
+ *               items:
+ *                 $ref: '#/definitions/OrderResponse'
+ *             failedRestaurants:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   restaurantId:
+ *                     type: string
+ *                   restaurantName:
+ *                     type: string
+ *                   error:
+ *                     type: string
+ *       400:
+ *         description: Cart empty or invalid payment method
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/checkout/cart', async (req, res) => {
+    try {
+        const { userId, paymentMethod } = req.body;
+        const token = req.headers.authorization?.split(' ')[1];
+
+        if (!userId || !paymentMethod) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'userId and paymentMethod are required',
+            });
+        }
+
+        logger.info(`Batch checkout request for user: ${userId}`);
+
+        const result = await orderController.createOrdersFromCart(userId, token, paymentMethod);
+
+        res.status(201).json({
+            status: 'success',
+            message: result.message,
+            data: result,
+        });
+    } catch (error) {
+        logger.error('Batch checkout error:', error.message);
+        res.status(400).json({
+            status: 'error',
+            message: error.message,
+        });
+    }
+});
+
 export default router;
