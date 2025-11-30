@@ -157,6 +157,15 @@ spring:
                   predicates:
                       - Path=/api/restaurant/**
                       - Method=GET
+                - id: restaurant-service-res-manager
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/restaurant/manager/**
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
                 - id: restaurant-service-res-enable
                   uri: lb://restaurant-service
                   predicates:
