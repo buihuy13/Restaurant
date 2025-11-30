@@ -81,6 +81,15 @@ spring:
                       - Method=POST
                   filters:
                       - name: JwtAuthentication
+                - id: user-service-manager
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/manager/**
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
                 - id: oauth2-authorization
                   uri: lb://user-service
                   predicates:
@@ -307,6 +316,54 @@ spring:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER
+
+                # Cart Service
+                - id: cart-service-get
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/**
+                      - Method=GET
+
+                - id: cart-service-add
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-service-update
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/**
+                      - Method=PUT,PATCH,DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-service-checkout
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/checkout
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-service-merge
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/merge
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
                 # Swagger Docs
                 - id: order-service-docs
                   uri: lb://order-service
