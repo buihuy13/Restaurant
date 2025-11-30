@@ -478,6 +478,6 @@ springdoc:
             - name: Restaurant Service
               url: /v3/api-docs/restaurant-service
             - name: Payment Service
-              url: http://payment-service:8083/v3/api-docs/payment-service
+              url: /v3/api-docs/payment-service
             - name: Order Service
               url: /v3/api-docs/order-service
