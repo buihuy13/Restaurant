@@ -39,7 +39,6 @@ const options = {
                 },
                 required: ['productId', 'productName', 'quantity', 'price'],
             },
-
             // Address
             Address: {
                 type: 'object',
@@ -51,7 +50,6 @@ const options = {
                 },
                 required: ['street', 'city', 'state', 'zipCode'],
             },
-
             // Create Order Request
             CreateOrderRequest: {
                 type: 'object',
@@ -95,7 +93,6 @@ const options = {
                     'userLon',
                 ],
             },
-
             // Update Order Status Request
             UpdateOrderStatusRequest: {
                 type: 'object',
@@ -108,7 +105,6 @@ const options = {
                 },
                 required: ['status'],
             },
-
             // Cancel Order Request
             CancelOrderRequest: {
                 type: 'object',
@@ -118,7 +114,6 @@ const options = {
                 },
                 required: ['userId'],
             },
-
             // Add Rating Request
             AddRatingRequest: {
                 type: 'object',
@@ -133,7 +128,6 @@ const options = {
                 },
                 required: ['userId', 'rating'],
             },
-
             // Restaurant
             Restaurant: {
                 type: 'object',
@@ -145,7 +139,6 @@ const options = {
                     rating: { type: 'number' },
                 },
             },
-
             // Order Response
             OrderResponse: {
                 type: 'object',
@@ -187,7 +180,6 @@ const options = {
                     updatedAt: { type: 'string', format: 'date-time' },
                 },
             },
-
             CartItem: {
                 type: 'object',
                 properties: {
@@ -200,7 +192,6 @@ const options = {
                 },
                 required: ['productId', 'productName', 'price', 'quantity'],
             },
-
             RestaurantCart: {
                 type: 'object',
                 properties: {
@@ -221,7 +212,6 @@ const options = {
                     deliveryAddress: { type: 'string' },
                 },
             },
-
             CartResponse: {
                 type: 'object',
                 properties: {
@@ -234,7 +224,6 @@ const options = {
                     updatedAt: { type: 'string' },
                 },
             },
-
             // API Response
             ApiResponse: {
                 type: 'object',
@@ -255,7 +244,6 @@ const options = {
                     },
                 },
             },
-
             // Error Response
             ErrorResponse: {
                 type: 'object',
@@ -268,8 +256,101 @@ const options = {
                     },
                 },
             },
+            Cart: {
+                type: 'object',
+                properties: {
+                    _id: {
+                        type: 'string',
+                        example: '507f1f77bcf86cd799439011',
+                    },
+                    userId: {
+                        type: 'string',
+                        example: 'USER123',
+                    },
+                    restaurants: {
+                        type: 'array',
+                        items: { $ref: '#/definitions/RestaurantCart' },
+                    },
+                    createdAt: {
+                        type: 'string',
+                        format: 'date-time',
+                    },
+                    updatedAt: {
+                        type: 'string',
+                        format: 'date-time',
+                    },
+                },
+            },
+            CartSummary: {
+                type: 'object',
+                properties: {
+                    totalRestaurants: {
+                        type: 'integer',
+                        example: 1,
+                    },
+                    totalItems: {
+                        type: 'integer',
+                        example: 4,
+                    },
+                    grandTotal: {
+                        type: 'number',
+                        example: 152000,
+                    },
+                    restaurants: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                restaurantId: { type: 'string' },
+                                restaurantName: { type: 'string' },
+                                itemCount: { type: 'integer' },
+                                totalAmount: { type: 'number' },
+                            },
+                        },
+                    },
+                },
+            },
+            CartEstimate: {
+                type: 'object',
+                properties: {
+                    subtotal: {
+                        type: 'number',
+                        example: 120000,
+                    },
+                    tax: {
+                        type: 'number',
+                        example: 12000,
+                    },
+                    deliveryFee: {
+                        type: 'number',
+                        example: 20000,
+                    },
+                    discount: {
+                        type: 'number',
+                        example: 0,
+                    },
+                    grandTotal: {
+                        type: 'number',
+                        example: 152000,
+                    },
+                    breakdown: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                restaurantId: { type: 'string' },
+                                restaurantName: { type: 'string' },
+                                subtotal: { type: 'number' },
+                                tax: { type: 'number' },
+                                deliveryFee: { type: 'number' },
+                                discount: { type: 'number' },
+                                total: { type: 'number' },
+                            },
+                        },
+                    },
+                },
+            },
         },
-        components: { schemas: {} },
     },
     apis: ['./src/routes/*.js'],
 };
