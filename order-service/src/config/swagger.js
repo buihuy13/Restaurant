@@ -3,7 +3,7 @@ import swaggerUi from 'swagger-ui-express';
 
 const options = {
     definition: {
-        openapi: '3.0.0',
+        openapi: '2.0',
         info: {
             title: 'Order Service API',
             version: '1.0.0',
@@ -11,7 +11,7 @@ const options = {
         },
         servers: [
             {
-                url: process.env.ORDER_SERVICE_URL || 'http://localhost:3000', // fallback local
+                url: process.env.ORDER_SERVICE_URL || 'http://localhost:8082', // fallback local
             },
         ],
         components: {
@@ -119,14 +119,31 @@ const options = {
 const swaggerSpec = swaggerJSDoc(options);
 
 export const setupSwagger = (app) => {
-    // Swagger UI
+    // Swagger UI at /api-docs
     app.use(
         '/api-docs',
         swaggerUi.serve,
         swaggerUi.setup(swaggerSpec, {
             explorer: true,
-            customCss: '.swagger-ui .topbar { display: none }',
-            customSiteTitle: 'Order Service API Docs',
+            swaggerOptions: {
+                persistAuthorization: true,
+                displayOperationId: false,
+            },
+            customCss: `
+                .swagger-ui .topbar { 
+                    display: none; 
+                }
+                .swagger-ui {
+                    font-family: "Segoe UI", Roboto, sans-serif;
+                }
+            `,
+            customSiteTitle: 'Order Service API Documentation',
         }),
     );
+
+    // Swagger JSON endpoint
+    app.get('/v3/api-docs/order-service', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(swaggerSpec);
+    });
 };
