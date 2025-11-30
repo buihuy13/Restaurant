@@ -153,18 +153,18 @@ class CartService {
             await cart.save();
             await cacheService.setCart(userId, cart.toObject());
 
-            logger.info(`✅ Item quantity updated to ${quantity}`);
+            logger.info(`Item quantity updated to ${quantity}`);
             return cart;
         } catch (error) {
-            logger.error(`❌ Update item quantity error: ${error.message}`);
+            logger.error(`Update item quantity error: ${error.message}`);
             throw error;
         }
     }
 
-    // ✅ Remove item from cart
+    // Remove item from cart
     async removeItemFromCart(userId, restaurantId, productId) {
         try {
-            logger.info(`🗑️ Removing item: ${userId} - ${restaurantId} - ${productId}`);
+            logger.info(`Removing item: ${userId} - ${restaurantId} - ${productId}`);
 
             const cart = await Cart.findOne({ userId });
 
@@ -210,7 +210,7 @@ class CartService {
         }
     }
 
-    // ✅ Remove restaurant from cart
+    // Remove restaurant from cart
     async removeRestaurantFromCart(userId, restaurantId) {
         try {
             logger.info(`🏪 Removing restaurant: ${userId} - ${restaurantId}`);
@@ -247,7 +247,7 @@ class CartService {
         }
     }
 
-    // ✅ Clear entire cart
+    // Clear entire cart
     async clearCart(userId) {
         try {
             logger.info(`🧹 Clearing cart for user: ${userId}`);
@@ -268,7 +268,7 @@ class CartService {
         }
     }
 
-    // ✅ Update cart details for specific restaurant
+    // Update cart details for specific restaurant
     async updateCartDetails(userId, restaurantId, details) {
         try {
             logger.info(`✏️ Updating cart details: ${userId} - ${restaurantId}`);

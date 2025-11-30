@@ -2,7 +2,7 @@ import cartService from '../services/cartService.js';
 import logger from '../utils/logger.js';
 
 class CartController {
-    // ✅ GET /api/cart/{userId} - Get user's cart
+    // GET /api/cart/{userId} - Get user's cart
     async getCart(req, res) {
         try {
             const { userId } = req.params;
@@ -212,7 +212,7 @@ class CartController {
         }
     }
 
-    // ✅ PUT /api/cart/{userId}/restaurant/{restaurantId} - Update cart details
+    // PUT /api/cart/{userId}/restaurant/{restaurantId} - Update cart details
     async updateCartDetails(req, res) {
         try {
             const { userId, restaurantId } = req.params;
