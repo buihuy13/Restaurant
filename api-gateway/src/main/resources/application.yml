@@ -372,7 +372,7 @@ spring:
                 - id: chat-service-api
                   uri: lb://chat-service
                   predicates:
-                      - Path=/roomId/**, /rooms/**
+                      - Path=/api/chat/roomId/**, /api/chat/rooms/**
                   filters:
                       - name: JwtAuthentication
                 - id: chat-service-websocket
