@@ -1,6 +1,5 @@
 import express from 'express';
 import cartController from '../controllers/cartController.js';
-import { authenticate } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -926,7 +925,7 @@ router.get('/:userId/restaurant/:restaurantId', cartController.getRestaurantCart
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/:userId/merge', authenticate, cartController.mergeCart);
+router.post('/:userId/merge', cartController.mergeCart);
 
 // ============ BULK UPDATE ITEMS ============
 
