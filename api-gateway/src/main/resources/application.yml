@@ -165,7 +165,7 @@ spring:
                   filters:
                       - name: JwtAuthentication
                         args:
-                            requiredRole: MERCHANT
+                            requiredRole: ADMIN,MERCHANT
                 - id: restaurant-service-res-ADMIN
                   uri: lb://restaurant-service
                   predicates:
