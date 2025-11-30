@@ -18,6 +18,9 @@ public class RabbitMQConfig {
     private static final String DLX_QUEUE = "dead_letter_queue";
     private static final String DLX_KEY = "dead_letter_routingKey";
 
+    private static final String PAYMENT_EXCHANGE = "payment_exchange";
+    private static final String PAYMENT_COMPLETED_QUEUE = "payment.completed";
+
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
@@ -37,6 +40,15 @@ public class RabbitMQConfig {
                 .withArgument("x-dead-letter-routing-key", DLX_KEY)
                 .build();
     }
+
+    @Bean
+    Queue paymentCompletedQueue() {
+        return QueueBuilder.durable(PAYMENT_COMPLETED_QUEUE)
+                .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", DLX_KEY)
+                .build();
+    }
+
     @Bean
     TopicExchange confirmationExchange() {
         return new TopicExchange("Confirmation_exchange");
@@ -46,6 +58,20 @@ public class RabbitMQConfig {
     TopicExchange merchantExchange() {
         return new TopicExchange("Merchant_exchange");
     }
+
+    @Bean
+    TopicExchange paymentExchange() {
+        return new TopicExchange(PAYMENT_EXCHANGE);
+    }
+
+    @Bean
+    Binding paymentCompletedBinding() {
+        return BindingBuilder
+                .bind(paymentCompletedQueue())
+                .to(paymentExchange())
+                .with("payment.completed");
+    }
+    
     @Bean
     Binding confirmationBinding() {
         return BindingBuilder

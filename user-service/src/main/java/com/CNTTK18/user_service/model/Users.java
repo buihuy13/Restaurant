@@ -33,7 +33,6 @@ public class Users {
     @Email
     @NotBlank(message = "Email is mandatory")
     private String email;
-    @NotBlank(message = "Password is mandatory")
     private String password;
     private boolean enabled;
     @Column(name = "verificationcode")
@@ -42,6 +41,7 @@ public class Users {
     private String phone;
     @Column(name = "authprovider")
     private String authProvider;
+    private String slug;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Address> addressList;

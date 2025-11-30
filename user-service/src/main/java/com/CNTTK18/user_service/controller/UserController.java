@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.user_service.dto.request.AddressRequest;
 import com.CNTTK18.user_service.dto.request.Login;
+import com.CNTTK18.user_service.dto.request.ManagerRequest;
 import com.CNTTK18.user_service.dto.request.Password;
 import com.CNTTK18.user_service.dto.request.Register;
 import com.CNTTK18.user_service.dto.request.Rejection;
@@ -59,6 +60,14 @@ public class UserController {
         return ResponseEntity.ok(new MessageResponse("User created successfully"));
     }
 
+    @Tag(name = "Post")
+    @Operation(summary = "Create manager")
+    @PostMapping("/manager")
+    public ResponseEntity<String> createManager(@RequestBody @Valid ManagerRequest user) {
+        String id = userService.createManagerUser(user);
+        return ResponseEntity.ok(id);
+    }
+
     @Tag(name = "Get")
     @Operation(summary = "Get all users")
     @GetMapping("")
@@ -90,9 +99,16 @@ public class UserController {
 
     @Tag(name = "Get")
     @Operation(summary = "Get user by ID")
-    @GetMapping("/{id}")
+    @GetMapping("/admin/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable String id) {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get user by slug")
+    @GetMapping("/{slug}")
+    public ResponseEntity<UserResponse> getUserBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok(userService.getUserBySlug(slug));
     }
 
     @Tag(name = "Put")
@@ -101,6 +117,14 @@ public class UserController {
     public ResponseEntity<UserResponse> updateUser(@PathVariable String id, @RequestBody @Valid UserRequest updateUserDTO) {
         UserResponse updatedUser = userService.updateUser(id, updateUserDTO);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @Tag(name = "Put")
+    @Operation(summary = "Update role from user to merchant")
+    @PutMapping("/merchant/{id}")
+    public ResponseEntity<MessageResponse> updateUserToMerchant(@PathVariable String id) {
+        userService.upgradeUserToMerchant(id);
+        return ResponseEntity.ok(new MessageResponse("Update successfully"));
     }
 
     @Tag(name = "Delete")
