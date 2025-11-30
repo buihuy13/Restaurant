@@ -437,12 +437,12 @@ spring:
                   args:
                       requiredRole: ADMIN
 
-                - id: payment-service-docs
+                - id: payment-service-swagger
                   uri: lb://payment-service
                   predicates:
-                      - Path=/payment-service/v3/api-docs/payment-service/**
+                      - Path=/v3/api-docs/payment-service/**
                   filters:
-                      - RewritePath=/v3/api-docs/payment-service/(?<segment>.*), /v3/api-docs/payment-service/${segment}
+                      - RewritePath=/v3/api-docs/payment-service/?(?<segment>.*), /v3/api-docs/payment-service/${segment}
 
                 - id: chat-service-api
                   uri: lb://chat-service
