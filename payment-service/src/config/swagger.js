@@ -74,7 +74,7 @@ export const setupSwagger = (app) => {
     );
 
     // Optional: endpoint JSON cho Swagger 2.0
-    app.get('/v2/api-docs/payment-service', (req, res) => {
+    app.get('/v3/api-docs/payment-service', (req, res) => {
         res.setHeader('Content-Type', 'application/json');
         res.send(swaggerSpec);
     });
