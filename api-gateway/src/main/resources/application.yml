@@ -48,7 +48,14 @@ spring:
                   uri: lb://user-service
                   predicates:
                       - Path=/api/users/**
-                      - Method=GET, PUT
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                - id: user-service-put-password
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/password/*
+                      - Method=PUT
                   filters:
                       - name: JwtAuthentication
                 - id: user-service-put
@@ -69,7 +76,7 @@ spring:
                   uri: lb://user-service
                   predicates:
                       - Path=/api/users/**
-                      - Method=POST, DELETE
+                      - Method=POST, DELETE, PUT
                   filters:
                       - name: JwtAuthentication
                         args:
