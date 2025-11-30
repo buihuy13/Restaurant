@@ -416,6 +416,17 @@ spring:
                       - Path=/payment-service/v3/api-docs/payment-service/**
                   filters:
                       - RewritePath=/v3/api-docs/payment-service/(?<segment>.*), /v3/api-docs/payment-service/${segment}
+                
+                - id: chat-service-api
+                  uri: lb://chat-service
+                  predicates:
+                      - Path=/api/chat/roomId/**, /api/chat/rooms/**
+                  filters:
+                      - name: JwtAuthentication
+                - id: chat-service-websocket
+                  uri: lb://chat-service
+                  predicates:
+                      - Path=/ws/**
 
 eureka:
     instance:
