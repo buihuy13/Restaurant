@@ -201,7 +201,7 @@ public class UserService {
         addressRepository.delete(address);
     }
 
-    public void createManagerUser(ManagerRequest user) {
+    public String createManagerUser(ManagerRequest user) {
         if (!user.getPassword().equals(user.getConfirmPassword())) {
             throw new IllegalArgumentException("Password and Confirm Password do not match");
         }
@@ -215,5 +215,6 @@ public class UserService {
         newUser.setRole(Role.MANAGER.toString());
         newUser.setSlug(SlugGenerator.generate(user.getUsername()));
         userRepository.save(newUser);
+        return newUser.getId();
     }
 }

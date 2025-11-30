@@ -63,9 +63,9 @@ public class UserController {
     @Tag(name = "Post")
     @Operation(summary = "Create manager")
     @PostMapping("/manager")
-    public ResponseEntity<MessageResponse> createManager(@RequestBody @Valid ManagerRequest user) {
-        userService.createManagerUser(user);
-        return ResponseEntity.ok(new MessageResponse("User created successfully"));
+    public ResponseEntity<String> createManager(@RequestBody @Valid ManagerRequest user) {
+        String id = userService.createManagerUser(user);
+        return ResponseEntity.ok(id);
     }
 
     @Tag(name = "Get")
