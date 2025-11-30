@@ -185,27 +185,27 @@ class CartService {
                 throw new Error(`Product ${productId} not found in cart`);
             }
 
-            // ✅ Remove restaurant if no items left
+            // Remove restaurant if no items left
             if (restaurantCart.items.length === 0) {
-                logger.info(`🏪 Removing restaurant from cart (no items left)`);
+                logger.info(`Removing restaurant from cart (no items left)`);
                 cart.restaurants = cart.restaurants.filter((r) => r.restaurantId !== restaurantId);
             }
 
-            // ✅ Delete cart if no restaurants left
+            // Delete cart if no restaurants left
             if (cart.restaurants.length === 0) {
                 await Cart.deleteOne({ userId });
                 await cacheService.deleteCart(userId);
-                logger.info(`🧹 Cart deleted (empty)`);
+                logger.info(`Cart deleted (empty)`);
                 return null;
             }
 
             await cart.save();
             await cacheService.setCart(userId, cart.toObject());
 
-            logger.info(`✅ Item removed from cart`);
+            logger.info(`Item removed from cart`);
             return cart;
         } catch (error) {
-            logger.error(`❌ Remove item error: ${error.message}`);
+            logger.error(`Remove item error: ${error.message}`);
             throw error;
         }
     }
@@ -213,7 +213,7 @@ class CartService {
     // Remove restaurant from cart
     async removeRestaurantFromCart(userId, restaurantId) {
         try {
-            logger.info(`🏪 Removing restaurant: ${userId} - ${restaurantId}`);
+            logger.info(`Removing restaurant: ${userId} - ${restaurantId}`);
 
             const cart = await Cart.findOne({ userId });
 
@@ -228,7 +228,7 @@ class CartService {
                 throw new Error(`Restaurant ${restaurantId} not found in cart`);
             }
 
-            // ✅ Delete cart if no restaurants left
+            // Delete cart if no restaurants left
             if (cart.restaurants.length === 0) {
                 await Cart.deleteOne({ userId });
                 await cacheService.deleteCart(userId);
@@ -260,10 +260,10 @@ class CartService {
 
             await cacheService.deleteCart(userId);
 
-            logger.info(`✅ Cart cleared`);
+            logger.info(`Cart cleared`);
             return { message: 'Cart cleared successfully' };
         } catch (error) {
-            logger.error(`❌ Clear cart error: ${error.message}`);
+            logger.error(`Clear cart error: ${error.message}`);
             throw error;
         }
     }
