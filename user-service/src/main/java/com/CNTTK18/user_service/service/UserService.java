@@ -217,4 +217,10 @@ public class UserService {
         userRepository.save(newUser);
         return newUser.getId();
     }
+
+    public void upgradeUserToMerchant(String id) {
+        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setRole(Role.MERCHANT.toString());
+        userRepository.save(user);
+    }
 }
