@@ -339,6 +339,8 @@ spring:
                   predicates:
                       - Path=/api/cart/**
                       - Method=GET
+                  filters:
+                      - name: JwtAuthentication
 
                 - id: cart-service-add
                   uri: lb://order-service
@@ -441,7 +443,7 @@ spring:
                       - Path=/payment-service/v3/api-docs/payment-service/**
                   filters:
                       - RewritePath=/v3/api-docs/payment-service/(?<segment>.*), /v3/api-docs/payment-service/${segment}
-                
+
                 - id: chat-service-api
                   uri: lb://chat-service
                   predicates:
