@@ -13,7 +13,7 @@ const options = {
                 email: 'support@example.com',
             },
         },
-        host: process.env.ORDER_SERVICE_HOST || 'localhost:8082',
+        host: process.env.ORDER_SERVICE_URL || 'localhost:8080',
         basePath: '/api',
         schemes: ['http', 'https'],
         consumes: ['application/json'],
@@ -27,7 +27,7 @@ const options = {
             },
         },
         definitions: {
-            // ✅ Order Item
+            // Order Item
             OrderItem: {
                 type: 'object',
                 properties: {
@@ -40,7 +40,7 @@ const options = {
                 required: ['productId', 'productName', 'quantity', 'price'],
             },
 
-            // ✅ Address
+            // Address
             Address: {
                 type: 'object',
                 properties: {
@@ -52,7 +52,7 @@ const options = {
                 required: ['street', 'city', 'state', 'zipCode'],
             },
 
-            // ✅ Create Order Request
+            // Create Order Request
             CreateOrderRequest: {
                 type: 'object',
                 properties: {

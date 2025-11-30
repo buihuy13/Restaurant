@@ -232,46 +232,59 @@ const router = express.Router();
  * @swagger
  * /api/cart/{userId}:
  *   get:
- *     summary: Get user's cart
- *     description: Retrieve the shopping cart for a specific user (supports both authenticated and guest users)
- *     tags:
- *       - Cart
+ *     summary: Lấy giỏ hàng của người dùng
+ *     tags: [Cart]
  *     parameters:
- *       - name: userId
- *         in: path
+ *       - in: path
+ *         name: userId
  *         required: true
- *         schema:
- *           type: string
- *         description: User ID (can be userId or guestCartId)
- *         example: "USER123"
+ *         type: string
+ *         description: ID người dùng hoặc guestCartId
+ *         example: USER123
  *     responses:
  *       200:
- *         description: Cart retrieved successfully
- *         content:
+ *         description: Lấy giỏ hàng thành công
+ *         produces:
+ *           - application/json
+ *         schema:
+ *           type: object
+ *           properties:
+ *             status:
+ *               type: string
+ *               example: success
+ *             message:
+ *               type: string
+ *               example: Cart retrieved successfully
+ *             data:
+ *               $ref: '#/definitions/Cart'
+ *         examples:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "success"
- *                 message:
- *                   type: string
- *                   example: "Cart retrieved successfully"
- *                 data:
- *                   $ref: '#/components/schemas/Cart'
+ *             status: success
+ *             message: Cart retrieved successfully
+ *             data:
+ *               _id: 64f8a1b2c3d4e5f6789abc12
+ *               userId: USER123
+ *               restaurants:
+ *                 - restaurantId: rest_789
+ *                   restaurantName: Phở 24 Lê Văn Sỹ
+ *                   items:
+ *                     - productId: prod_001
+ *                       productName: Phở bò tái nạm
+ *                       price: 65000
+ *                       quantity: 2
+ *                       customizations: Thêm hành, ít tiêu
+ *                   subtotal: 130000
+ *                   deliveryFee: 20000
+ *                   totalAmount: 150000
+ *               createdAt: 2025-04-05T10:00:00Z
+ *               updatedAt: 2025-04-05T10:05:00Z
+ *
  *       400:
- *         description: Invalid request
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         description: Không tìm thấy userId
+ *         produces:
+ *           - application/json
+ *         schema:
+ *           $ref: '#/definitions/ErrorResponse'
  */
 router.get('/:userId', cartController.getCart);
 
@@ -553,39 +566,55 @@ router.put('/:userId/restaurant/:restaurantId', cartController.updateCartDetails
  * @swagger
  * /api/cart/{userId}/summary:
  *   get:
- *     summary: Get cart summary
- *     description: Get a lightweight summary of the cart including total restaurants, items count, and grand total
- *     tags:
- *       - Cart
+ *     summary: Lấy tóm tắt giỏ hàng (dùng cho badge/header)
+ *     tags: [Cart]
  *     parameters:
- *       - name: userId
- *         in: path
+ *       - in: path
+ *         name: userId
  *         required: true
- *         schema:
- *           type: string
- *         example: "USER123"
+ *         type: string
+ *         description: ID người dùng
+ *         example: USER123
  *     responses:
  *       200:
- *         description: Cart summary retrieved successfully
- *         content:
+ *         description: Lấy tóm tắt thành công
+ *         produces:
+ *           - application/json
+ *         schema:
+ *           type: object
+ *           properties:
+ *             status:
+ *               type: string
+ *               example: success
+ *             message:
+ *               type: string
+ *               example: Cart summary retrieved successfully
+ *             data:
+ *               $ref: '#/definitions/CartSummary'
+ *         examples:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "success"
- *                 message:
- *                   type: string
- *                   example: "Cart summary retrieved successfully"
- *                 data:
- *                   $ref: '#/components/schemas/CartSummary'
+ *             status: success
+ *             message: Cart summary retrieved successfully
+ *             data:
+ *               totalRestaurants: 2
+ *               totalItems: 5
+ *               grandTotal: 285000
+ *               restaurants:
+ *                 - restaurantId: rest_789
+ *                   restaurantName: Phở 24 Lê Văn Sỹ
+ *                   itemCount: 3
+ *                   totalAmount: 195000
+ *                 - restaurantId: rest_456
+ *                   restaurantName: Cơm tấm Cali
+ *                   itemCount: 2
+ *                   totalAmount: 90000
+ *
  *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *         description: Lỗi server
+ *         produces:
+ *           - application/json
+ *         schema:
+ *           $ref: '#/definitions/ErrorResponse'
  */
 router.get('/:userId/summary', cartController.getCartSummary);
 
