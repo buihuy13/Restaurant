@@ -48,7 +48,14 @@ spring:
                   uri: lb://user-service
                   predicates:
                       - Path=/api/users/**
-                      - Method=GET, PUT
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                - id: user-service-put-password
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/password/*
+                      - Method=PUT
                   filters:
                       - name: JwtAuthentication
                 - id: user-service-put
@@ -69,7 +76,7 @@ spring:
                   uri: lb://user-service
                   predicates:
                       - Path=/api/users/**
-                      - Method=POST, DELETE
+                      - Method=POST, DELETE, PUT
                   filters:
                       - name: JwtAuthentication
                         args:
@@ -81,6 +88,15 @@ spring:
                       - Method=POST
                   filters:
                       - name: JwtAuthentication
+                - id: user-service-manager
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/manager/**
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
                 - id: oauth2-authorization
                   uri: lb://user-service
                   predicates:
@@ -148,6 +164,15 @@ spring:
                   predicates:
                       - Path=/api/restaurant/**
                       - Method=GET
+                - id: restaurant-service-res-manager
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/restaurant/manager/**
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
                 - id: restaurant-service-res-enable
                   uri: lb://restaurant-service
                   predicates:
@@ -314,6 +339,8 @@ spring:
                   predicates:
                       - Path=/api/cart/**
                       - Method=GET
+                  filters:
+                      - name: JwtAuthentication
 
                 - id: cart-service-add
                   uri: lb://order-service
@@ -416,7 +443,7 @@ spring:
                       - Path=/payment-service/v3/api-docs/payment-service/**
                   filters:
                       - RewritePath=/v3/api-docs/payment-service/(?<segment>.*), /v3/api-docs/payment-service/${segment}
-                
+
                 - id: chat-service-api
                   uri: lb://chat-service
                   predicates:
@@ -451,6 +478,6 @@ springdoc:
             - name: Restaurant Service
               url: /v3/api-docs/restaurant-service
             - name: Payment Service
-              url: http://payment-service:8083/v3/api-docs/payment-service
+              url: /v3/api-docs/payment-service
             - name: Order Service
               url: /v3/api-docs/order-service
