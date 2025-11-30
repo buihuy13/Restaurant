@@ -269,6 +269,7 @@ const options = {
                 },
             },
         },
+        components: { schemas: {} },
     },
     apis: ['./src/routes/*.js'],
 };
