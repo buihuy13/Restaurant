@@ -292,55 +292,32 @@ router.get('/:userId', cartController.getCart);
  *         schema:
  *           type: string
  *         example: "USER123"
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               restaurant:
- *                 $ref: '#/components/schemas/Restaurant'
- *               item:
- *                 $ref: '#/components/schemas/CartItem'
- *             required:
- *               - restaurant
- *               - item
- *             example:
- *               restaurant:
- *                 restaurantId: "qte6F123K9RoI0pg1GBRLwz5Igs4lC9G1BgIGPWmPTyNA9NyMKfslxCXc9clILImVbTAK2pKwURO3wdU5dXkzG0LkxmkjNmroankmr1MzOIPkrFyWrEJkIG06vesXIPmpEpVlYvtgSy1e81086MZpOGGfHedeVJnixTF0iuiyzi8qtyqPyL6hg76zXseJXMrV2VOTIVuzrJpvX1pnRN6XqCM9qu9sCToqiSKvA80pGlnygGy0e4RwB29K9i23f"
- *                 restaurantName: "Nhà hàng UIT3"
- *                 restaurantSlug: "nha-hang-uit3-6rbN8"
- *                 restaurantImage: "https://via.placeholder.com/300"
- *                 deliveryFee: 20000
- *               item:
- *                 productId: "GrAZGZIci23h6LNRl2BRSaDCGXHrR9obQimft4vyjvFWfwKMaeUnuW5ku58c8Z644cOreH7DsufFFMxSXj1cFPl6K2Qk6U0QFTt4Q6y4rrBNaQa782zA6H5f9ZMHCE3zNw7cYUYZnrvGZYj3oQa1v3hts7anNwQLbEoeRxsi1VWjGZmOdHMdz2AS9XCFUW5UdwPx1S25DybjaMbfkQu9QYnbabrKMU0hHfcuZQrVTDAryZTyUwN0qB0yZvQLS6"
- *                 productName: "Trà sữa trân châu đường đen"
- *                 price: 30000
- *                 quantity: 2
- *                 customizations: "Không đường, thêm trân châu"
- *     responses:
- *       201:
- *         description: Item added to cart successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "success"
- *                 message:
- *                   type: string
- *                   example: "Item added to cart successfully"
- *                 data:
- *                   $ref: '#/components/schemas/Cart'
- *       400:
- *         description: Invalid request - missing required fields
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             restaurant:
+ *               $ref: '#/components/schemas/Restaurant'
+ *             item:
+ *               $ref: '#/components/schemas/CartItem'
+ *           required:
+ *             - restaurant
+ *             - item
+ *           example:
+ *             restaurant:
+ *               restaurantId: "qte6F123K9RoI0pg1GBRLwz5Igs4lC9G1BgIGPWmPTyNA9NyMKfslxCXc9clILImVbTAK2pKwURO3wdU5dXkzG0LkxmkjNmroankmr1MzOIPkrFyWrEJkIG06vesXIPmpEpVlYvtgSy1e81086MZpOGGfHedeVJnixTF0iuiyzi8qtyqPyL6hg76zXseJXMrV2VOTIVuzrJpvX1pnRN6XqCM9qu9sCToqiSKvA80pGlnygGy0e4RwB29K9i23f"
+ *               restaurantName: "Nhà hàng UIT3"
+ *               restaurantSlug: "nha-hang-uit3-6rbN8"
+ *               restaurantImage: "https://via.placeholder.com/300"
+ *               deliveryFee: 20000
+ *             item:
+ *               productId: "GrAZGZIci23h6LNRl2BRSaDCGXHrR9obQimft4vyjvFWfwKMaeUnuW5ku58c8Z644cOreH7DsufFFMxSXj1cFPl6K2Qk6U0QFTt4Q6y4rrBNaQa782zA6H5f9ZMHCE3zNw7cYUYZnrvGZYj3oQa1v3hts7anNwQLbEoeRxsi1VWjGZmOdHMdz2AS9XCFUW5UdwPx1S25DybjaMbfkQu9QYnbabrKMU0hHfcuZQrVTDAryZTyUwN0qB0yZvQLS6"
+ *               productName: "Trà sữa trân châu đường đen"
+ *               price: 30000
+ *               quantity: 2
+ *               customizations: "Không đường, thêm trân châu"
  */
 router.post('/:userId', cartController.addItemToCart);
 
@@ -366,48 +343,23 @@ router.post('/:userId', cartController.addItemToCart);
  *         required: true
  *         schema:
  *           type: string
- *         example: "qte6F123K9RoI0pg1GBRLwz5Igs4lC9G1BgIGPWmPTyNA9NyMKfslxCXc9clILImVbTAK2pKwURO3wdU5dXkzG0LkxmkjNmroankmr1MzOIPkrFyWrEJkIG06vesXIPmpEpVlYvtgSy1e81086MZpOGGfHedeVJnixTF0iuiyzi8qtyqPyL6hg76zXseJXMrV2VOTIVuzrJpvX1pnRN6XqCM9qu9sCToqiSKvA80pGlnygGy0e4RwB29K9i23f"
  *       - name: productId
  *         in: path
  *         required: true
  *         schema:
  *           type: string
- *         example: "GrAZGZIci23h6LNRl2BRSaDCGXHrR9obQimft4vyjvFWfwKMaeUnuW5ku58c8Z644cOreH7DsufFFMxSXj1cFPl6K2Qk6U0QFTt4Q6y4rrBNaQa782zA6H5f9ZMHCE3zNw7cYUYZnrvGZYj3oQa1v3hts7anNwQLbEoeRxsi1VWjGZmOdHMdz2AS9XCFUW5UdwPx1S25DybjaMbfkQu9QYnbabrKMU0hHfcuZQrVTDAryZTyUwN0qB0yZvQLS6"
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               quantity:
- *                 type: integer
- *                 minimum: 1
- *                 example: 4
- *             required:
- *               - quantity
- *     responses:
- *       200:
- *         description: Item quantity updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "success"
- *                 message:
- *                   type: string
- *                   example: "Item quantity updated successfully"
- *                 data:
- *                   $ref: '#/components/schemas/Cart'
- *       400:
- *         description: Invalid quantity or resource not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             quantity:
+ *               type: integer
+ *               minimum: 1
+ *               example: 4
+ *           required:
+ *             - quantity
  */
 router.patch('/:userId/restaurant/:restaurantId/item/:productId', cartController.updateItemQuantity);
 
@@ -569,54 +521,29 @@ router.delete('/:userId', cartController.clearCart);
  *         required: true
  *         schema:
  *           type: string
- *         example: "USER123"
  *       - name: restaurantId
  *         in: path
  *         required: true
  *         schema:
  *           type: string
- *         example: "qte6F123K9RoI0pg1GBRLwz5Igs4lC9G1BgIGPWmPTyNA9NyMKfslxCXc9clILImVbTAK2pKwURO3wdU5dXkzG0LkxmkjNmroankmr1MzOIPkrFyWrEJkIG06vesXIPmpEpVlYvtgSy1e81086MZpOGGfHedeVJnixTF0iuiyzi8qtyqPyL6hg76zXseJXMrV2VOTIVuzrJpvX1pnRN6XqCM9qu9sCToqiSKvA80pGlnygGy0e4RwB29K9i23f"
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               notes:
- *                 type: string
- *                 example: "Giao cẩn thận, để ở cửa nhà"
- *               deliveryAddress:
- *                 type: string
- *                 example: "113 Đường Hàn Thuyên, Quận Thủ Đức, TP.HCM"
- *               discount:
- *                 type: number
- *                 example: 5000
- *               deliveryFee:
- *                 type: number
- *                 example: 25000
- *     responses:
- *       200:
- *         description: Cart details updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "success"
- *                 message:
- *                   type: string
- *                   example: "Cart details updated successfully"
- *                 data:
- *                   $ref: '#/components/schemas/Cart'
- *       400:
- *         description: Invalid request
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             notes:
+ *               type: string
+ *               example: "Giao cẩn thận, để ở cửa nhà"
+ *             deliveryAddress:
+ *               type: string
+ *               example: "113 Đường Hàn Thuyên, Quận Thủ Đức, TP.HCM"
+ *             discount:
+ *               type: number
+ *               example: 5000
+ *             deliveryFee:
+ *               type: number
+ *               example: 25000
  */
 router.put('/:userId/restaurant/:restaurantId', cartController.updateCartDetails);
 
@@ -678,42 +605,12 @@ router.get('/:userId/summary', cartController.getCartSummary);
  *         required: true
  *         schema:
  *           type: string
- *         example: "USER123"
- *     responses:
- *       200:
- *         description: Cart is ready for checkout
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: "success"
- *                 message:
- *                   type: string
- *                   example: "Cart is valid for checkout"
- *                 data:
- *                   type: object
- *                   properties:
- *                     restaurantCount:
- *                       type: integer
- *                       example: 1
- *                     itemCount:
- *                       type: integer
- *                       example: 4
- *                     grandTotal:
- *                       type: number
- *                       example: 152000
- *                     isReadyForCheckout:
- *                       type: boolean
- *                       example: true
- *       400:
- *         description: Cart not valid for checkout
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
+ *           example: "USER123"
+ *       - in: body
+ *         name: body
+ *         required: false
+ *         schema:
+ *           type: object
  */
 router.post('/:userId/checkout', cartController.validateCartForCheckout);
 
