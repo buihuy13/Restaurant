@@ -7,31 +7,64 @@ import logger from '../utils/logger.js';
 class WalletService {
     // 1. CỘNG TIỀN KHI ĐƠN HOÀN TẤT (Order Service gọi)
     async credit(restaurantId, orderId, amount, description = '') {
-        if (!restaurantId || !orderId || amount <= 0) throw new Error('Thiếu thông tin');
-
-        let wallet = await Wallet.findOne({ where: { restaurantId } });
-        if (!wallet) {
-            wallet = await Wallet.create({
-                restaurantId,
-                balance: 0,
-                totalEarned: 0,
-                totalWithdrawn: 0,
-            });
-            logger.info(`Tạo ví mới cho nhà hàng: ${restaurantId}`);
+        // Validate đầu vào
+        if (!restaurantId || !orderId || !amount || amount <= 0) {
+            throw new Error('Thiếu hoặc sai thông tin: restaurantId, orderId, amount');
         }
 
-        await wallet.increment({ balance: amount, totalEarned: amount });
+        const t = await Wallet.sequelize.transaction(); // BẮT ĐẦU TRANSACTION – QUAN TRỌNG NHẤT!
 
-        await WalletTransaction.create({
-            walletId: wallet.id,
-            orderId,
-            type: 'EARN',
-            amount,
-            status: 'COMPLETED',
-            description: description || `Đơn #${orderId} – giao thành công`,
-        });
+        try {
+            let wallet = await Wallet.findOne({
+                where: { restaurantId },
+                lock: t.LOCK.UPDATE, // khóa record để tránh race condition
+                transaction: t,
+            });
 
-        logger.info(`Cộng ${amount.toLocaleString()}đ vào ví ${restaurantId}`);
+            if (!wallet) {
+                wallet = await Wallet.create(
+                    {
+                        restaurantId,
+                        balance: 0,
+                        totalEarned: 0,
+                        totalWithdrawn: 0,
+                    },
+                    { transaction: t },
+                );
+                logger.info(`Tạo ví mới cho nhà hàng: ${restaurantId}`);
+            }
+
+            // Cộng tiền vào ví
+            await wallet.increment({ balance: amount, totalEarned: amount }, { transaction: t });
+
+            // Tạo lịch sử giao dịch – BẮT BUỘC PHẢI THÀNH CÔNG
+            await WalletTransaction.create(
+                {
+                    walletId: wallet.id,
+                    orderId,
+                    type: 'EARN',
+                    amount,
+                    status: 'COMPLETED',
+                    description: description || `Đơn #${orderId} – giao thành công`,
+                },
+                { transaction: t },
+            );
+
+            // Thành công → commit
+            await t.commit();
+
+            logger.info(`Cộng tiền thành công: +${amount.toLocaleString()}đ → ví ${restaurantId} (đơn #${orderId})`);
+        } catch (error) {
+            // Có lỗi → rollback hết, không để tiền "bốc hơi"
+            await t.rollback();
+            logger.error('Cộng tiền ví thất bại – đã rollback:', {
+                restaurantId,
+                orderId,
+                amount,
+                error: error.message,
+            });
+            throw error; // ném ra để Order Service biết và retry sau
+        }
     }
 
     async getByRestaurantId(restaurantId) {
