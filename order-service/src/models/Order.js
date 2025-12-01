@@ -83,7 +83,7 @@ const orderSchema = new mongoose.Schema(
                 'confirmed', // restaurant xác nhận
                 'preparing', // restaurant chuẩn bị món
                 'ready', // món ăn sẵn sàng
-                'completed', // khách nhận món
+                'completed', // món đã giao
                 'cancelled',
             ],
             default: 'pending',

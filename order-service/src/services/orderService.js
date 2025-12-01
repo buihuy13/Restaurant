@@ -562,6 +562,22 @@ class OrderService {
                 timestamp: new Date().toISOString(),
             });
 
+            // If order is completed, publish order.completed event to trigger wallet crediting
+            if (statusData.status === 'completed') {
+                await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.completed', {
+                    orderId: order.orderId,
+                    userId: order.userId,
+                    restaurantId: order.restaurantId,
+                    restaurantName: order.restaurantName,
+                    totalAmount: order.finalAmount,
+                    platformFee: Math.round(order.finalAmount * 0.1),
+                    amoutRestaurant: Math.round(order.finalAmount * 0.9),
+                    items: order.items,
+                    completedAt: new Date().toISOString(),
+                });
+                logger.info(`Order completed event published: ${order.orderId}`);
+            }
+
             logger.info(`Order status updated: ${order.orderId} -> ${statusData.status}`);
             return order;
         } catch (error) {

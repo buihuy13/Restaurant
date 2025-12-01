@@ -10,6 +10,7 @@ class RabbitMQConnection {
             ORDER: 'order_exchange',
             PAYMENT: 'payment_exchange',
             NOTIFICATION: 'notification_exchange',
+            WALLET: 'wallet_exchange',
         };
 
         this.queues = {
@@ -18,6 +19,8 @@ class RabbitMQConnection {
             ORDER_CANCELLED: 'order.cancelled',
             PAYMENT_COMPLETED: 'payment.completed',
             PAYMENT_FAILED: 'payment.failed',
+            ORDER_COMPLETED: 'order.completed',
+            WALLET_CREDITED: 'wallet.credited',
         };
 
         this.deadLetter = {
@@ -65,6 +68,9 @@ class RabbitMQConnection {
             await this.channel.bindQueue(this.queues.ORDER_CANCELLED, this.exchanges.ORDER, 'order.cancelled');
             await this.channel.bindQueue(this.queues.PAYMENT_COMPLETED, this.exchanges.PAYMENT, 'payment.completed');
             await this.channel.bindQueue(this.queues.PAYMENT_FAILED, this.exchanges.PAYMENT, 'payment.failed');
+
+            await this.channel.bindQueue(this.queues.ORDER_COMPLETED, this.exchanges.ORDER, 'order.completed');
+            await this.channel.bindQueue(this.queues.WALLET_CREDITED, this.exchanges.WALLET, 'wallet.credited');
 
             logger.info('RabbitMQ connected successfully');
 
