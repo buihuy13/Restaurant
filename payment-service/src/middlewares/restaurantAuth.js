@@ -12,8 +12,8 @@ export const restaurantAuth = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Quan trọng: kiểm tra xem user này có phải nhà hàng không
-        if (decoded.role !== 'MANAGER') {
-            return res.status(403).json({ success: false, message: 'Chỉ nhà hàng mới được truy cập ví' });
+        if (decoded.role !== 'MERCHANT') {
+            return res.status(403).json({ success: false, message: 'Chỉ merchant nhà hàng mới được truy cập ví' });
         }
 
         // Gắn restaurantId vào req để dùng trong controller

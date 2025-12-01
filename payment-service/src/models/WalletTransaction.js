@@ -42,7 +42,13 @@ const WalletTransaction = sequelize.define(
     {
         tableName: 'wallet_transactions',
         timestamps: true,
-        indexes: [{ fields: ['wallet_id'] }, { fields: ['order_id'] }, { fields: ['createdAt'] }],
+        indexes: [
+            { fields: ['wallet_id'] },
+            { fields: ['order_id'] },
+            { fields: ['payout_request_id'] },
+            { fields: ['created_at'] },
+            { fields: ['updated_at'] },
+        ],
     },
 );
 

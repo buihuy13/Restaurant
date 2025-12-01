@@ -14,7 +14,7 @@ import walletRoutes from './routes/walletRoutes.js';
 import { startOrderConsumer } from './consumers/orderConsumer.js';
 import { setupSwagger } from './config/swagger.js';
 import { startOrderCompletedConsumer } from './consumers/orderCompletedConsumer.js';
-
+import adminWalletRoutes from './routes/adminWalletRoutes.js';
 const app = express();
 const PORT = process.env.PAYMENT_PORT || 8083;
 
@@ -63,6 +63,7 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/payments', paymentRoutes);
 app.use('/api/wallets', walletRoutes);
+app.use('/api/admin/wallets', adminWalletRoutes);
 
 // 404 handler
 app.use((req, res) => {

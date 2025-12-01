@@ -1,7 +1,7 @@
 // src/routes/walletRoutes.js
 import express from 'express';
 import walletController from '../controllers/walletController.js';
-import { restaurantAuth } from '../middlewares/authMiddleware.js';
+import { restaurantAuth } from '../middlewares/restaurantAuth.js';
 
 const router = express.Router();
 

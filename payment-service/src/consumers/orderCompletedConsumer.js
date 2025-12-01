@@ -1,5 +1,5 @@
 import rabbitmqConnection from '../config/rabbitmq.js';
-import Wallet from '../models/walletModel.js';
+import Wallet from '../models/Wallet.js';
 import logger from '../utils/logger.js';
 
 export const startOrderCompletedConsumer = async () => {

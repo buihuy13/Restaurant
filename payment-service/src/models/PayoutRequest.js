@@ -2,6 +2,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
+// Modal để quản lý các yêu cầu rút tiền từ ví
 const PayoutRequest = sequelize.define(
     'PayoutRequest',
     {
@@ -39,7 +40,7 @@ const PayoutRequest = sequelize.define(
     {
         tableName: 'payout_requests',
         timestamps: true,
-        indexes: [{ fields: ['wallet_id'] }, { fields: ['status'] }, { fields: ['createdAt'] }],
+        indexes: [{ fields: ['wallet_id'] }, { fields: ['status'] }, { fields: ['created_at'] }],
     },
 );
 

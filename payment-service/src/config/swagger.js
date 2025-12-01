@@ -4,7 +4,6 @@ import swaggerUi from 'swagger-ui-express';
 
 const options = {
     swaggerDefinition: {
-        // <-- Đổi từ "definition" thành "swaggerDefinition" cho Swagger 2.0
         swagger: '2.0',
         info: {
             title: 'Payment & Wallet Service API',
@@ -27,7 +26,6 @@ const options = {
             },
         },
         definitions: {
-            // === CÁC SCHEMA CŨ CỦA BẠN GIỮ NGUYÊN ===
             Payment: {
                 type: 'object',
                 properties: {
@@ -45,7 +43,6 @@ const options = {
                 },
             },
 
-            // === THÊM MỚI: WALLET SCHEMA ===
             Wallet: {
                 type: 'object',
                 properties: {
