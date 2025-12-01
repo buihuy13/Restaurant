@@ -16,6 +16,7 @@ class RabbitMQConnection {
             ORDER_CREATED: 'order.created',
             ORDER_UPDATED: 'order.updated',
             ORDER_CANCELLED: 'order.cancelled',
+            ORDER_COMPLETED: 'order.completed',
             PAYMENT_COMPLETED: 'payment.completed',
             PAYMENT_FAILED: 'payment.failed',
         };
