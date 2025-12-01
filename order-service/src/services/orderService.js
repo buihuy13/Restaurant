@@ -65,6 +65,11 @@ class OrderService {
                 throw new Error('Restaurant name missing');
             }
 
+            // if (restaurant.enabled === false) {
+            //     logger.warn(`Restaurant is disabled: ${restaurant.name}`);
+            //     throw new Error(`Restaurant is currently closed: ${restaurant.name}`);
+            // }
+
             if (restaurant.openingTime && restaurant.closingTime) {
                 const isOpen = this.checkRestaurantOpen(restaurant.openingTime, restaurant.closingTime);
                 if (!isOpen) {
@@ -115,13 +120,30 @@ class OrderService {
     checkRestaurantOpen(openingTime, closingTime) {
         try {
             const now = new Date();
-            const currentTime =
-                String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-            return currentTime >= openingTime && currentTime <= closingTime;
+            // Chuyển openingTime và closingTime từ "HH:mm" sang phút trong ngày
+            const [openH, openM] = openingTime.split(':').map(Number);
+            const [closeH, closeM] = closingTime.split(':').map(Number);
+
+            const openMinutes = openH * 60 + openM;
+            const closeMinutes = closeH * 60 + closeM;
+
+            if (openMinutes < closeMinutes) {
+                // Trường hợp bình thường: mở 08:00 - 22:00
+                return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+            } else if (openMinutes > closeMinutes) {
+                // Trường hợp mở xuyên đêm: mở 20:00 - 06:00
+                return currentMinutes >= openMinutes || currentMinutes < closeMinutes;
+            } else {
+                // openMinutes === closeMinutes → mở 24h (hoặc đóng cả ngày, nhưng thường là 00:00 - 00:00 = 24h)
+                return true;
+            }
         } catch (error) {
-            logger.warn(`Error checking restaurant hours: ${error.message}`);
-            return true;
+            logger.warn(
+                `Error checking restaurant hours: ${error.message}. Opening: ${openingTime}, Closing: ${closingTime}`,
+            );
+            return true; // fallback an toàn: cho phép đặt hàng nếu không xác định được
         }
     }
 
