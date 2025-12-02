@@ -564,18 +564,33 @@ class OrderService {
 
             // If order is completed, publish order.completed event to trigger wallet crediting
             if (statusData.status === 'completed') {
-                await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.completed', {
-                    orderId: order.orderId,
-                    userId: order.userId,
-                    restaurantId: order.restaurantId,
-                    restaurantName: order.restaurantName,
-                    totalAmount: order.finalAmount,
-                    platformFee: Math.round(order.finalAmount * 0.1),
-                    amoutRestaurant: Math.round(order.finalAmount * 0.9),
-                    items: order.items,
-                    completedAt: new Date().toISOString(),
-                });
-                logger.info(`Order completed event published: ${order.orderId}`);
+                // KIỂM TRA THANH TOÁN TRƯỚC KHI CỘNG TIỀN!
+                if (order.paymentStatus !== 'paid' && order.paymentStatus !== 'completed') {
+                    logger.warn(`Order ${order.orderId} completed but payment not paid yet. Skip wallet credit.`, {
+                        paymentStatus: order.paymentStatus,
+                    });
+                    // KHÔNG publish event → không cộng tiền
+                } else {
+                    // MỚI ĐƯỢC CỘNG TIỀN!
+                    await rabbitmqConnection.publishMessage(
+                        rabbitmqConnection.exchanges.ORDER,
+                        'order.completed', // ← event này mới kích hoạt cộng tiền
+                        {
+                            orderId: order.orderId,
+                            userId: order.userId,
+                            restaurantId: order.restaurantId,
+                            restaurantName: order.restaurantName,
+                            totalAmount: order.finalAmount,
+                            platformFee: Math.round(order.finalAmount * 0.1),
+                            amountForRestaurant: Math.round(order.finalAmount * 0.9),
+                            items: order.items,
+                            completedAt: new Date().toISOString(),
+                            paymentMethod: order.paymentMethod,
+                            paymentStatus: order.paymentStatus,
+                        },
+                    );
+                    logger.info(`Order completed + PAID → Published wallet credit event: ${order.orderId}`);
+                }
             }
 
             logger.info(`Order status updated: ${order.orderId} -> ${statusData.status}`);
