@@ -1,13 +1,14 @@
+// src/docs/swagger.js  (đè file cũ của bạn là chạy ngon)
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 
 const options = {
-    definition: {
+    swaggerDefinition: {
         swagger: '2.0',
         info: {
-            title: 'Payment Service API',
+            title: 'Payment & Wallet Service API',
             version: '1.0.0',
-            description: 'API documentation for Payment Service',
+            description: 'Thanh toán khách hàng + Ví đối tác (nhà hàng) – chuẩn Grab/ShopeeFood',
             contact: {
                 name: 'API Support',
                 email: 'support@example.com',
@@ -16,18 +17,14 @@ const options = {
         host: process.env.PAYMENT_SERVICE_URL || 'localhost:8083',
         basePath: '/api',
         schemes: ['http', 'https'],
-        consumes: ['application/json'],
-        produces: ['application/json'],
-
         securityDefinitions: {
             Bearer: {
                 type: 'apiKey',
                 name: 'Authorization',
                 in: 'header',
-                description: 'JWT Bearer Token',
+                description: 'Nhập token theo định dạng: Bearer <your-jwt-token>',
             },
         },
-
         definitions: {
             Payment: {
                 type: 'object',
@@ -38,43 +35,64 @@ const options = {
                     userId: { type: 'string' },
                     amount: { type: 'number' },
                     currency: { type: 'string' },
-                    paymentMethod: {
-                        type: 'string',
-                        enum: ['cash', 'card', 'wallet'],
-                    },
-                    status: {
-                        type: 'string',
-                        enum: ['pending', 'processing', 'completed', 'failed', 'refunded'],
-                    },
+                    paymentMethod: { type: 'string', enum: ['cash', 'card', 'wallet'] },
+                    status: { type: 'string', enum: ['pending', 'processing', 'completed', 'failed', 'refunded'] },
                     transactionId: { type: 'string' },
                     createdAt: { type: 'string', format: 'date-time' },
                     updatedAt: { type: 'string', format: 'date-time' },
                 },
-                required: ['paymentId', 'orderId', 'userId', 'amount', 'currency', 'paymentMethod', 'status'],
             },
 
-            ConfirmPaymentResponse: {
+            Wallet: {
                 type: 'object',
                 properties: {
-                    success: { type: 'boolean' },
-                    message: { type: 'string' },
-                    payment: { $ref: '#/definitions/Payment' },
+                    balance: { type: 'number', example: 1850000 },
+                    totalEarned: { type: 'number', example: 2100000 },
+                    totalWithdrawn: { type: 'number', example: 250000 },
+                },
+            },
+
+            WalletTransaction: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    type: { type: 'string', enum: ['EARN', 'WITHDRAW'] },
+                    amount: { type: 'number' },
+                    status: { type: 'string', enum: ['PENDING', 'COMPLETED', 'FAILED'] },
+                    description: { type: 'string' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                },
+            },
+
+            PayoutRequest: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    amount: { type: 'number' },
+                    bankInfo: {
+                        type: 'object',
+                        properties: {
+                            bankName: { type: 'string' },
+                            accountNumber: { type: 'string' },
+                            accountHolderName: { type: 'string' },
+                        },
+                    },
+                    status: { type: 'string', enum: ['pending', 'processing', 'completed', 'failed'] },
+                    note: { type: 'string' },
+                    createdAt: { type: 'string', format: 'date-time' },
                 },
             },
 
             Error: {
                 type: 'object',
                 properties: {
-                    success: { type: 'boolean' },
+                    success: { type: 'boolean', example: false },
                     message: { type: 'string' },
                 },
             },
         },
-
-        components: { schemas: {} },
     },
-
-    apis: ['./src/routes/*.js', './src/controllers/*.js'],
+    apis: ['./src/routes/*.js', './src/controllers/*.js'], // vẫn giữ nguyên
 };
 
 const swaggerSpec = swaggerJSDoc(options);
@@ -90,22 +108,19 @@ export const setupSwagger = (app) => {
             },
             customCss: `
                 .swagger-ui .topbar { display: none; }
+                .swagger-ui .info { margin: 20px 0; }
             `,
-            customSiteTitle: 'Payment Service API Documentation',
+            customSiteTitle: 'Payment & Wallet Service API',
         }),
     );
 
-    // API Gateway cần endpoint này
+    // Cho API Gateway gọi
     app.get('/v3/api-docs/payment-service', (req, res) => {
         res.setHeader('Content-Type', 'application/json');
         res.send(swaggerSpec);
     });
 
     app.get('/swagger-health', (req, res) => {
-        res.json({
-            status: 'ok',
-            swaggerVersion: '2.0',
-            url: '/api-docs',
-        });
+        res.json({ status: 'ok', url: '/api-docs' });
     });
 };

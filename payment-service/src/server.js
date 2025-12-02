@@ -4,14 +4,18 @@ dotenv.config();
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import { connectDB } from './config/database.js';
+import sequelize, { connectDB } from './config/database.js';
 import logger from './utils/logger.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import rabbitmqConnection from './config/rabbitmq.js';
 import eurekaClient from './config/eureka.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import walletRoutes from './routes/walletRoutes.js';
 import { startOrderConsumer } from './consumers/orderConsumer.js';
 import { setupSwagger } from './config/swagger.js';
+import { startOrderCompletedConsumer } from './consumers/orderCompletedConsumer.js';
+import adminWalletRoutes from './routes/adminWalletRoutes.js';
+import internalWalletRoutes from './routes/internalWalletRoutes.js';
 
 const app = express();
 const PORT = process.env.PAYMENT_PORT || 8083;
@@ -60,6 +64,9 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/payments', paymentRoutes);
+app.use('/api/wallets', walletRoutes);
+app.use('/api/admin/wallets', adminWalletRoutes);
+app.use('/api/internal/wallet', internalWalletRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -79,6 +86,8 @@ const startServer = async () => {
         await connectDB();
         await rabbitmqConnection.connect();
         await startOrderConsumer();
+        await startOrderCompletedConsumer();
+        await sequelize.sync({ alter: true }); // Sync models to DB
 
         app.listen(PORT, () => {
             logger.info(`Payment Service running on port ${PORT}`);
