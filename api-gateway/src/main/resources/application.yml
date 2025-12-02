@@ -449,7 +449,7 @@ spring:
                 - id: admin-wallet-service
                   uri: lb://wallet-service
                   predicates:
-                      - Path=/api/admin/payout-requests,/api/admin/payout-requests/**
+                      - Path=/api/admin/wallets/payout-requests,/api/admin/wallets/payout-requests/**
                   filters:
                       - name: JwtAuthentication
                   args:
