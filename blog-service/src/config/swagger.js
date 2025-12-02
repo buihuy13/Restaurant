@@ -1,117 +1,107 @@
-import swaggerJsdoc from 'swagger-jsdoc';
+// src/config/swagger.js
+import swaggerJSDoc from 'swagger-jsdoc';
 
-const options = {
-    definition: {
-        openapi: '3.0.0',
-        info: {
-            title: 'Blog Service API',
-            version: '1.0.0',
-            description: 'Food Delivery Blog & Content Management API',
-            contact: {
-                name: 'API Support',
-                // email: 'support@foodeats.com',
-            },
+const swaggerDefinition = {
+    swagger: '2.0',
+    info: {
+        title: 'FoodEats Blog Service API',
+        version: '1.0.0',
+        description: 'API quản lý blog, comment, upload ảnh cho hệ thống FoodEats',
+        contact: {
+            name: 'Dev Team',
         },
-        servers: [
-            {
-                url: 'http://localhost:3006',
-                description: 'Development server',
-            },
-            {
-                url: 'http://localhost:8080',
-                description: 'API Gateway',
-            },
-        ],
-        components: {
-            securitySchemes: {
-                bearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT',
-                },
-            },
-            schemas: {
-                Blog: {
+    },
+    host: 'localhost:8087',
+    basePath: '/api/blogs',
+    schemes: ['http', 'https'],
+    securityDefinitions: {
+        bearerAuth: {
+            type: 'apiKey',
+            name: 'Authorization',
+            scheme: 'bearer',
+            in: 'header',
+            bearerFormat: 'JWT',
+        },
+    },
+    security: [{ bearerAuth: [] }],
+    definitions: {
+        Blog: {
+            type: 'object',
+            properties: {
+                _id: { type: 'string' },
+                title: { type: 'string', example: 'Top 10 món chay ngon nhất Hà Nội' },
+                slug: { type: 'string' },
+                excerpt: { type: 'string' },
+                content: { type: 'string' },
+                featuredImage: { type: 'string', format: 'url' },
+                author: {
                     type: 'object',
                     properties: {
-                        _id: {
-                            type: 'string',
-                        },
-                        title: {
-                            type: 'string',
-                            example: 'Top 10 Vegetarian Restaurants',
-                        },
-                        slug: {
-                            type: 'string',
-                            example: 'top-10-vegetarian-restaurants-1234567890',
-                        },
-                        content: {
-                            type: 'string',
-                        },
-                        excerpt: {
-                            type: 'string',
-                        },
-                        author: {
-                            type: 'object',
-                            properties: {
-                                userId: { type: 'string' },
-                                name: { type: 'string' },
-                                avatar: { type: 'string' },
-                            },
-                        },
-                        category: {
-                            type: 'string',
-                            enum: ['recipe', 'review', 'tips', 'news', 'health', 'other'],
-                        },
-                        tags: {
-                            type: 'array',
-                            items: { type: 'string' },
-                        },
-                        status: {
-                            type: 'string',
-                            enum: ['draft', 'published', 'archived'],
-                        },
-                        views: {
-                            type: 'number',
-                        },
-                        likesCount: {
-                            type: 'number',
-                        },
-                        commentsCount: {
-                            type: 'number',
-                        },
-                        createdAt: {
-                            type: 'string',
-                            format: 'date-time',
+                        userId: { type: 'string' },
+                        name: { type: 'string' },
+                        avatar: { type: 'string', format: 'url' },
+                    },
+                },
+                category: { type: 'string', enum: ['recipe', 'review', 'tips', 'news', 'health', 'other'] },
+                tags: { type: 'array', items: { type: 'string' } },
+                status: { type: 'string', enum: ['draft', 'published', 'archived'] },
+                views: { type: 'integer' },
+                likesCount: { type: 'integer' },
+                commentsCount: { type: 'integer' },
+                readTime: { type: 'integer' },
+                publishedAt: { type: 'string', format: 'date-time' },
+                createdAt: { type: 'string', format: 'date-time' },
+            },
+        },
+        Comment: {
+            type: 'object',
+            properties: {
+                _id: { type: 'string' },
+                blogId: { type: 'string' },
+                parentId: { type: 'string', nullable: true },
+                content: { type: 'string' },
+                images: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            url: { type: 'string' },
+                            public_id: { type: 'string' },
+                            width: { type: 'integer' },
+                            height: { type: 'integer' },
                         },
                     },
                 },
-                // Comment: {
-                //     type: 'object',
-                //     properties: {
-                //         _id: { type: 'string' },
-                //         blogId: { type: 'string' },
-                //         author: {
-                //             type: 'object',
-                //             properties: {
-                //                 userId: { type: 'string' },
-                //                 name: { type: 'string' },
-                //             },
-                //         },
-                //         content: { type: 'string' },
-                //         likesCount: { type: 'number' },
-                //         createdAt: { type: 'string', format: 'date-time' },
-                //     },
-                // },
+                author: {
+                    type: 'object',
+                    properties: {
+                        userId: { type: 'string' },
+                        name: { type: 'string' },
+                        avatar: { type: 'string' },
+                    },
+                },
+                likesCount: { type: 'integer' },
+                createdAt: { type: 'string', format: 'date-time' },
             },
         },
-        security: [
-            {
-                bearerAuth: [],
+        Error: {
+            type: 'object',
+            properties: {
+                success: { type: 'boolean', example: false },
+                message: { type: 'string' },
             },
-        ],
+        },
     },
-    apis: ['./src/routes/*.js', './src/controllers/*.js'],
 };
 
-export const swaggerSpec = swaggerJsdoc(options);
+const options = {
+    swaggerDefinition,
+    apis: [
+        './src/routes/blogRoutes.js',
+        './src/routes/commentRoutes.js',
+        './src/routes/uploadRoutes.js',
+        './src/controllers/*.js', // nếu bạn để JSDoc trong controller
+    ],
+};
+
+export const swaggerSpec = swaggerJSDoc(options);

@@ -250,6 +250,25 @@ services:
             service-discovery:
                 condition: service_healthy
 
+    blog-service:
+        build:
+            context: ./blog-service
+            dockerfile: Dockerfile
+            args:
+                - MODULE_PATH=blog-service
+        ports:
+            - '8087:8087'
+        env_file:
+            - ./blog-service/.env
+        environment:
+            - TZ=${ENV_TZ}
+        depends_on:
+            mongodb:
+                condition: service_healthy
+            service-discovery:
+                condition: service_healthy
+        restart: unless-stopped
+
 volumes:
     mysql_data:
     mongodb_data:

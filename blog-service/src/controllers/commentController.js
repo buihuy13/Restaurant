@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
 import commentService from '../services/commentService.js';
-import { get } from 'mongoose';
 
 const createComment = async (req, res) => {
     try {
@@ -21,10 +20,6 @@ const createComment = async (req, res) => {
             comment,
         });
     } catch (error) {
-        // Xóa ảnh nếu lỗi
-        if (req.files) {
-            req.files.forEach((file) => cloudinary.uploader.destroy(file.public_id));
-        }
         return res.status(500).json({ success: false, message: error.message });
     }
 };

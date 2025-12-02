@@ -1,6 +1,7 @@
 import os from 'os';
 import { Eureka } from 'eureka-js-client';
 import eurekaLogger from '../utils/eurekaLogger.js';
+import logger from '../utils/logger.js';
 
 const getLocalIp = () => {
     const interfaces = os.networkInterfaces();

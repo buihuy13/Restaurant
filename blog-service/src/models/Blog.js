@@ -1,7 +1,8 @@
+// src/models/Blog.js
 import mongoose from 'mongoose';
 import slugify from 'slugify';
 
-const blogSchema = new mongoose.Chema(
+const blogSchema = new mongoose.Schema(
     {
         title: {
             type: String,
@@ -19,9 +20,8 @@ const blogSchema = new mongoose.Chema(
             required: [true, 'Content is required'],
         },
         excerpt: {
-            // mô tả ngắn gọn
             type: String,
-            required: [true, 'Excerpt cannot exceed 500 characters'],
+            maxlength: [500, 'Excerpt cannot exceed 500 characters'], // Sửa lỗi: bỏ required nếu muốn tự động tạo
         },
         author: {
             userId: {
@@ -38,7 +38,7 @@ const blogSchema = new mongoose.Chema(
         featuredImage: String,
         category: {
             type: String,
-            ennum: ['recipe', 'review', 'tips', 'news', 'health', 'other'],
+            enum: ['recipe', 'review', 'tips', 'news', 'health', 'other'], // Sửa: "enNUM" → "enum"
             default: 'other',
             index: true,
         },
@@ -46,6 +46,7 @@ const blogSchema = new mongoose.Chema(
             {
                 type: String,
                 trim: true,
+                lowercase: true,
             },
         ],
         status: {
@@ -62,13 +63,10 @@ const blogSchema = new mongoose.Chema(
             type: Number,
             default: 0,
         },
-        likes: [{ type: String }], // Array of user IDs who liked the post
-        commentsCount: {
-            type: Number,
-            default: 0,
-        },
+        likes: [{ type: String }], // userId strings
         publishedAt: Date,
         comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+
         seo: {
             metaTitle: String,
             metaDescription: String,
@@ -77,24 +75,29 @@ const blogSchema = new mongoose.Chema(
     },
     {
         timestamps: true,
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true },
     },
 );
 
-// Create slug before saving
+// Pre-save hook
 blogSchema.pre('save', function (next) {
-    if (this.isModified('title')) {
-        this.slug = slugify(this.title, { lower: true, strict: true }) + '-' + Date.now();
+    // Tạo slug đẹp + tránh trùng
+    if (this.isModified('title') || !this.slug) {
+        const base = slugify(this.title, { lower: true, strict: true });
+        this.slug = `${base}-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
     }
 
-    // Auto-generate excerpt
+    // Tự động tạo excerpt nếu chưa có
     if (!this.excerpt && this.content) {
-        this.excerpt = this.content.substring(0, 200).replace(/<[^>]*>/g, '') + '...';
+        const text = this.content.replace(/<[^>]*>/g, '').trim();
+        this.excerpt = text.length > 200 ? text.substring(0, 197) + '...' : text;
     }
 
-    // Calculate read time
+    // Tính thời gian đọc
     if (this.content) {
-        const wordCount = this.content.split(/\s+/).length;
-        this.readTime = Math.ceil(wordCount / 200);
+        const words = this.content.trim().split(/\s+/).length;
+        this.readTime = Math.max(1, Math.ceil(words / 200));
     }
 
     next();
@@ -102,18 +105,20 @@ blogSchema.pre('save', function (next) {
 
 // Indexes
 blogSchema.index({ title: 'text', content: 'text', tags: 'text' });
-blogSchema.index({ status: 1, publishedAt: -1 });
 blogSchema.index({ 'author.userId': 1, status: 1 });
 blogSchema.index({ category: 1, status: 1 });
 
-// Virtuals
-BlogSchema.virtual('likesCount').get(function () {
-    return this.likes.length;
-});
-BlogSchema.virtual('commentsCount').get(function () {
-    return this.comments.length;
+// Virtuals - KHÔNG ĐƯỢC trùng tên với field thật!
+blogSchema.virtual('likesCount').get(function () {
+    return this.likes?.length || 0;
 });
 
-BlogSchema.set('toJSON', { virtuals: true });
+blogSchema.virtual('commentsCount').get(function () {
+    return this.comments?.length || 0;
+});
+
+// Bắt buộc bật virtuals khi trả về JSON
+blogSchema.set('toJSON', { virtuals: true });
+blogSchema.set('toObject', { virtuals: true });
 
 export default mongoose.model('Blog', blogSchema);

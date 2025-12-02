@@ -56,7 +56,7 @@ class CloudinaryService {
             const uploadPromises = files.map((file) => this.uploadImage(file.buffer, folder, file.originalname));
 
             const results = await Promise.all(uploadPromises);
-            logger.info(`✅ ${results.length} images uploaded successfully`);
+            logger.info(`${results.length} images uploaded successfully`);
             return results;
         } catch (error) {
             logger.error('Upload multiple images error:', error);
@@ -72,7 +72,7 @@ class CloudinaryService {
     async deleteImage(publicId) {
         try {
             const result = await cloudinary.uploader.destroy(publicId);
-            logger.info(`✅ Image deleted from Cloudinary: ${publicId}`);
+            logger.info(`Image deleted from Cloudinary: ${publicId}`);
             return result;
         } catch (error) {
             logger.error('Delete image error:', error);

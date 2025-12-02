@@ -1,7 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 import connectDB from './config/database.js';
@@ -10,8 +12,6 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import { startEurekaClient } from './config/eureka.js';
 import { swaggerSpec } from './config/swagger.js';
 import logger from './utils/logger.js';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8087;
