@@ -92,7 +92,7 @@ const options = {
             },
         },
     },
-    apis: ['./src/routes/*.js', './src/controllers/*.js'], // vẫn giữ nguyên
+    apis: ['./src/routes/**/*.js', './src/controllers/**/*.js'],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
