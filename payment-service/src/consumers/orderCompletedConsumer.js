@@ -8,6 +8,14 @@ export const startOrderCompletedConsumer = async () => {
             try {
                 logger.info('Order completed event received:', orderData);
 
+                if (!['completed'].includes(orderData.paymentStatus?.toLowerCase())) {
+                    logger.error(
+                        `BLOCKED: Order ${orderData.orderId} not paid but received completed event!`,
+                        orderData,
+                    );
+                    return; // KHÔNG CỘNG TIỀN
+                }
+
                 const platformFee = Math.round(orderData.totalAmount * 0.1); // 10% phí nền tảng
                 const amountForRestaurant = orderData.totalAmount - platformFee;
 
