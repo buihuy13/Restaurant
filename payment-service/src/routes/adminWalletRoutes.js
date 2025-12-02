@@ -5,24 +5,22 @@ import { adminAuth } from '../middlewares/adminAuth.js';
 
 const router = express.Router();
 
-// Bảo vệ toàn bộ route bằng adminAuth
 router.use(adminAuth);
 
 /**
  * @swagger
- * /api/admin/payout-requests:
+ * /api/admin/wallets/payout-requests:
  *   get:
- *     summary: [ADMIN] Lay danh sach yeu cau rut tien
+ *     summary: [ADMIN] Lấy danh sách yêu cầu rút tiền
  *     tags: [Admin - Wallet]
  *     security:
  *       - Bearer: []
  *     parameters:
  *       - name: status
  *         in: query
- *         description: Loc theo trang thai (pending/completed/failed)
  *         schema:
  *           type: string
- *           enum: [pending, completed, failed]
+ *           enum: [pending, completed, rejected]
  *       - name: page
  *         in: query
  *         schema:
@@ -35,36 +33,15 @@ router.use(adminAuth);
  *           default: 20
  *     responses:
  *       200:
- *         description: Danh sach yeu cau rut tien
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     requests:
- *                       type: array
- *                       items:
- *                         $ref: '#/definitions/PayoutRequest'
- *                     pagination:
- *                       type: object
- *                       properties:
- *                         page: { type: integer }
- *                         limit: { type: integer }
- *                         total: { type: integer }
- *                         totalPages: { type: integer }
+ *         description: Thành công
  */
+router.get('/payout-requests', adminWalletController.getPayoutRequests);
 
 /**
  * @swagger
- * /api/admin/payout-requests/{id}/approve:
+ * /api/admin/wallets/payout-requests/{id}/approve:
  *   post:
- *     summary: [ADMIN] Duyet yeu cau rut tien va chuyen tien qua Stripe
+ *     summary: [ADMIN] Duyệt yêu cầu rút tiền
  *     tags: [Admin - Wallet]
  *     security:
  *       - Bearer: []
@@ -72,35 +49,19 @@ router.use(adminAuth);
  *       - name: id
  *         in: path
  *         required: true
- *         description: ID cua PayoutRequest
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Chuyen tien thanh cong
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Chuyen tien thanh cong
- *                 transferId:
- *                   type: string
- *                   description: Stripe Transfer ID
- *       400:
- *         description: Loi (da duyet, khong co Stripe account, ...)
+ *         description: Duyệt thành công
  */
+router.post('/payout-requests/:id/approve', adminWalletController.approve);
 
 /**
  * @swagger
- * /api/admin/payout-requests/{id}/reject:
+ * /api/admin/wallets/payout-requests/{id}/reject:
  *   post:
- *     summary: [ADMIN] Tu choi yeu cau rut tien va hoan tien lai vi
+ *     summary: [ADMIN] Từ chối yêu cầu rút tiền
  *     tags: [Admin - Wallet]
  *     security:
  *       - Bearer: []
@@ -108,7 +69,6 @@ router.use(adminAuth);
  *       - name: id
  *         in: path
  *         required: true
- *         description: ID cua PayoutRequest
  *         schema:
  *           type: string
  *     requestBody:
@@ -120,25 +80,10 @@ router.use(adminAuth);
  *             properties:
  *               reason:
  *                 type: string
- *                 example: Thong tin ngan hang khong chinh xac
  *     responses:
  *       200:
- *         description: Da tu choi va hoan tien thanh cong
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Da tu choi va hoan tien thanh cong
+ *         description: Từ chối thành công
  */
-
-router.get('/payout-requests', adminWalletController.getPayoutRequests);
-router.post('/payout-requests/:id/approve', adminWalletController.approve);
 router.post('/payout-requests/:id/reject', adminWalletController.reject);
 
 export default router;
