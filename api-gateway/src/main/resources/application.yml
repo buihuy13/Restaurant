@@ -437,6 +437,24 @@ spring:
                   args:
                       requiredRole: ADMIN
 
+                - id: wallet-service-jwt
+                  uri: lb://wallet-service
+                  predicates:
+                      - Path=/api/wallet,/api/wallet/**,/api/wallet/transactions,/api/wallet/withdraw
+                  filters:
+                      - name: JwtAuthentication
+                  args:
+                      requiredRole: MERCHANT
+
+                - id: admin-wallet-service
+                  uri: lb://wallet-service
+                  predicates:
+                      - Path=/api/admin/payout-requests,/api/admin/payout-requests/**
+                  filters:
+                      - name: JwtAuthentication
+                  args:
+                      requiredRole: ADMIN
+
                 - id: payment-service-swagger
                   uri: lb://payment-service
                   predicates:
