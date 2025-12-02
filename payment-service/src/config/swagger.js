@@ -8,7 +8,7 @@ const options = {
         info: {
             title: 'Payment & Wallet Service API',
             version: '1.0.0',
-            description: 'Thanh toán khách hàng + Ví đối tác (nhà hàng) – chuẩn Grab/ShopeeFood',
+            description: 'Thanh toán khách hàng + Ví đối tác (nhà hàng)',
             contact: {
                 name: 'API Support',
                 email: 'support@example.com',
@@ -92,7 +92,7 @@ const options = {
             },
         },
     },
-    apis: ['./src/routes/**/*.js', './src/controllers/**/*.js'],
+    apis: ['./src/routes/**/*.js', './src/controllers/**/*.js', './src/routes/adminWalletRoutes.js'],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
