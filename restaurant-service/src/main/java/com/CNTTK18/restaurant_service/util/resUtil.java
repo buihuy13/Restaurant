@@ -22,6 +22,7 @@ public class resUtil {
                         .enabled(res.isEnabled())
                         .totalReview(res.getTotalReview())
                         .cate(res.getCategories().stream().map(c -> new cateResponse(c.getId(),c.getCateName())).toList())
+                        .slug(res.getSlug())
                         .build();
     }
 
@@ -43,6 +44,7 @@ public class resUtil {
                         .distance(distance)
                         .duration(duration)
                         .cate(res.getCategories().stream().map(c -> new cateResponse(c.getId(),c.getCateName())).toList())
+                        .slug(res.getSlug())
                         .build();
     }
 
@@ -63,6 +65,7 @@ public class resUtil {
                         .totalReview(res.getTotalReview())
                         .products(res.getProducts().stream().map(productUtil::mapProductToProductResponseWithoutResParam).toList())
                         .cate(res.getCategories().stream().map(c -> new cateResponse(c.getId(),c.getCateName())).toList())
+                        .slug(res.getSlug())
                         .build();
     }
 
@@ -85,6 +88,7 @@ public class resUtil {
                         .duration(duration)
                         .products(res.getProducts().stream().map(productUtil::mapProductToProductResponseWithoutResParam).toList())
                         .cate(res.getCategories().stream().map(c -> new cateResponse(c.getId(),c.getCateName())).toList())
+                        .slug(res.getSlug())
                         .build();
     }
 }

@@ -1,61 +1,41 @@
 import { createPaymentSchema } from '../dtos/createPaymentDto.js';
 import paymentService from '../services/paymentService.js';
+import stripeService from '../services/stripeService.js';
 import logger from '../utils/logger.js';
 
-/**
- * @swagger
- * tags:
- *   name: Payments
- *   description: Payment management API
- */
 class PaymentController {
-    /**
-     * @swagger
-     * /api/payments:
-     *   post:
-     *     summary: Create a new payment
-     *     tags: [Payments]
-     *     security:
-     *       - bearerAuth: []
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             required:
-     *               - orderId
-     *               - userId
-     *               - amount
-     *               - paymentMethod
-     *             properties:
-     *               orderId:
-     *                 type: string
-     *               userId:
-     *                 type: string
-     *               amount:
-     *                 type: number
-     *               paymentMethod:
-     *                 type: string
-     *                 enum: [cash, card, wallet]
-     *               currency:
-     *                 type: string
-     *                 default: USD
-     *     responses:
-     *       201:
-     *         description: Payment created successfully
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 success:
-     *                   type: boolean
-     *                 message:
-     *                   type: string
-     *                 data:
-     *                   $ref: '#/components/schemas/Payment'
-     */
+    async handleWebhook(req, res) {
+        const sig = req.headers['stripe-signature'];
+        const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+        // Kiểm tra cấu hình webhook secret
+        if (!webhookSecret) {
+            logger.error('STRIPE_WEBHOOK_SECRET is not set');
+            return res.status(500).send('Server configuration error');
+        }
+
+        let event;
+        // Xác thực webhook từ Stripe
+        try {
+            event = stripeService.stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+            logger.info(`Webhook received: ${event.type}`);
+        } catch (err) {
+            logger.error(`Webhook signature verification failed: ${err.message}`);
+            return res.status(400).send(`Webhook Error: ${err.message}`);
+        }
+
+        // Trả 200 NGAY LẬP TỨC để Stripe không retry
+        res.status(200).json({ received: true });
+
+        // Xử lý bất đồng bộ - không block response
+        try {
+            await paymentService.handleStripeWebhook(event);
+        } catch (err) {
+            logger.error(`Error in handleStripeWebhook: ${err.message}`);
+            // Không trả lỗi về Stripe vì đã 200 rồi
+        }
+    }
+
     async createPayment(req, res, next) {
         try {
             const { error } = createPaymentSchema.validate(req.body);
@@ -80,26 +60,6 @@ class PaymentController {
         }
     }
 
-    /**
-     * @swagger
-     * /api/payments/order/{orderId}:
-     *   get:
-     *     summary: Get payment by order ID
-     *     tags: [Payments]
-     *     security:
-     *       - bearerAuth: []
-     *     parameters:
-     *       - in: path
-     *         name: orderId
-     *         required: true
-     *         schema:
-     *           type: string
-     *     responses:
-     *       200:
-     *         description: Payment details
-     *       404:
-     *         description: Payment not found
-     */
     async getPaymentByOrderId(req, res, next) {
         try {
             const { orderId } = req.params;
@@ -122,26 +82,6 @@ class PaymentController {
         }
     }
 
-    /**
-     * @swagger
-     * /api/payments/{paymentId}:
-     *   get:
-     *     summary: Get payment by payment ID
-     *     tags: [Payments]
-     *     security:
-     *       - bearerAuth: []
-     *     parameters:
-     *       - in: path
-     *         name: paymentId
-     *         required: true
-     *         schema:
-     *           type: string
-     *     responses:
-     *       200:
-     *         description: Payment details
-     *       404:
-     *         description: Payment not found
-     */
     async getPaymentById(req, res, next) {
         try {
             const { paymentId } = req.params;
@@ -164,39 +104,6 @@ class PaymentController {
         }
     }
 
-    /**
-     * @swagger
-     * /api/payments/user/{userId}:
-     *   get:
-     *     summary: Get user's payment history
-     *     tags: [Payments]
-     *     security:
-     *       - bearerAuth: []
-     *     parameters:
-     *       - in: path
-     *         name: userId
-     *         required: true
-     *         schema:
-     *           type: string
-     *       - in: query
-     *         name: status
-     *         schema:
-     *           type: string
-     *           enum: [pending, processing, completed, failed, refunded]
-     *       - in: query
-     *         name: page
-     *         schema:
-     *           type: integer
-     *           default: 1
-     *       - in: query
-     *         name: limit
-     *         schema:
-     *           type: integer
-     *           default: 10
-     *     responses:
-     *       200:
-     *         description: List of payments
-     */
     async getUserPayments(req, res, next) {
         try {
             const { userId } = req.params;
@@ -214,37 +121,7 @@ class PaymentController {
             next(error);
         }
     }
-    /**
-     * @swagger
-     * /api/payments/{paymentId}/refund:
-     *   post:
-     *     summary: Refund a payment
-     *     tags: [Payments]
-     *     security:
-     *       - bearerAuth: []
-     *     parameters:
-     *       - in: path
-     *         name: paymentId
-     *         required: true
-     *         schema:
-     *           type: string
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             required:
-     *               - reason
-     *             properties:
-     *               amount:
-     *                 type: number
-     *               reason:
-     *                 type: string
-     *     responses:
-     *       200:
-     *         description: Payment refunded successfully
-     */
+
     async refundPayment(req, res, next) {
         try {
             const { paymentId } = req.params;

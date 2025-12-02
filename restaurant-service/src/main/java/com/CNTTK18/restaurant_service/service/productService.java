@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
+import com.CNTTK18.Common.Util.SlugGenerator;
 import com.CNTTK18.restaurant_service.data.reviewType;
 import com.CNTTK18.restaurant_service.dto.product.request.productRequest;
 import com.CNTTK18.restaurant_service.dto.product.request.sizePrice;
@@ -169,6 +170,11 @@ public class productService {
         return productUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
+    public productResponse getProductBySlug(String slug) {
+        products product = productRepo.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        return productUtil.mapProductToProductResponseWitoutResParam(product);
+    }
+
     @Transactional
     public productResponse createProduct(productRequest productRequest, MultipartFile imageFile) {
         categories cate = cateRepository.findById(productRequest.getCategoryId())
@@ -187,6 +193,7 @@ public class productService {
                                 .volume(0)
                                 .totalReview(0)
                                 .rating(0)
+                                .slug(SlugGenerator.generate(productRequest.getProductName()))
                                 .build();
         //Check cate
         if (!res.getCategories().contains(cate)) {
@@ -240,7 +247,11 @@ public class productService {
             }
         }
 
-        product.setProductName(updateProduct.getProductName());
+        if (!product.getProductName().equals(updateProduct.getProductName())) {
+            product.setProductName(updateProduct.getProductName());
+            product.setSlug(updateProduct.getProductName());
+        }
+        
         product.setCategory(cate);
         product.setDescription(updateProduct.getDescription());
 

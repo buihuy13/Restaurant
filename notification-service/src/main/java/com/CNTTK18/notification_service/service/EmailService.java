@@ -16,6 +16,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.CNTTK18.Common.Event.ConfirmationEvent;
 import com.CNTTK18.Common.Event.MerchantEvent;
+import com.CNTTK18.Common.Event.PaymentEvent;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -82,4 +83,33 @@ public class EmailService {
             throw new RuntimeException("Lỗi khi gửi mail, " + ex.getMessage(), ex);
         }
     }
+
+    @RabbitListener(queues = "payment.completed")
+    public void sendPaymentEmail(PaymentEvent request) {
+        try {
+            Context context = new Context();
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("name", request.getEmail());
+            variables.put("orderId", request.getOrderId());
+            variables.put("amount", request.getAmount());
+            variables.put("transactionId", request.getTransactionId());
+            variables.put("url", url + request.getUrl());
+            context.setVariables(variables);
+
+            String content = springTemplateEngine.process("payment_completed", context);
+
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+
+            helper.setSubject("Payment Completed - Order " + request.getOrderId());
+            helper.setText(content, true);
+            helper.setTo(request.getEmail());
+            helper.setFrom(username);
+
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException | MailException e) {
+            throw new RuntimeException("Lỗi khi gửi mail: " + e.getMessage(), e);
+        }
+    }
+
 }

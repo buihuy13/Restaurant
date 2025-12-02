@@ -46,11 +46,13 @@ public class restaurants {
     private String publicID; // Cho việc xóa ảnh trong cloud
     @Column(name = "merchant_id", nullable = false)
     private String merchantId;
-
+    @Column(name = "manager_id", nullable = false)
+    private String managerId;
     private boolean enabled;
 
     @Column(name = "total_review")
     private int totalReview;
+    private String slug;
 
     @ManyToMany
     @JoinTable(

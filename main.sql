@@ -11,15 +11,16 @@ create table users (
     `enabled` boolean not null,
     verificationcode varchar(255),
     phone varchar(15),
+    slug varchar(255) not null unique,
     authprovider varchar(20) default 'LOCAL'
 );
 
 create index idx_email on users(email);
 
-insert into users(id, `password`, username, email, phone, `role`, `enabled`, `verificationcode`) values 
-("testadminid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testadmin", "testadmin@gmail.com", "0762612698", "ADMIN", true, "abcxyz123"),
-("testuserid", "$2a$12$CydeMvJj1Hvu/824Lh2NuOEIrZnlhRMIUM736cYXa7bSD3LUmGW7K", "testuser", "testuser@gmail.com", "0762612699", "USER", true, "abcxyz456"),
-("testmerchantid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testmerchant", "testmerchant@gmail.com", "0762612697", "MERCHANT", true, "abcxyz789");
+insert into users(id, `password`, username, email, phone, `role`, `enabled`, `verificationcode`, `slug`) values 
+("testadminid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testadmin", "testadmin@gmail.com", "0762612698", "ADMIN", true, "abcxyz123", "abcxyz"),
+("testuserid", "$2a$12$CydeMvJj1Hvu/824Lh2NuOEIrZnlhRMIUM736cYXa7bSD3LUmGW7K", "testuser", "testuser@gmail.com", "0762612699", "USER", true, "abcxyz456", "abc"),
+("testmerchantid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testmerchant", "testmerchant@gmail.com", "0762612697", "MERCHANT", true, "abcxyz789", "xyz");
 create table address (
     id varchar(255) primary key,
     `location` varchar(255) not null,
@@ -53,6 +54,8 @@ create table restaurants (
     phone varchar(15),
     total_review int default 0,
     merchant_id varchar(100) not null,
+    manager_id varchar(100),
+    slug varchar(255) not null unique,
     `enabled` boolean not null
 );
 
@@ -82,6 +85,7 @@ create table products (
     volume int not null,
     total_review int,
     rating float,
+    slug varchar(255) not null unique,
     available boolean not null
 );
 

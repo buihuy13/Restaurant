@@ -10,9 +10,11 @@ import org.springframework.stereotype.Service;
 
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
+import com.CNTTK18.Common.Util.SlugGenerator;
 import com.CNTTK18.user_service.data.Role;
 import com.CNTTK18.user_service.dto.request.AddressRequest;
 import com.CNTTK18.user_service.dto.request.Login;
+import com.CNTTK18.user_service.dto.request.ManagerRequest;
 import com.CNTTK18.user_service.dto.request.Password;
 import com.CNTTK18.user_service.dto.request.Register;
 import com.CNTTK18.user_service.dto.request.Rejection;
@@ -26,6 +28,7 @@ import com.CNTTK18.user_service.model.Address;
 import com.CNTTK18.user_service.model.Users;
 import com.CNTTK18.user_service.repository.AddressRepository;
 import com.CNTTK18.user_service.repository.UserRepository;
+import com.CNTTK18.user_service.util.AddressUtil;
 import com.CNTTK18.user_service.util.UserUtil;
 
 @Service
@@ -59,11 +62,19 @@ public class UserService {
 
     public UserResponse updateUser(String id, UserRequest user) {
         Users existingUser = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        existingUser.setUsername(user.getUsername());
+        if (!existingUser.getUsername().equals(user.getUsername())) {
+            existingUser.setUsername(user.getUsername());
+            existingUser.setSlug(SlugGenerator.generate(user.getUsername()));
+        }
         existingUser.setPhone(user.getPhone());
         userRepository.save(existingUser);
         return new UserResponse(existingUser.getId(),user.getUsername(),existingUser.getEmail(), 
-                                existingUser.isEnabled(), existingUser.getRole(), user.getPhone());
+                                existingUser.isEnabled(), existingUser.getRole(), user.getPhone(), existingUser.getSlug());
+    }
+
+    public UserResponse getUserBySlug(String slug) {
+        return userRepository.findBySlug(slug).map(UserUtil::mapUsersToUserResponse)
+                                          .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     public void deleteUserById(String id) {
@@ -82,6 +93,7 @@ public class UserService {
         newUser.setEnabled(false);
         newUser.setVerficationCode(java.util.UUID.randomUUID().toString());
         newUser.setRole(user.getRole());
+        newUser.setSlug(SlugGenerator.generate(user.getUsername()));
         userRepository.save(newUser);
         mailService.sendConfirmationEmail(newUser.getEmail(),newUser.getVerficationCode());
     }
@@ -157,9 +169,10 @@ public class UserService {
         return UserUtil.mapUsersToUserResponse(updatedUser);
     }
 
-    public List<Address> getUserAddresses(String id) {
+    public List<AddressResponse> getUserAddresses(String id) {
         Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return user.getAddressList();
+        List<Address> addresses = user.getAddressList();
+        return addresses.stream().map(AddressUtil::mapAddressToAddressResponseWithUserNull).toList();
     }
 
     public UserResponse resetPassword(Password password, String id) {
@@ -179,13 +192,35 @@ public class UserService {
 
         user.addAddress(address);
         userRepository.save(user);
-        return new AddressResponse(address.getId(),address.getLocation(),address.getLongitude(),
-                                    address.getLatitude(), UserUtil.mapUsersToUserResponse(user));
+        return AddressUtil.mapAddressToAddressResponse(address, user);
     }
 
     public void deleteAddress(String id) {
         Address address = addressRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
         addressRepository.delete(address);
+    }
+
+    public String createManagerUser(ManagerRequest user) {
+        if (!user.getPassword().equals(user.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password and Confirm Password do not match");
+        }
+        Users newUser = new Users();
+        newUser.setId(RandomIdGenerator.generate(99));
+        newUser.setUsername(user.getUsername());
+        newUser.setEmail(user.getEmail());
+        newUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        newUser.setEnabled(true);
+        newUser.setVerficationCode(java.util.UUID.randomUUID().toString());
+        newUser.setRole(Role.MANAGER.toString());
+        newUser.setSlug(SlugGenerator.generate(user.getUsername()));
+        userRepository.save(newUser);
+        return newUser.getId();
+    }
+
+    public void upgradeUserToMerchant(String id) {
+        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setRole(Role.MERCHANT.toString());
+        userRepository.save(user);
     }
 }

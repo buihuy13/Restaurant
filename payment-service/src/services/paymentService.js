@@ -20,7 +20,7 @@ class PaymentService {
                 orderId: paymentData.orderId,
                 userId: paymentData.userId,
                 amount: paymentData.amount,
-                currency: paymentData.currency || 'VND',
+                currency: paymentData.currency.toLowerCase() || 'usd',
                 paymentMethod: paymentData.paymentMethod,
                 status: 'pending',
                 metadata: paymentData.metadata || {},
@@ -50,6 +50,11 @@ class PaymentService {
     // Thanh toán bằng thẻ (Stripe)
     async processCardPayment(payment) {
         try {
+            // Kiểm tra xem có hỗ trợ currency không
+            if (payment.currency.toLowerCase() === 'vnd') {
+                throw new Error('Stripe does not support VND. Use USD instead.');
+            }
+
             // cập nhật trạng thái sang "processing"
             payment.status = 'processing';
             await payment.save();
@@ -57,13 +62,17 @@ class PaymentService {
             // Tạo PaymentIntent trên Stripe
             const paymentIntent = await stripeService.createPaymentIntent(
                 payment.amount,
-                payment.currency.toLowerCase(),
+                payment.currency.toLowerCase() || 'usd',
                 {
                     paymentId: payment.paymentId,
                     orderId: payment.orderId,
                     userId: payment.userId,
                 },
             );
+
+            if (!paymentIntent || !paymentIntent.client_secret) {
+                throw new Error('PaymentIntent created but missing client_secret');
+            }
 
             // Lưu lại thông tin giao dịch Stripe
             payment.transactionId = paymentIntent.id;
@@ -225,7 +234,7 @@ class PaymentService {
                 const paymentIntent = data.object;
                 const payment = await Payment.findOne({ where: { transactionId: paymentIntent.id } });
 
-                if (!payment) return logger.warn(`⚠️ No payment found for transaction ${paymentIntent.id}`);
+                if (!payment) return logger.warn(`No payment found for transaction ${paymentIntent.id}`);
 
                 payment.status = 'failed';
                 payment.failureReason = paymentIntent.last_payment_error?.message || 'Unknown error';
@@ -276,9 +285,10 @@ class PaymentService {
         await this.publishEvent('payment.completed', {
             paymentId: payment.paymentId,
             orderId: payment.orderId,
-            userId: payment.userId,
+            email: payment.userEmail,
             amount: parseFloat(payment.amount),
             transactionId: payment.transactionId,
+            url: `/api/orders/user/${payment.userId}`,
             timestamp: new Date().toISOString(),
         });
     }
@@ -332,7 +342,7 @@ class PaymentService {
                 userId: orderData.userId,
                 amount: orderData.totalAmount,
                 paymentMethod: orderData.paymentMethod,
-                currency: 'VND',
+                currency: orderData.currency.toLowerCase() || 'usd',
             };
 
             await this.createPayment(paymentData);

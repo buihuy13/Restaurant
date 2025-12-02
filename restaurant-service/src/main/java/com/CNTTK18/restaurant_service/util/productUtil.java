@@ -22,6 +22,7 @@ public class productUtil {
                             .restaurant(resResponse)
                             .rating(product.getRating())
                             .volume(product.getVolume())
+                            .slug(product.getSlug())
                             .build();
     }
 
@@ -40,6 +41,7 @@ public class productUtil {
                             .rating(product.getRating())
                             .volume(product.getVolume())
                             .restaurant(resUtil.mapResToResResponse(product.getRestaurant()))
+                            .slug(product.getSlug())
                             .build();
     }
 
@@ -57,6 +59,7 @@ public class productUtil {
                                                                                 ps.getPrice(),ps.getSize().getId())).toList())
                             .rating(product.getRating())
                             .volume(product.getVolume())
+                            .slug(product.getSlug())
                             .build();
     }
 }

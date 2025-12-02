@@ -102,6 +102,7 @@ services:
             - REDIS_PORT=${REDIS_PORT}
             - REDIS_PASSWORD=${REDIS_PASSWORD}
             - REDIS_SSL=${REDIS_SSL}
+            - TZ=${ENV_TZ}
         depends_on:
             service-discovery:
                 condition: service_started
@@ -201,6 +202,7 @@ services:
             - OPENROUTESERVICE_URL=${OPENROUTESERVICE_URL}
             - OPENROUTESERVICE_LIST_URL=${OPENROUTESERVICE_LIST_URL}
             - OPENROUTESERVICE_API_KEY=${OPENROUTESERVICE_API_KEY}
+            - TZ=${ENV_TZ}
         depends_on:
             db:
                 condition: service_healthy
@@ -217,6 +219,7 @@ services:
             - '8082:8082'
         environment:
             - ./order-service/.env
+            - TZ=${ENV_TZ}
         depends_on:
             mongodb:
                 condition: service_healthy
@@ -237,6 +240,8 @@ services:
             - '8083:8083'
         env_file:
             - ./payment-service/.env
+        environment:
+            - TZ=${ENV_TZ}
         depends_on:
             db:
                 condition: service_healthy

@@ -26,5 +26,6 @@ public class productResponseWithoutRes {
     private boolean available;
     private int totalReview;
     private float rating;
+    private String slug;
     private List<ProductSizeResponse> productSizes;
 }
