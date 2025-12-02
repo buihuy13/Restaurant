@@ -119,14 +119,6 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    @Tag(name = "Put")
-    @Operation(summary = "Update role from user to merchant")
-    @PutMapping("/merchant/{id}")
-    public ResponseEntity<MessageResponse> updateUserToMerchant(@PathVariable String id) {
-        userService.upgradeUserToMerchant(id);
-        return ResponseEntity.ok(new MessageResponse("Update successfully"));
-    }
-
     @Tag(name = "Delete")
     @Operation(summary = "Delete user")
     @DeleteMapping("/{id}")
