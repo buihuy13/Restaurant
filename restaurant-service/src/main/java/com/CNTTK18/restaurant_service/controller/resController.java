@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
-import com.CNTTK18.restaurant_service.dto.restaurant.request.ManagerRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
 import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponseWithProduct;
@@ -29,7 +28,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import reactor.core.publisher.Mono;
@@ -111,18 +109,6 @@ public class resController {
                     @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         return resService.createRestaurant(resRequest, imageFile)
                         .map(savedRestaurant -> ResponseEntity.ok(savedRestaurant)).toFuture();
-    }
-
-    @Tag(name = "Post")
-    @Operation(summary = "Create new restaurant")
-    @PostMapping("/manager/{id}")
-    @CircuitBreaker(name = "create", fallbackMethod = "fallbackMethod")
-    @TimeLimiter(name = "create")
-    @Retry(name = "create")
-    public ResponseEntity<Void> createNewManager(@RequestBody(required = true) @Valid ManagerRequest managerRequest,
-                    @PathVariable String id) {
-        resService.addNewManager(managerRequest, id);
-        return ResponseEntity.ok().build();
     }
 
     public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(resRequest resRequest, 
