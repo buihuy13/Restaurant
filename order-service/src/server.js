@@ -12,6 +12,7 @@ import cartRouter from './routes/cartRoutes.js';
 import redisClient from './config/redis.js';
 import startPaymentConsumer from './consumers/paymentConsumer.js';
 import eurekaClient from './config/eureka.js';
+import orderMerchantRoutes from './routes/orderMerchantRoutes.js';
 import { setupSwagger } from './config/swagger.js';
 
 dotenv.config();
@@ -51,6 +52,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/orders', orderRouter);
 app.use('/api/cart', cartRouter);
+app.use('/api/merchant/orders', orderMerchantRoutes);
 
 // Setup swagger
 setupSwagger(app);

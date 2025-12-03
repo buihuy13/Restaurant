@@ -4,6 +4,7 @@ import logger from '../utils/logger.js';
 import Order from '../models/Order.js';
 import Cart from '../models/Cart.js';
 import cacheService from './cacheService.js';
+import { notifyNewOrder } from '../config/socket.js';
 
 class OrderService {
     generateOrderId() {
@@ -297,6 +298,7 @@ class OrderService {
             });
 
             await order.save();
+            await this.notifyMerchantNewOrder(order);
             logger.info(`Order saved: ${order.orderId}`);
 
             // Cache
@@ -392,6 +394,7 @@ class OrderService {
                     });
 
                     await order.save();
+                    await this.notifyMerchantNewOrder(order);
                     logger.info(`Order created: ${order.orderId}`);
 
                     createdOrders.push(order.toObject());
@@ -723,6 +726,149 @@ class OrderService {
         } catch (error) {
             logger.error('Get restaurant orders error:', error);
             throw error;
+        }
+    }
+
+    async acceptOrderByMerchant(orderId, merchantId) {
+        const order = await Order.findOne({ orderId });
+
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        const restaurant = await this.validateRestaurant(order.restaurantId);
+        if (restaurant.merchantId !== merchantId) {
+            throw new Error('You are not authorized to manage this restaurant');
+        }
+
+        if (order.status !== 'pending') {
+            throw new Error(`Cannot accept order. Current status: ${order.status}`);
+        }
+
+        // Chuyển từ pending → confirmed
+        order.status = 'confirmed';
+        await order.save();
+
+        // Cập nhật cache
+        await cacheService.setOrder(order.orderId, order.toObject());
+        await cacheService.invalidateUserOrders(order.userId);
+
+        // Publish event: merchant accepted order
+        // await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.accepted', {
+        //     orderId: order.orderId,
+        //     userId: order.userId,
+        //     restaurantId: order.restaurantId,
+        //     restaurantName: order.restaurantName,
+        //     merchantId,
+        //     timestamp: new Date().toISOString(),
+        // });
+
+        logger.info(`Merchant ${merchantId} accepted order ${orderId}`);
+        return order;
+    }
+
+    async rejectOrderByMerchant(orderId, merchantId, reason) {
+        if (!reason || reason.trim() === '') {
+            throw new Error('Rejection reason is required');
+        }
+
+        const order = await Order.findOne({ orderId });
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        const restaurant = await this.validateRestaurant(order.restaurantId);
+        if (restaurant.merchantId !== merchantId) {
+            throw new Error('You are not authorized to manage this restaurant');
+        }
+
+        if (order.status !== 'pending') {
+            throw new Error(`Cannot reject order. Current status: ${order.status}`);
+        }
+
+        order.status = 'cancelled';
+        order.cancellationReason = `Restaurant rejected: ${reason}`;
+        await order.save();
+
+        await cacheService.setOrder(order.orderId, order.toObject());
+        await cacheService.invalidateUserOrders(order.userId);
+
+        // Publish event: merchant rejected
+        // await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.rejected', {
+        //     orderId: order.orderId,
+        //     userId: order.userId,
+        //     restaurantId: order.restaurantId,
+        //     restaurantName: order.restaurantName,
+        //     merchantId,
+        //     reason,
+        //     timestamp: new Date().toISOString(),
+        // });
+
+        logger.info(`Merchant ${merchantId} rejected order ${orderId}: ${reason}`);
+        return order;
+    }
+
+    async cancelOrderByMerchant(orderId, merchantId, reason) {
+        if (!reason || reason.trim() === '') {
+            throw new Error('Cancellation reason is required');
+        }
+
+        const order = await Order.findOne({ orderId });
+        if (!order) {
+            throw new Error('Order not found');
+        }
+
+        // Kiểm tra quyền merchant
+        const restaurant = await this.validateRestaurant(order.restaurantId);
+        if (restaurant.merchantId !== merchantId) {
+            throw new Error('You are not authorized to manage this restaurant');
+        }
+
+        // Chỉ cho phép hủy khi đơn chưa giao xong
+        const allowedCancelStatuses = ['confirmed', 'preparing'];
+        if (!allowedCancelStatuses.includes(order.status)) {
+            throw new Error(`Cannot cancel order at status: ${order.status}`);
+        }
+
+        const previousStatus = order.status;
+
+        // Cập nhật trạng thái
+        order.status = 'cancelled';
+        order.cancellationReason = `Restaurant cancelled: ${reason}`;
+        await order.save();
+
+        // Cập nhật cache
+        await cacheService.setOrder(order.orderId, order.toObject());
+        await cacheService.invalidateUserOrders(order.userId);
+
+        // Publish event: merchant cancelled order
+        await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.cancelled.by.merchant', {
+            orderId: order.orderId,
+            userId: order.userId,
+            restaurantId: order.restaurantId,
+            restaurantName: order.restaurantName,
+            merchantId,
+            reason,
+            previousStatus,
+            refundRequired: order.paymentStatus === 'completed' || order.paymentStatus === 'paid',
+            timestamp: new Date().toISOString(),
+        });
+
+        logger.info(`Merchant ${merchantId} cancelled order ${orderId}. Reason: ${reason}`);
+        return order;
+    }
+
+    async notifyMerchantNewOrder(order) {
+        try {
+            notifyNewOrder(order.restaurantId, {
+                orderId: order.orderId,
+                totalAmount: order.finalAmount,
+                itemCount: order.items.reduce((sum, i) => sum + i.quantity, 0),
+                customerNote: order.orderNote,
+                createdAt: order.createdAt,
+            });
+        } catch (err) {
+            logger.warn('Failed to send realtime notification to merchant', err.message);
         }
     }
 }

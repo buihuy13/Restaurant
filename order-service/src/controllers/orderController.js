@@ -151,24 +151,6 @@ class OrderController {
         }
     }
 
-    async getRestaurantOrders(req, res, next) {
-        try {
-            const { restaurantId } = req.params;
-            const filters = req.query;
-
-            const result = await orderService.getRestaurantOrders(restaurantId, filters);
-
-            res.status(200).json({
-                success: true,
-                data: result.orders.map(orderResponseDTO),
-                pagination: result.pagination,
-            });
-        } catch (error) {
-            logger.error('Get restaurant orders controller error:', error);
-            next(error);
-        }
-    }
-
     async getAllOrders(req, res, next) {
         try {
             const filters = req.query;

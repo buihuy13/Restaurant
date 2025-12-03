@@ -245,57 +245,6 @@ router.get('/user/:userId', orderController.getUserOrders);
 
 /**
  * @swagger
- * /api/orders/restaurant/{restaurantId}:
- *   get:
- *     summary: Get restaurant's orders
- *     description: Retrieve all orders for a specific restaurant
- *     tags:
- *       - Orders
- *     security:
- *       - Bearer: []
- *     parameters:
- *       - name: restaurantId
- *         in: path
- *         required: true
- *         type: string
- *         description: Restaurant ID
- *       - name: status
- *         in: query
- *         type: string
- *         description: Filter by status
- *       - name: page
- *         in: query
- *         type: integer
- *         default: 1
- *       - name: limit
- *         in: query
- *         type: integer
- *         default: 20
- *     responses:
- *       200:
- *         description: Restaurant orders retrieved
- *         schema:
- *           type: object
- *           properties:
- *             status:
- *               type: string
- *             message:
- *               type: string
- *             data:
- *               type: array
- *               items:
- *                 $ref: '#/definitions/OrderResponse'
- *             pagination:
- *               type: object
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden - Merchant/Admin only
- */
-router.get('/restaurant/:restaurantId', orderController.getRestaurantOrders);
-
-/**
- * @swagger
  * /api/orders/{orderId}/status:
  *   patch:
  *     summary: Update order status
