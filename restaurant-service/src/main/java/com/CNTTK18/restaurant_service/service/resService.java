@@ -22,7 +22,6 @@ import com.CNTTK18.restaurant_service.data.reviewType;
 import com.CNTTK18.restaurant_service.dto.api.UserResponse;
 import com.CNTTK18.restaurant_service.dto.distance.response.Summary;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
-import com.CNTTK18.restaurant_service.dto.restaurant.request.ManagerRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
 import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponseWithProduct;
@@ -261,20 +260,5 @@ public class resService {
             return new ArrayList<>();
         }
         return resList.get().stream().map(resUtil::mapResToResResponseWithProduct).toList();
-    }
-
-    public void addNewManager(ManagerRequest managerRequest, String resId) {
-        restaurants res = resRepository.findById(resId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
-        String id = webClientBuilder.build()
-            .post()
-            .uri("lb://user-service/api/users/manager")
-            .body(Mono.just(managerRequest), ManagerRequest.class)
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
-        
-        res.setManagerId(id);
-        resRepository.save(res);
     }
 }

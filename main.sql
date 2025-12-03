@@ -54,7 +54,6 @@ create table restaurants (
     phone varchar(15),
     total_review int default 0,
     merchant_id varchar(100) not null,
-    manager_id varchar(100),
     slug varchar(255) not null unique,
     `enabled` boolean not null
 );
