@@ -16,4 +16,5 @@ export const updateBlogSchema = Joi.object({
         metaDescription: Joi.string().optional(),
         keywords: Joi.array().items(Joi.string()).optional(),
     }).optional(),
+    userId: Joi.string().optional(),
 });

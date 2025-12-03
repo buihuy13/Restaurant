@@ -125,7 +125,7 @@ class BlogService {
         }
     }
 
-    async updateBlog(blogId, updateData, userId) {
+    async updateBlog(blogId, updateData, userId, userRole) {
         try {
             const blog = await Blog.findById(blogId);
 
@@ -133,8 +133,8 @@ class BlogService {
                 throw new Error('Blog not found');
             }
 
-            if (blog.author.userId !== userId) {
-                throw new Error('Unauthorized to update this blog');
+            if (blog.author.userId !== userId && userRole !== 'ADMIN') {
+                return res.status(403).json({ success: false, message: 'Forbidden: Unauthorized to update this blog' });
             }
 
             Object.keys(updateData).forEach((key) => {

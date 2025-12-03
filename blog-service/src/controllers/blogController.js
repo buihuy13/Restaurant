@@ -62,7 +62,8 @@ class BlogController {
             if (error) return res.status(400).json({ success: false, message: error.details[0].message });
 
             const userId = req.user?.userId || req.body.userId;
-            const blog = await blogService.updateBlog(blogId, req.body, userId);
+            const userRole = req.user?.role;
+            const blog = await blogService.updateBlog(blogId, req.body, userId, userRole);
 
             return res.status(200).json({ success: true, message: 'Blog updated successfully', data: blog });
         } catch (error) {
@@ -115,7 +116,7 @@ class BlogController {
         try {
             const { blogId } = req.params;
             const userId = req.user?.userId || req.body.userId;
-            const result = await blogService.toggleLike(blogId, userId);
+            const result = await blogService.toggleLikeBlog(blogId, userId);
             return res.status(200).json({ success: true, message: 'Blog like toggled', data: result });
         } catch (error) {
             logger.error('Error toggling like:', error);

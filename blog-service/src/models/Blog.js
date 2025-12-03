@@ -35,10 +35,13 @@ const blogSchema = new mongoose.Schema(
             },
             avatar: String,
         },
-        featuredImage: String,
+        featuredImage: {
+            url: { type: String, required: false },
+            alt: { type: String, required: false },
+        },
         category: {
             type: String,
-            enum: ['recipe', 'review', 'tips', 'news', 'health', 'other'], // Sửa: "enNUM" → "enum"
+            enum: ['recipe', 'review', 'tips', 'news', 'health', 'other'],
             default: 'other',
             index: true,
         },
