@@ -455,6 +455,77 @@ spring:
                   predicates:
                       - Path=/ws/**
 
+                # Blog-service
+                - id: blog-service-get
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/**
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+                - id: blog-service-post
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/**
+                        - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+                - id: blog-service-put
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/**
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+                - id: blog-service-delete
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/**
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+                - id: blog-service-like
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/*/like
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+                - id: blog-service-comments
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/*/comments/**
+                      - Method=GET,POST,PUT,DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+                - id: blog-service-upload
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/upload/**
+                      - Method=POST,DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+                - id: blog-service-swagger
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/v3/api-docs/blog-service/**
+                  filters:
+                      - RewritePath=/v3/api-docs/blog-service/(?<segment>.*), /v3/api-docs/blog-service/${segment}
+
 eureka:
     instance:
         #hostname: ${spring.application.name}
@@ -481,3 +552,5 @@ springdoc:
               url: /v3/api-docs/payment-service
             - name: Order Service
               url: /v3/api-docs/order-service
+            - name: Blog Service
+              url: /v3/api-docs/blog-service
