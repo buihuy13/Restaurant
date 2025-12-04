@@ -1,21 +1,129 @@
 import Blog from '../models/Blog.js';
 import logger from '../utils/logger.js';
+import CloudinaryService from './cloudinaryService.js';
+import slugify from 'slugify';
 
 class BlogService {
-    async createBlog(blogData) {
-        try {
-            const blog = new Blog(blogData);
+    async createBlog(blogData, featuredImageFile = null) {
+        const session = await Blog.startSession();
+        session.startTransaction();
 
-            if (blog.status === 'published' && !blog.publishedAt) {
-                blog.publishedAt = new Date();
+        try {
+            const {
+                title,
+                content,
+                excerpt: providedExcerpt,
+                category = 'other',
+                tags = [],
+                status = 'draft',
+                author,
+            } = blogData;
+
+            // === 1. VALIDATE DỮ LIỆU ĐẦU VÀO ===
+            if (!title?.trim()) throw new Error('Tiêu đề bài viết là bắt buộc');
+            if (!content?.trim()) throw new Error('Nội dung bài viết là bắt buộc');
+            if (!author?.userId || !author?.name?.trim()) throw new Error('Thông tin tác giả không hợp lệ');
+
+            // === 2. UPLOAD ẢNH BÌA (NẾU CÓ) ===
+            let featuredImage = null;
+            let uploadedPublicId = null;
+
+            if (featuredImageFile?.buffer) {
+                const uploadResult = await CloudinaryService.uploadImage(
+                    featuredImageFile.buffer,
+                    'foodeats/blogs/covers',
+                    featuredImageFile.originalname.split('.').slice(0, -1).join('.'),
+                );
+
+                featuredImage = {
+                    url: uploadResult.secure_url,
+                    publicId: uploadResult.public_id,
+                    width: uploadResult.width,
+                    height: uploadResult.height,
+                };
+                uploadedPublicId = uploadResult.public_id;
             }
 
-            await blog.save();
-            logger.info(`Blog created: ${blog._id}`);
-            return blog;
+            // === 3. TẠO SLUG DUY NHẤT 100% ===
+            const baseSlug = slugify(title, { lower: true, strict: true, trim: true });
+            let slug = baseSlug;
+
+            const slugExists = await Blog.findOne({ slug }).lean();
+            if (slugExists) {
+                const randomSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
+                slug = `${baseSlug}-${randomSuffix}`;
+            }
+
+            // === 4. TỰ ĐỘNG TẠO EXCERPT NẾU CHƯA CÓ ===
+            let excerpt = providedExcerpt?.trim();
+            if (!excerpt && content) {
+                const cleanText = content
+                    .replace(/<[^>]*>/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                excerpt = cleanText.length > 200 ? cleanText.substring(0, 197) + '...' : cleanText;
+            }
+
+            // === 5. TÍNH THỜI GIAN ĐỌC ===
+            const wordCount = content
+                .replace(/<[^>]*>/g, '')
+                .trim()
+                .split(/\s+/).length;
+            const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
+            // === 6. XÁC ĐỊNH publishedAt ===
+            const publishedAt = status === 'published' ? new Date() : null;
+
+            // === 7. TẠO BLOG MỚI ===
+            const blog = new Blog({
+                title: title.trim(),
+                slug,
+                content: content.trim(),
+                excerpt,
+                featuredImage,
+                author: {
+                    userId: author.userId,
+                    name: author.name.trim(),
+                    avatar: author.avatar || null,
+                },
+                category,
+                tags: tags.map((t) => t?.trim().toLowerCase()).filter(Boolean),
+                status,
+                publishedAt,
+                readTime,
+                views: 0,
+                likes: [],
+                comments: [],
+            });
+
+            await blog.save({ session });
+
+            await session.commitTransaction();
+
+            logger.info(`Blog created successfully | ID: ${blog._id} | Slug: ${slug} | Author: ${author.userId}`);
+
+            // Trả về dữ liệu sạch + virtuals
+            const populatedBlog = await Blog.findById(blog._id).select('-likes -__v').lean({ virtuals: true });
+
+            return populatedBlog;
         } catch (error) {
-            logger.error('Create blog error:', error);
+            await session.abortTransaction();
+
+            // === ROLLBACK ẢNH NẾU ĐÃ UPLOAD ===
+            if (uploadedPublicId) {
+                await CloudinaryService.deleteImage(uploadedPublicId).catch(() => {});
+            }
+
+            logger.error('Create blog failed:', {
+                message: error.message,
+                stack: error.stack,
+                authorId: blogData.author?.userId,
+                title: blogData.title,
+            });
+
             throw error;
+        } finally {
+            session.endSession();
         }
     }
 

@@ -3,22 +3,20 @@ import blogController from '../controllers/blogController.js';
 import commentRoutes from './commentRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
 
+const router = express.Router();
+
 /**
  * @swagger
  * tags:
  *   - name: Blogs
  *     description: Quản lý bài viết blog
- *   - name: Comments
- *     description: Bình luận & trả lời
- *   - name: Upload
- *     description: Upload ảnh riêng biệt
  */
 
 /**
  * @swagger
  * /api/blogs:
  *   post:
- *     summary: Tạo bài viết mới (hỗ trợ ảnh bìa)
+ *     summary: Tạo bài viết mới (có upload ảnh bìa)
  *     tags: [Blogs]
  *     security:
  *       - bearerAuth: []
@@ -36,119 +34,58 @@ import uploadRoutes from './uploadRoutes.js';
  *             properties:
  *               title:
  *                 type: string
- *                 example: Top 10 món chay ngon nhất Hà Nội 2025
+ *                 example: "Top 10 quán chay ngon nhất Hà Nội 2025"
  *               content:
  *                 type: string
- *                 example: |
- *                   <h2>Ăn chay không còn nhàm chán!</h2>
- *                   <p>Sau đây là danh sách 10 quán chay mình tâm đắc nhất...</p>
- *                   <ul>
- *                     <li>Quán 1: Chay Mộc</li>
- *                     <li>Quán 2: Loving Hut</li>
- *                   </ul>
+ *                 example: "<h2>Ăn chay đang là xu hướng!</h2><p>Mình đã đi thử hết 10 quán này...</p>"
  *               excerpt:
  *                 type: string
- *                 example: Khám phá ngay 10 quán chay ngon nhất thủ đô năm 2025 – từ bình dân đến cao cấp!
+ *                 example: "Top 10 quán chay ngon nhất Hà Nội năm 2025 – từ bình dân đến cao cấp!"
  *               category:
  *                 type: string
  *                 enum: [recipe, review, tips, news, health, other]
  *                 example: review
  *               tags:
  *                 type: string
- *                 example: chay, hà nội, ẩm thực, ăn uống, quán ngon
+ *                 example: "chay,hà nội,ẩm thực,quán ngon"
  *               featuredImage:
  *                 type: string
  *                 format: binary
- *                 description: Ảnh bìa bài viết (jpg, png, webp)
+ *                 description: Ảnh bìa bài viết
  *               author.userId:
  *                 type: string
- *                 example: 60d5ecb74b3d3f001c8b4567
+ *                 example: "60d5ecb74b3d3f001c8b4567"
  *               author.name:
  *                 type: string
- *                 example: Nguyễn Văn A
+ *                 example: "Nguyễn Văn A"
  *               author.avatar:
  *                 type: string
- *                 format: url
- *                 example: https://ui-avatars.com/api/?name=Nguyen+Van+A&background=random
+ *                 example: "https://ui-avatars.com/api/?name=Nguyen+Van+A"
  *     responses:
  *       201:
  *         description: Tạo bài viết thành công
  *         content:
  *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Blog created successfully
- *                 data:
- *                   type: object
- *                   # ← Swagger sẽ hiển thị đẹp hơn khi dùng schema rõ ràng
- *                   properties:
- *                     _id:
- *                       type: string
- *                       example: 67a1b2c3d4e5f67890123456
- *                     title:
- *                       type: string
- *                       example: Top 10 món chay ngon nhất Hà Nội 2025
- *                     slug:
- *                       type: string
- *                       example: top-10-mon-chay-ngon-nhat-ha-noi-2025-n9x7k2p8m
- *                     excerpt:
- *                       type: string
- *                       example: Khám phá ngay 10 quán chay ngon nhất thủ đô năm 2025...
- *                     content:
- *                       type: string
- *                     featuredImage:
- *                       type: string
- *                       format: url
- *                       example: https://res.cloudinary.com/dhaecxi8n/image/upload/v1733150000/blog/cover_xyz123.jpg
- *                     author:
- *                       type: object
- *                       properties:
- *                         userId:
- *                           type: string
- *                           example: 60d5ecb74b3d3f001c8b4567
- *                         name:
- *                           type: string
- *                           example: Nguyễn Văn A
- *                         avatar:
- *                           type: string
- *                           example: https://ui-avatars.com/api/?name=Nguyen+Van+A&background=random
- *                     category:
- *                       type: string
- *                       example: review
- *                     tags:
- *                       type: array
- *                       items:
- *                         type: string
- *                       example: ["chay", "hà nội", "ẩm thực"]
- *                     status:
- *                       type: string
- *                       example: draft
- *                     views:
- *                       type: integer
- *                       example: 0
- *                     likesCount:
- *                       type: integer
- *                       example: 0
- *                     commentsCount:
- *                       type: integer
- *                       example: 0
- *                     readTime:
- *                       type: integer
- *                       example: 7
- *                     createdAt:
- *                       type: string
- *                       format: date-time
- *                       example: 2025-12-02T10:30:00.000Z
- *                     updatedAt:
- *                       type: string
- *                       format: date-time
- *                       example: 2025-12-02T10:30:00.000Z
+ *             example:
+ *               success: true
+ *               message: "Blog created successfully"
+ *               data:
+ *                 _id: "67a1b2c3d4e5f67890123456"
+ *                 title: "Top 10 quán chay ngon nhất Hà Nội 2025"
+ *                 slug: "top-10-quan-chay-ngon-nhat-ha-noi-2025-abc123xyz"
+ *                 excerpt: "Top 10 quán chay ngon nhất..."
+ *                 featuredImage:
+ *                   url: "https://res.cloudinary.com/dhaecxi8n/image/upload/v1733150000/blog/chay_hanoi_cover.jpg"
+ *                 author:
+ *                   userId: "60d5ecb74b3d3f001c8b4567"
+ *                   name: "Nguyễn Văn A"
+ *                 category: "review"
+ *                 status: "draft"
+ *                 views: 0
+ *                 likesCount: 0
+ *                 commentsCount: 0
+ *                 readTime: 6
+ *                 createdAt: "2025-12-04T10:00:00.000Z"
  */
 
 /**
@@ -160,18 +97,27 @@ import uploadRoutes from './uploadRoutes.js';
  *     parameters:
  *       - in: query
  *         name: page
- *         schema: { type: integer, default: 1, minimum: 1 }
- *         description: Trang hiện tại
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         example: 1
  *       - in: query
  *         name: limit
- *         schema: { type: integer, default: 10, maximum: 50 }
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         example: 10
  *       - in: query
  *         name: category
- *         schema: { type: string, enum: [recipe, review, tips, news, health, other] }
+ *         schema:
+ *           type: string
+ *           enum: [recipe, review, tips, news, health, other]
+ *         example: review
  *       - in: query
  *         name: search
- *         schema: { type: string }
- *         description: Tìm kiếm theo từ khóa (title, content, tags)
+ *         schema:
+ *           type: string
+ *         example: chay Hà Nội
  *     responses:
  *       200:
  *         description: Danh sách bài viết
@@ -179,21 +125,21 @@ import uploadRoutes from './uploadRoutes.js';
  *           application/json:
  *             example:
  *               success: true
- *               message: "Blogs retrieved successfully"
  *               data:
- *                 - _id: "67a1b2c3d4e5f6789012345"
- *                   title: "Top 10 món chay ngon nhất Hà Nội 2025"
- *                   slug: "top-10-mon-chay-ngon-nhat-ha-noi-2025-l2m9x7p3q"
- *                   excerpt: "Khám phá ngay 10 quán chay ngon nhất..."
- *                   featuredImage: "https://res.cloudinary.com/..."
+ *                 - _id: "67a1b2c3d4e5f67890123456"
+ *                   title: "Top 10 quán chay ngon nhất Hà Nội 2025"
+ *                   slug: "top-10-quan-chay-ngon-nhat-ha-noi-2025-abc123xyz"
+ *                   excerpt: "Top 10 quán chay ngon nhất..."
+ *                   featuredImage:
+ *                     url: "https://res.cloudinary.com/..."
  *                   author:
  *                     name: "Nguyễn Văn A"
  *                   category: "review"
- *                   views: 1250
- *                   likesCount: 89
- *                   commentsCount: 24
+ *                   views: 2580
+ *                   likesCount: 142
+ *                   commentsCount: 28
  *                   readTime: 6
- *                   publishedAt: "2025-12-01T10:00:00.000Z"
+ *                   publishedAt: "2025-12-03T10:00:00.000Z"
  *               pagination:
  *                 page: 1
  *                 limit: 10
@@ -210,10 +156,14 @@ import uploadRoutes from './uploadRoutes.js';
  *     parameters:
  *       - in: query
  *         name: limit
- *         schema: { type: integer, default: 5, maximum: 20 }
+ *         schema:
+ *           type: integer
+ *           default: 5
+ *           maximum: 20
+ *         example: 5
  *     responses:
  *       200:
- *         description: Danh sách bài viết nổi bật
+ *         description: Danh sách bài viết hot
  *         content:
  *           application/json:
  *             example:
@@ -222,9 +172,11 @@ import uploadRoutes from './uploadRoutes.js';
  *                 - title: "Phở bò Kobe Hà Nội - Có thật không?"
  *                   slug: "pho-bo-kobe-ha-noi-co-that-khong-xyz789"
  *                   excerpt: "Tin đồn phở bò Kobe giá 2 triệu..."
- *                   featuredImage: "https://res.cloudinary.com/..."
- *                   views: 15890
+ *                   featuredImage:
+ *                     url: "https://res.cloudinary.com/..."
+ *                   views: 18900
  *                   likesCount: 1200
+ *                   commentsCount: 89
  */
 
 /**
@@ -237,17 +189,18 @@ import uploadRoutes from './uploadRoutes.js';
  *       - in: path
  *         name: slug
  *         required: true
- *         schema: { type: string }
- *         example: top-10-mon-chay-ngon-nhat-ha-noi-2025-l2m9x7p3q
+ *         schema:
+ *           type: string
+ *         example: top-10-quan-chay-ngon-nhat-ha-noi-2025-abc123xyz
  *     responses:
  *       200:
  *         description: Chi tiết bài viết
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/definitions/Blog'
+ *               $ref: '#/components/schemas/Blog'
  *       404:
- *         description: Không tìm thấy bài viết
+ *         description: Không tìm thấy
  *         content:
  *           application/json:
  *             example:
@@ -265,33 +218,14 @@ import uploadRoutes from './uploadRoutes.js';
  *       - in: path
  *         name: blogId
  *         required: true
- *         schema: { type: string }
- *         example: 67a1b2c3d4e5f6789012345
+ *         example: 67a1b2c3d4e5f67890123456
  *     responses:
  *       200:
  *         description: Chi tiết bài viết
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/definitions/Blog'
- */
-
-/**
- * @swagger
- * /api/blogs/{blogId}/related:
- *   get:
- *     summary: Lấy bài viết liên quan
- *     tags: [Blogs]
- *     parameters:
- *       - in: path
- *         name: blogId
- *         required: true
- *       - in: query
- *         name: limit
- *         schema: { type: integer, default: 3 }
- *     responses:
- *       200:
- *         description: Danh sách bài viết liên quan
+ *               $ref: '#/components/schemas/Blog'
  */
 
 /**
@@ -306,7 +240,7 @@ import uploadRoutes from './uploadRoutes.js';
  *       - in: path
  *         name: blogId
  *         required: true
- *         schema: { type: string }
+ *         example: 67a1b2c3d4e5f67890123456
  *     responses:
  *       200:
  *         description: Like thành công
@@ -315,7 +249,7 @@ import uploadRoutes from './uploadRoutes.js';
  *             example:
  *               success: true
  *               message: "Blog liked successfully"
- *               likesCount: 157
+ *               likesCount: 143
  *               liked: true
  */
 
@@ -337,7 +271,7 @@ import uploadRoutes from './uploadRoutes.js';
  *           schema:
  *             type: object
  *             properties:
- *               title: { type: string }
+ *               title: { type: string, example: "Top 10 quán chay ngon nhất Hà Nội 2026" }
  *               content: { type: string }
  *               featuredImage: { type: string, format: binary }
  *     responses:
@@ -345,7 +279,7 @@ import uploadRoutes from './uploadRoutes.js';
  *         description: Cập nhật thành công
  *
  *   delete:
- *     summary: Xóa bài viết
+ *     summary: Xóa bài viết (chỉ owner hoặc admin)
  *     tags: [Blogs]
  *     security:
  *       - bearerAuth: []
@@ -363,23 +297,16 @@ import uploadRoutes from './uploadRoutes.js';
  *               message: "Blog deleted successfully"
  */
 
-const router = express.Router();
-
-// Upload routes
 router.use('/upload', uploadRoutes);
+router.use('/:blogId/comments', commentRoutes);
 
-// Blog routes
-router.get('/popular', blogController.getPopularBlogs);
 router.post('/', blogController.createBlog);
 router.get('/', blogController.getBlogs);
-router.get('/:blogId', blogController.getBlogById);
-router.get('/:blogId/related', blogController.getRelatedBlogs);
+router.get('/popular', blogController.getPopularBlogs);
 router.get('/slug/:slug', blogController.getBlogBySlug);
+router.get('/:blogId', blogController.getBlogById);
 router.put('/:blogId', blogController.updateBlog);
 router.delete('/:blogId', blogController.deleteBlog);
 router.post('/:blogId/like', blogController.toggleLike);
-
-// Comment routes - tách riêng
-router.use('/:blogId/comments', commentRoutes);
 
 export default router;

@@ -29,7 +29,7 @@ class CloudinaryService {
                             logger.error('Cloudinary upload error:', error);
                             reject(error);
                         } else {
-                            logger.info(`✅ Image uploaded to Cloudinary: ${result.public_id}`);
+                            logger.info(`Image uploaded to Cloudinary: ${result.public_id}`);
                             resolve(result);
                         }
                     },
@@ -88,7 +88,7 @@ class CloudinaryService {
     async deleteMultipleImages(publicIds) {
         try {
             const result = await cloudinary.api.delete_resources(publicIds);
-            logger.info(`✅ ${publicIds.length} images deleted from Cloudinary`);
+            logger.info(`${publicIds.length} images deleted from Cloudinary`);
             return result;
         } catch (error) {
             logger.error('Delete multiple images error:', error);

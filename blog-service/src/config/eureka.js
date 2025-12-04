@@ -26,13 +26,13 @@ const eurekaClient = new Eureka({
             '@enabled': true,
         },
         vipAddress: 'blog-service',
-        statusPageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
+        statusPageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'blog-service'}:${
             process.env.BLOG_PORT || 8087
         }/health`,
-        healthCheckUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
+        healthCheckUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'blog-service'}:${
             process.env.BLOG_PORT || 8082
         }/health`,
-        homePageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'order-service'}:${
+        homePageUrl: `http://${process.env.EUREKA_INSTANCE_HOSTNAME || 'blog-service'}:${
             process.env.BLOG_PORT || 8082
         }`,
         dataCenterInfo: {

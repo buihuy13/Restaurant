@@ -1,19 +1,9 @@
+// src/routes/commentRoutes.js
 import express from 'express';
 import commentController from '../controllers/commentController.js';
 import { uploadCommentImages } from '../middlewares/uploadMiddleware.js';
 
-const router = express.Router({ mergeParams: true }); // Để nhận :blogId từ parent router
-
-/**
- * @swagger
- * tags:
- *   - name: Blogs
- *     description: Quản lý bài viết blog
- *   - name: Comments
- *     description: Bình luận & trả lời
- *   - name: Upload
- *     description: Upload ảnh
- */
+const router = express.Router({ mergeParams: true });
 
 /**
  * @swagger
@@ -29,7 +19,7 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *         required: true
  *         schema:
  *           type: string
- *         example: 67a1b2c3d4e5f6789012345
+ *         example: 67a1b2c3d4e5f67890123456
  *     requestBody:
  *       required: true
  *       content:
@@ -43,7 +33,7 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *             properties:
  *               content:
  *                 type: string
- *                 example: "Bài viết rất hay! Mình đã thử quán số 3, đúng là tuyệt vời!"
+ *                 example: "Mình đã thử quán số 3, đúng là tuyệt vời luôn! Đặc biệt là món cơm gạo lứt trộn nấm"
  *               author.userId:
  *                 type: string
  *                 example: "60d5ecb74b3d3f001c8b4567"
@@ -52,15 +42,14 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *                 example: "Trần Thị B"
  *               author.avatar:
  *                 type: string
- *                 format: url
- *                 example: "https://example.com/avatar-b.jpg"
+ *                 example: "https://ui-avatars.com/api/?name=Tran+Thi+B&background=random"
  *               images:
  *                 type: array
  *                 items:
  *                   type: string
  *                   format: binary
  *                 maxItems: 6
- *                 description: Tối đa 6 ảnh cho bình luận
+ *                 description: Tối đa 6 ảnh cho mỗi bình luận
  *     responses:
  *       201:
  *         description: Bình luận được tạo thành công
@@ -70,21 +59,21 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *               success: true
  *               message: "Comment created successfully"
  *               data:
- *                 _id: "67b9c8d7e6f5a4b3c2d1e0f9"
- *                 blogId: "67a1b2c3d4e5f6789012345"
- *                 content: "Bài viết rất hay! Mình đã thử quán số 3, ngon tuyệt vời!"
+ *                 _id: "67c9d8e7f6a5b4c3d2e1f0a9"
+ *                 blogId: "67a1b2c3d4e5f67890123456"
+ *                 content: "Mình đã thử quán số 3, đúng là tuyệt vời luôn!..."
  *                 author:
  *                   userId: "60d5ecb74b3d3f001c8b4567"
  *                   name: "Trần Thị B"
- *                   avatar: "https://example.com/avatar-b.jpg"
+ *                   avatar: "https://ui-avatars.com/api/?name=Tran+Thi+B&background=random"
  *                 images:
- *                   - url: "https://res.cloudinary.com/dhaecxi8n/image/upload/v123/comments/img1.jpg"
- *                     publicId: "comments/img1_abc123"
+ *                   - url: "https://res.cloudinary.com/dhaecxi8n/image/upload/v1733151000/comments/xyz123.jpg"
+ *                     publicId: "comments/xyz123"
  *                     width: 1200
  *                     height: 800
  *                 likesCount: 0
  *                 path: "0001"
- *                 createdAt: "2025-12-02T15:30:00.000Z"
+ *                 createdAt: "2025-12-04T12:30:00.000Z"
  */
 
 /**
@@ -97,21 +86,15 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *       - in: path
  *         name: blogId
  *         required: true
- *         schema:
- *           type: string
- *         example: 67a1b2c3d4e5f6789012345
+ *         example: 67a1b2c3d4e5f67890123456
  *       - in: query
  *         name: page
- *         schema:
- *           type: integer
- *           default: 1
- *           minimum: 1
+ *         schema: { type: integer, default: 1 }
+ *         example: 1
  *       - in: query
  *         name: limit
- *         schema:
- *           type: integer
- *           default: 15
- *           maximum: 50
+ *         schema: { type: integer, default: 15 }
+ *         example: 15
  *     responses:
  *       200:
  *         description: Danh sách bình luận gốc
@@ -120,15 +103,16 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *             example:
  *               success: true
  *               data:
- *                 - _id: "67b9c8d7e6f5a4b3c2d1e0f9"
- *                   content: "Bài viết hay quá!"
+ *                 - _id: "67c9d8e7f6a5b4c3d2e1f0a9"
+ *                   content: "Bài viết rất hay! Mình đã thử quán số 3..."
  *                   author:
- *                     name: "Nguyễn Văn C"
- *                   likesCount: 12
+ *                     name: "Trần Thị B"
+ *                     avatar: "https://ui-avatars.com/..."
  *                   images:
- *                     - url: "https://res.cloudinary.com/.../img1.jpg"
- *                       publicId: "comments/img1"
- *                   createdAt: "2025-12-02T15:30:00.000Z"
+ *                     - url: "https://res.cloudinary.com/..."
+ *                       publicId: "comments/xyz123"
+ *                   likesCount: 18
+ *                   createdAt: "2025-12-04T12:30:00.000Z"
  *               pagination:
  *                 page: 1
  *                 limit: 15
@@ -140,7 +124,7 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  * @swagger
  * /api/blogs/{blogId}/comments/{commentId}/reply:
  *   post:
- *     summary: Trả lời bình luận (cũng hỗ trợ tối đa 6 ảnh)
+ *     summary: Trả lời bình luận (nested comment)
  *     tags: [Comments]
  *     security:
  *       - bearerAuth: []
@@ -148,26 +132,29 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *       - in: path
  *         name: blogId
  *         required: true
- *         schema:
- *           type: string
  *       - in: path
  *         name: commentId
  *         required: true
- *         schema:
- *           type: string
- *         example: 67b9c8d7e6f5a4b3c2d1e0f9
+ *         example: 67c9d8e7f6a5b4c3d2e1f0a9
  *     requestBody:
- *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
  *               - content
+ *               - author.userId
+ *               - author.name
  *             properties:
  *               content:
  *                 type: string
- *                 example: "Cảm ơn bạn đã chia sẻ kinh nghiệm!"
+ *                 example: "Cảm ơn bạn nhiều nhé! Mình cũng đang định đi thử quán đó cuối tuần này!"
+ *               author.userId:
+ *                 type: string
+ *                 example: "60d5ecb74b3d3f001c8b4568"
+ *               author.name:
+ *                 type: string
+ *                 example: "Lê Văn C"
  *               images:
  *                 type: array
  *                 items:
@@ -181,13 +168,12 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *           application/json:
  *             example:
  *               success: true
- *               message: "Reply created successfully"
  *               data:
- *                 _id: "67c0d1e2f3a4b5c6d7e8f9a0"
- *                 parentId: "67b9c8d7e6f5a4b3c2d1e0f9"
- *                 content: "Cảm ơn bạn đã chia sẻ kinh nghiệm!"
+ *                 _id: "67c9d8e7f6a5b4c3d2e1f0b0"
+ *                 parentId: "67c9d8e7f6a5b4c3d2e1f0a9"
+ *                 content: "Cảm ơn bạn nhiều nhé!..."
  *                 path: "0001.0002"
- *                 createdAt: "2025-12-02T15:35:00.000Z"
+ *                 createdAt: "2025-12-04T12:35:00.000Z"
  */
 
 /**
@@ -203,7 +189,7 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *       - in: path
  *         name: commentId
  *         required: true
- *         example: 67b9c8d7e6f5a4b3c2d1e0f9
+ *         example: 67c9d8e7f6a5b4c3d2e1f0a9
  *     responses:
  *       200:
  *         description: Danh sách trả lời
@@ -224,6 +210,7 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *       - in: path
  *         name: commentId
  *         required: true
+ *         example: 67c9d8e7f6a5b4c3d2e1f0a9
  *     responses:
  *       200:
  *         description: Like thành công
@@ -231,7 +218,8 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *           application/json:
  *             example:
  *               success: true
- *               likesCount: 13
+ *               message: "Comment liked"
+ *               likesCount: 19
  *               liked: true
  */
 
@@ -258,7 +246,7 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *             properties:
  *               content:
  *                 type: string
- *                 example: "Cập nhật nội dung bình luận..."
+ *                 example: "Cập nhật: quán này giờ có thêm món mới rất ngon!"
  *               images:
  *                 type: array
  *                 items:
@@ -269,7 +257,7 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *         description: Cập nhật thành công
  *
  *   delete:
- *     summary: Xóa bình luận (soft delete - chỉ chủ bình luận hoặc admin)
+ *     summary: Xóa bình luận (soft delete)
  *     tags: [Comments]
  *     security:
  *       - bearerAuth: []
@@ -290,25 +278,12 @@ const router = express.Router({ mergeParams: true }); // Để nhận :blogId t�
  *               message: "Comment deleted successfully"
  */
 
-// Lấy comment của blog
 router.get('/', commentController.getComments);
-
-//  Tạo comment mới
 router.post('/', uploadCommentImages, commentController.createComment);
-
-//  Reply comment
 router.post('/:commentId/reply', uploadCommentImages, commentController.replyComment);
-
-// Lấy reply của comment
 router.get('/:commentId/replies', commentController.getReplies);
-
-//  Like/Unlike comment
 router.post('/:commentId/like', commentController.likeComment);
-
-//  Cập nhật comment
 router.put('/:commentId', uploadCommentImages, commentController.updateComment);
-
-//  Xóa comment
 router.delete('/:commentId', commentController.deleteComment);
 
 export default router;
