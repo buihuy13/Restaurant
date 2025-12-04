@@ -1,3 +1,4 @@
+import { orderResponseDTO } from '../dtos/response/orderResponseDto.js';
 import orderService from '../services/orderService.js';
 import logger from '../utils/logger.js';
 
@@ -77,9 +78,10 @@ class OrderMerchantController {
     async getRestaurantOrders(req, res, next) {
         try {
             const { restaurantId } = req.params;
+            const merchantId = req.user.id;
             const filters = req.query;
 
-            const result = await orderService.getRestaurantOrders(restaurantId, filters);
+            const result = await orderService.getRestaurantOrders(restaurantId, merchantId, filters);
 
             res.status(200).json({
                 success: true,

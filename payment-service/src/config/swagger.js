@@ -1,4 +1,3 @@
-// src/docs/swagger.js  (đè file cũ của bạn là chạy ngon)
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 

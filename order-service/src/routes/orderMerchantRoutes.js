@@ -5,10 +5,18 @@ const router = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   - name: Orders - Merchant
+ *     description: API dành riêng cho chủ quán (Merchant)
+ */
+
+/**
+ * @swagger
  * /api/merchant/orders/{orderId}/accept:
  *   post:
- *     summary: Merchant chấp nhận đơn hàng
- *     tags: [Merchant Order]
+ *     summary: Chấp nhận đơn hàng
+ *     description: Merchant xác nhận nhận đơn → chuyển trạng thái thành "confirmed"
+ *     tags: [Orders - Merchant]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -17,12 +25,23 @@ const router = express.Router();
  *         required: true
  *         schema:
  *           type: string
- *         description: ID đơn hàng (ví dụ: ORD1700000000000ABCDEF)
+ *         example: ORD1737456123000ABCDE
+ *         description: ID đơn hàng
  *     responses:
  *       200:
- *         description: Đơn hàng đã được chấp nhận
+ *         description: Đơn hàng đã được chấp nhận thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrderResponse'
  *       400:
- *         description: Lỗi (không phải chủ quán, trạng thái không hợp lệ...)
+ *         description: Không thể chấp nhận (đơn đã bị hủy, đã xác nhận, hết món, v.v.)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Không tìm thấy đơn hàng
  */
 router.post('/:orderId/accept', orderMerchantController.acceptOrder);
 
@@ -30,8 +49,9 @@ router.post('/:orderId/accept', orderMerchantController.acceptOrder);
  * @swagger
  * /api/merchant/orders/{orderId}/reject:
  *   post:
- *     summary: Merchant từ chối đơn hàng
- *     tags: [Merchant Order]
+ *     summary: Từ chối đơn hàng
+ *     description: Merchant từ chối đơn → hoàn tiền tự động cho khách
+ *     tags: [Orders - Merchant]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -40,6 +60,7 @@ router.post('/:orderId/accept', orderMerchantController.acceptOrder);
  *         required: true
  *         schema:
  *           type: string
+ *         example: ORD1737456123000ABCDE
  *     requestBody:
  *       required: true
  *       content:
@@ -51,12 +72,17 @@ router.post('/:orderId/accept', orderMerchantController.acceptOrder);
  *             properties:
  *               reason:
  *                 type: string
- *                 example: "Hết nguyên liệu món này"
+ *                 example: "Hết nguyên liệu nấu món này"
+ *                 description: Lý do từ chối (sẽ gửi thông báo cho khách)
  *     responses:
  *       200:
- *         description: Đơn hàng đã bị từ chối
+ *         description: Đơn hàng đã bị từ chối & hoàn tiền thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrderResponse'
  *       400:
- *         description: Thiếu lý do hoặc không hợp lệ
+ *         description: Không thể từ chối (đơn đã được chuẩn bị, đã giao, v.v.)
  */
 router.post('/:orderId/reject', orderMerchantController.rejectOrder);
 
@@ -64,9 +90,9 @@ router.post('/:orderId/reject', orderMerchantController.rejectOrder);
  * @swagger
  * /api/merchant/orders/{orderId}/cancel:
  *   post:
- *     summary: Merchant hủy đơn hàng đã chấp nhận
- *     description: Chỉ áp dụng cho đơn đang ở trạng thái confirmed hoặc preparing
- *     tags: [Merchant Order]
+ *     summary: Hủy đơn đã chấp nhận
+ *     description: Merchant hủy đơn sau khi đã accept → hoàn tiền + phạt nếu cần
+ *     tags: [Orders - Merchant]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -75,7 +101,7 @@ router.post('/:orderId/reject', orderMerchantController.rejectOrder);
  *         required: true
  *         schema:
  *           type: string
- *         description: Mã đơn hàng
+ *         example: ORD1737456123000ABCDE
  *     requestBody:
  *       required: true
  *       content:
@@ -87,22 +113,26 @@ router.post('/:orderId/reject', orderMerchantController.rejectOrder);
  *             properties:
  *               reason:
  *                 type: string
- *                 example: "Hết nguyên liệu làm món gà rán"
+ *                 example: "Quán đóng cửa đột xuất"
  *     responses:
  *       200:
- *         description: Đơn hàng đã được hủy thành công
+ *         description: Hủy đơn thành công, đã hoàn tiền cho khách
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrderResponse'
  *       400:
- *         description: Lỗi (không phải chủ quán, trạng thái không cho phép, thiếu lý do...)
+ *         description: Không thể hủy ở trạng thái hiện tại
  */
 router.post('/:orderId/cancel', orderMerchantController.cancelAcceptedOrder);
 
 /**
  * @swagger
- * /merchant/restaurants/{restaurantId}/orders:
+ * /api/merchant/restaurants/{restaurantId}/orders:
  *   get:
- *     summary: Lấy danh sách đơn hàng của quán (dành cho Merchant)
- *     description: Chỉ trả về đơn của chính quán đó. Mặc định lọc pending + confirmed
- *     tags: [Merchant Order]
+ *     summary: Lấy danh sách đơn hàng của quán
+ *     description: Merchant xem tất cả đơn hàng thuộc quán mình quản lý
+ *     tags: [Orders - Merchant]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -111,33 +141,35 @@ router.post('/:orderId/cancel', orderMerchantController.cancelAcceptedOrder);
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID quán ăn
  *       - in: query
  *         name: status
  *         schema:
  *           type: string
  *           enum: [pending, confirmed, preparing, ready, completed, cancelled]
- *         description: Lọc theo trạng thái (mặc định pending,confirmed)
+ *         description: Lọc theo trạng thái
  *       - in: query
  *         name: page
- *         schema: { type: integer, default: 1 }
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
  *       - in: query
  *         name: limit
- *         schema: { type: integer, default: 20 }
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 20
  *     responses:
  *       200:
- *         description: Danh sách đơn hàng
+ *         description: Lấy danh sách đơn hàng thành công
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean }
- *                 count: { type: integer }
- *                 newOrdersCount: { type: integer, description: "Số đơn pending (chưa xem)" }
- *                 orders:
- *                   type: array
- *                   items:
- *                     $ref: '#/definitions/Order'
+ *               $ref: '#/components/schemas/PaginatedOrders'
+ *       403:
+ *         description: Không có quyền truy cập quán này
  */
 router.get('/restaurants/:restaurantId/orders', orderMerchantController.getRestaurantOrders);
 

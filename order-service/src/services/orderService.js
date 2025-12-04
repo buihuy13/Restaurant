@@ -696,9 +696,12 @@ class OrderService {
         }
     }
 
-    async getRestaurantOrders(restaurantId, filters = {}) {
+    async getRestaurantOrders(restaurantId, merchantId, filters = {}) {
         try {
             const restaurant = await this.validateRestaurant(restaurantId);
+            if (restaurant.merchantId !== merchantId) {
+                throw new Error('Bạn không có quyền xem đơn hàng của quán này');
+            }
 
             const query = { restaurantId };
 

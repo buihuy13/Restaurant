@@ -14,7 +14,7 @@ class CartController {
                 });
             }
 
-            logger.info(`📋 GET - Cart for user: ${userId}`);
+            logger.info(`GET - Cart for user: ${userId}`);
 
             const cart = await cartService.getCart(userId);
 
