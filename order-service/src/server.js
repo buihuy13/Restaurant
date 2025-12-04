@@ -14,6 +14,8 @@ import startPaymentConsumer from './consumers/paymentConsumer.js';
 import eurekaClient from './config/eureka.js';
 import orderMerchantRoutes from './routes/orderMerchantRoutes.js';
 import openapiRoute from './routes/openapiRoute.js';
+import http from 'http';
+import { initOrderSocket } from './config/socket.js';
 
 dotenv.config();
 
@@ -82,6 +84,12 @@ const startServer = async () => {
 
         // Start payment consumer
         startPaymentConsumer();
+
+        // Tạo HTTP server để gắn socket
+        const server = http.createServer(app);
+
+        // Khởi động socket.IO
+        initOrderSocket(server);
 
         // Start server
         app.listen(PORT, () => {

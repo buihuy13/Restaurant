@@ -10,7 +10,7 @@ const swaggerSpec = swaggerJSDoc({
     apis: ['./src/routes/blogRoutes.js', './src/routes/commentRoutes.js', './src/routes/uploadRoutes.js'],
 });
 
-router.get('/v3/api-docs/blog-service', (req, res) => {
+router.get('/', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.send(swaggerSpec);
 });

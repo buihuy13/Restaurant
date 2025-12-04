@@ -565,71 +565,174 @@ spring:
                   predicates:
                       - Path=/ws/**
 
-                # Blog-service
-                - id: blog-service-get
+                # ====================== BLOG SERVICE  ======================
+
+                # PUBLIC - ĐỌC BLOG (không cần JWT)
+                - id: blog-get-list
                   uri: lb://blog-service
                   predicates:
-                      - Path=/api/blogs/**
+                      - Path=/api/blogs
                       - Method=GET
-                  filters:
-                      - name: JwtAuthentication
-                        args:
-                            requiredRole: USER,ADMIN,MERCHANT
-                - id: blog-service-post
+
+                - id: blog-get-by-slug
                   uri: lb://blog-service
                   predicates:
-                      - Path=/api/blogs/**
+                      - Path=/api/blogs/slug/{slug}
+                      - Method=GET
+
+                - id: blog-get-by-id
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}
+                      - Method=GET
+
+                - id: blog-get-popular
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/popular
+                      - Method=GET
+
+                - id: blog-get-comments
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments
+                      - Method=GET
+
+                - id: blog-get-comment-replies
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments/{commentId}/replies
+                      - Method=GET
+
+                - id: blog-create
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs
                       - Method=POST
                   filters:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER,ADMIN,MERCHANT
-                - id: blog-service-put
+
+                - id: blog-update
                   uri: lb://blog-service
                   predicates:
-                      - Path=/api/blogs/**
+                      - Path=/api/blogs/{blogId}
                       - Method=PUT
                   filters:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER,ADMIN,MERCHANT
-                - id: blog-service-delete
+
+                - id: blog-delete
                   uri: lb://blog-service
                   predicates:
-                      - Path=/api/blogs/**
+                      - Path=/api/blogs/{blogId}
                       - Method=DELETE
                   filters:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER,ADMIN,MERCHANT
-                - id: blog-service-like
+
+                - id: blog-like
                   uri: lb://blog-service
                   predicates:
-                      - Path=/api/blogs/*/like
+                      - Path=/api/blogs/{blogId}/like
                       - Method=POST
                   filters:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER,ADMIN,MERCHANT
-                - id: blog-service-comments
+
+                - id: blog-create-comment
                   uri: lb://blog-service
                   predicates:
-                      - Path=/api/blogs/*/comments/**
-                      - Method=GET,POST,PUT,DELETE
+                      - Path=/api/blogs/{blogId}/comments
+                      - Method=POST
                   filters:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER,ADMIN,MERCHANT
-                - id: blog-service-upload
+
+                - id: blog-reply-comment
                   uri: lb://blog-service
                   predicates:
-                      - Path=/api/blogs/upload/**
-                      - Method=POST,DELETE
+                      - Path=/api/blogs/{blogId}/comments/{commentId}/reply
+                      - Method=POST
                   filters:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER,ADMIN,MERCHANT
-                - id: blog-service-swagger
+
+                - id: blog-like-comment
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments/{commentId}/like
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-update-comment
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments/{commentId}
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-delete-comment
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments/{commentId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                # UPLOAD ROUTES (ảnh bìa, ảnh comment)
+                - id: blog-upload-image
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/upload/image
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-upload-images
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/upload/images
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-delete-upload
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/upload/delete
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                # Swagger Docs
+                - id: blog-service-docs
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api-docs/blog-service/**
+
+                # Blog Service - Swagger JSON
+                - id: blog-service-swagger-json
                   uri: lb://blog-service
                   predicates:
                       - Path=/v3/api-docs/blog-service/**
