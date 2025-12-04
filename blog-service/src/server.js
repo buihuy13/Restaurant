@@ -10,7 +10,7 @@ import blogRoutes from './routes/blogRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { startEurekaClient } from './config/eureka.js';
 import logger from './utils/logger.js';
-import openapiRoute from './config/swagger.js';
+import openapiRoute from './routes/openapiRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 8087;

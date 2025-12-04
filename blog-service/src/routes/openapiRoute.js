@@ -1,7 +1,7 @@
 // src/routes/openapiRoute.js
 import express from 'express';
 import swaggerJSDoc from 'swagger-jsdoc';
-import { blogServiceOpenAPI } from '../config/openapi.js';
+import { blogServiceOpenAPI } from '../config/swagger.js';
 
 const router = express.Router();
 
