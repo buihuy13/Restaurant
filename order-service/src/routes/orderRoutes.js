@@ -1,7 +1,6 @@
 // src/routes/orderRoutes.js
 import express from 'express';
 import orderController from '../controllers/orderController.js';
-import { authenticate, authorize } from '../middleware/authMiddleware.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 import { createOrderSchema } from '../dtos/request/createOrderDto.js';
 import { updateOrderStatusSchema, addRatingSchema } from '../dtos/request/updateOrderDto.js';
@@ -11,9 +10,6 @@ const router = express.Router();
 // Public routes (không cần token)
 router.get('/:orderId', orderController.getOrderById);
 router.get('/slug/:slug', orderController.getOrderBySlug);
-
-// Protected routes
-router.use(authenticate);
 
 /**
  * @swagger
@@ -72,7 +68,7 @@ router.use(authenticate);
  *                     limit: { type: integer }
  *                     totalPages: { type: integer }
  */
-router.get('/', authorize(['admin']), orderController.getAllOrders);
+router.get('/', orderController.getAllOrders);
 
 /**
  * @swagger

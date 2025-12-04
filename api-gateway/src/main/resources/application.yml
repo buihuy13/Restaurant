@@ -363,12 +363,12 @@ spring:
                 - id: merchant-get-restaurant-orders
                   uri: lb://order-service
                   predicates:
-                      - Path=/api/merchant/restaurants/{restaurantId}/orders
+                      - Path=/api/merchant/orders/restaurants/{restaurantId}/orders
                       - Method=GET
                   filters:
                       - name: JwtAuthentication
                         args:
-                            requiredRole: MERCHANT
+                            requiredRole: MERCHANT, ADMIN
 
                 # ====================== CART SERVICE (trong Order Service) ======================
                 - id: cart-get
