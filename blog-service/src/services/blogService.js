@@ -1,21 +1,131 @@
 import Blog from '../models/Blog.js';
 import logger from '../utils/logger.js';
+import CloudinaryService from './cloudinaryService.js';
+import slugify from 'slugify';
 
 class BlogService {
-    async createBlog(blogData) {
-        try {
-            const blog = new Blog(blogData);
+    async createBlog(blogData, featuredImageFile = null) {
+        const session = await mongoose.startSession();
+        session.startTransaction();
 
-            if (blog.status === 'published' && !blog.publishedAt) {
-                blog.publishedAt = new Date();
+        let uploadedPublicId = null;
+
+        try {
+            const {
+                title,
+                content,
+                excerpt: providedExcerpt,
+                category = 'other',
+                tags = [],
+                status = 'draft',
+                author,
+            } = blogData;
+
+            // === 1. Validate cơ bản (bổ sung cho Joi) ===
+            if (!title?.trim()) throw new AppError('Tiêu đề bài viết là bắt buộc', 400);
+            if (!content?.trim()) throw new AppError('Nội dung bài viết là bắt buộc', 400);
+            if (!author?.userId) throw new AppError('Thiếu thông tin tác giả', 400);
+
+            // === 2. Upload ảnh bìa nếu có ===
+            let featuredImage = null;
+            if (featuredImageFile) {
+                const uploadResult = await CloudinaryService.uploadImage(
+                    featuredImageFile.buffer || featuredImageFile.path, // hỗ trợ cả buffer và path
+                    'foodeats/blogs/covers',
+                    title,
+                );
+
+                featuredImage = {
+                    url: uploadResult.secure_url,
+                    publicId: uploadResult.public_id,
+                    width: uploadResult.width,
+                    height: uploadResult.height,
+                };
+                uploadedPublicId = uploadResult.public_id;
             }
 
-            await blog.save();
-            logger.info(`Blog created: ${blog._id}`);
-            return blog;
+            // === 3. Tạo slug duy nhất ===
+            let slug = slugify(title, { lower: true, strict: true, trim: true });
+            const existingBlog = await Blog.findOne({ slug }).session(session).lean();
+
+            if (existingBlog) {
+                const suffix = `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
+                slug = `${slug}-${suffix}`;
+            }
+
+            // === 4. Tạo excerpt tự động nếu thiếu ===
+            let excerpt = providedExcerpt?.trim();
+            if (!excerpt && content) {
+                const plainText = content
+                    .replace(/<[^>]*>/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+                excerpt = plainText.length > 200 ? plainText.slice(0, 197) + '...' : plainText;
+            }
+
+            // === 5. Tính thời gian đọc ===
+            const wordCount = content
+                .replace(/<[^>]*>/g, '')
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean).length;
+            const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
+            // === 6. Xác định publishedAt ===
+            const publishedAt = status === 'published' ? new Date() : null;
+
+            // === 7. Tạo blog ===
+            const blog = await Blog.create(
+                [
+                    {
+                        title: title.trim(),
+                        slug,
+                        content: content.trim(),
+                        excerpt,
+                        featuredImage,
+                        author: {
+                            userId: author.userId,
+                            name: author.name?.trim() || 'Ẩn danh',
+                            avatar: author.avatar || null,
+                        },
+                        category,
+                        tags: [...new Set(tags.map((t) => t?.trim().toLowerCase()).filter(Boolean))], // loại trùng
+                        status,
+                        publishedAt,
+                        readTime,
+                        views: 0,
+                    },
+                ],
+                { session },
+            );
+
+            await session.commitTransaction();
+
+            logger.info(`Blog created | ID: ${blog[0]._id} | Slug: ${slug} | Author: ${author.userId}`);
+
+            // Trả về dữ liệu đẹp + virtuals
+            return await Blog.findById(blog[0]._id).select('-likes -comments -__v').lean({ virtuals: true });
         } catch (error) {
-            logger.error('Create blog error:', error);
-            throw error;
+            await session.abortTransaction();
+
+            // Xóa ảnh trên Cloudinary nếu đã upload
+            if (uploadedPublicId) {
+                await CloudinaryService.deleteImage(uploadedPublicId).catch((err) =>
+                    logger.warn('Failed to delete uploaded image on rollback', err),
+                );
+            }
+
+            logger.error('blogService.createBlog failed:', {
+                message: error.message,
+                stack: error.stack,
+                authorId: blogData.author?.userId,
+                title: blogData.title,
+            });
+
+            // Ném lại lỗi (AppError hoặc Error bình thường)
+            throw error instanceof AppError ? error : new AppError('Tạo bài viết thất bại', 500);
+        } finally {
+            session.endSession();
         }
     }
 

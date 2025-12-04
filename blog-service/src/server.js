@@ -5,13 +5,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import swaggerUi from 'swagger-ui-express';
 import connectDB from './config/database.js';
 import blogRoutes from './routes/blogRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { startEurekaClient } from './config/eureka.js';
-import { swaggerSpec } from './config/swagger.js';
 import logger from './utils/logger.js';
+import openapiRoute from './routes/openapiRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 8087;
@@ -44,24 +43,7 @@ app.use((req, res, next) => {
 });
 
 // Swagger Documentation
-app.use(
-    '/api-docs',
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerSpec, {
-        explorer: true,
-        customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: 'Blog Service API Docs',
-        swaggerOptions: {
-            persistAuthorization: true,
-        },
-    }),
-);
-
-// Swagger JSON endpoint
-app.get('/api-docs.json', (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpec);
-});
+app.use('/', openapiRoute);
 
 // Health check
 app.get('/health', (req, res) => {

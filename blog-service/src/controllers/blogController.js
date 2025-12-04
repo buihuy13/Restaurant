@@ -5,15 +5,64 @@ import { updateBlogSchema } from '../dtos/updateBlogDto.js';
 
 class BlogController {
     createBlog = async (req, res, next) => {
-        try {
-            const { error } = createBlogSchema.validate(req.body);
-            if (error) return res.status(400).json({ success: false, message: error.details[0].message });
+        let featuredImageFile = null;
 
-            const blog = await blogService.createBlog(req.body);
-            return res.status(201).json({ success: true, message: 'Blog created successfully', data: blog });
+        try {
+            // 1. Xử lý dữ liệu đầu vào – hỗ trợ cả form-data và raw JSON
+            let blogData = {};
+
+            if (req.file) {
+                // Trường hợp upload ảnh qua multer (form-data)
+                featuredImageFile = req.file;
+                blogData = req.body;
+            } else if (req.body && Object.keys(req.body).length > 0) {
+                // Raw JSON (Postman "raw" hoặc frontend fetch)
+                blogData = req.body;
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Không có dữ liệu bài viết nào được gửi lên',
+                });
+            }
+
+            // 2. Validate với Joi – quan trọng: validate đúng dữ liệu (không phải req.body khi có file)
+            const { error } = createBlogSchema.validate(blogData, { abortEarly: false });
+
+            if (error) {
+                if (featuredImageFile) {
+                    await fs.promises.unlink(featuredImageFile.path).catch(() => {});
+                }
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dữ liệu không hợp lệ',
+                    errors: error.details.map((e) => e.message),
+                });
+            }
+
+            // 3. Gọi service
+            const blog = await blogService.createBlog(blogData, featuredImageFile);
+
+            // 4. Trả kết quả
+            return res.status(201).json({
+                success: true,
+                message: 'Tạo bài viết thành công',
+                data: blog,
+            });
         } catch (error) {
-            logger.error('Error creating blog:', error);
-            return next(error);
+            // Xóa file tạm nếu có lỗi
+            if (featuredImageFile) {
+                await fs.promises.unlink(featuredImageFile.path).catch(() => {});
+            }
+
+            logger.error('BlogController.createBlog error:', {
+                message: error.message,
+                stack: error.stack,
+                userId: blogData.author?.userId || req.user?.id,
+                title: blogData.title,
+                hasFile: !!featuredImageFile,
+            });
+
+            return next(error); // để error middleware xử lý
         }
     };
 
