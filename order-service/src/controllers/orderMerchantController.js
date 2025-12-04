@@ -6,7 +6,7 @@ class OrderMerchantController {
     async acceptOrder(req, res) {
         try {
             const { orderId } = req.params;
-            const merchantId = req.user.id || req.body.merchantId;
+            const merchantId = req.user?.id || req.body?.merchantId;
 
             const order = await orderService.acceptOrderByMerchant(orderId, merchantId);
 
@@ -28,7 +28,7 @@ class OrderMerchantController {
         try {
             const { orderId } = req.params;
             const { reason } = req.body;
-            const merchantId = req.user.id || req.body.merchantId;
+            const merchantId = req.user?.id || req.body?.merchantId;
 
             const order = await orderService.rejectOrderByMerchant(orderId, merchantId, reason);
 
@@ -50,7 +50,7 @@ class OrderMerchantController {
         try {
             const { orderId } = req.params;
             const { reason } = req.body;
-            const merchantId = req.user.id || req.body.merchantId;
+            const merchantId = req.user?.id || req.body?.merchantId;
 
             if (!reason || reason.trim() === '') {
                 return res.status(400).json({
@@ -78,7 +78,7 @@ class OrderMerchantController {
     async getRestaurantOrders(req, res, next) {
         try {
             const { restaurantId } = req.params;
-            const merchantId = req.user.id || req.body.merchantId;
+            const merchantId = req.user?.id || req.body?.merchantId;
             const filters = req.query;
 
             const result = await orderService.getRestaurantOrders(restaurantId, merchantId, filters);
