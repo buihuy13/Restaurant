@@ -258,32 +258,18 @@ spring:
                   filters:
                       - name: JwtAuthentication
 
-                # Order-Service
-                - id: order-service-get-all
-                  uri: lb://order-service
-                  predicates:
-                      - Path=/api/orders
-                      - Method=GET
-                  filters:
-                      - name: JwtAuthentication
-                        args:
-                            requiredRole: ADMIN
-
-                - id: order-service-get-by-id
+                # ====================== ORDER SERVICE - USER ======================
+                - id: order-service-get-order-by-id
                   uri: lb://order-service
                   predicates:
                       - Path=/api/orders/{orderId}
                       - Method=GET
 
-                - id: order-service-create
+                - id: order-service-get-by-slug
                   uri: lb://order-service
                   predicates:
-                      - Path=/api/orders
-                      - Method=POST
-                  filters:
-                      - name: JwtAuthentication
-                        args:
-                            requiredRole: USER
+                      - Path=/api/orders/slug/{slug}
+                      - Method=GET
 
                 - id: order-service-get-user-orders
                   uri: lb://order-service
@@ -293,35 +279,23 @@ spring:
                   filters:
                       - name: JwtAuthentication
 
-                - id: order-service-get-restaurant-orders
+                - id: order-service-create-order
                   uri: lb://order-service
                   predicates:
-                      - Path=/api/orders/restaurant/{restaurantId}
-                      - Method=GET
+                      - Path=/api/orders
+                      - Method=POST
                   filters:
                       - name: JwtAuthentication
                         args:
-                            requiredRole: MERCHANT,ADMIN
+                            requiredRole: USER
 
-                - id: order-service-update-status
-                  uri: lb://order-service
-                  predicates:
-                      - Path=/api/orders/{orderId}/status
-                      - Method=PATCH
-                  filters:
-                      - name: JwtAuthentication
-                        args:
-                            requiredRole: MERCHANT,ADMIN
-
-                - id: order-service-cancel
+                - id: order-service-cancel-order
                   uri: lb://order-service
                   predicates:
                       - Path=/api/orders/{orderId}/cancel
                       - Method=PATCH
                   filters:
                       - name: JwtAuthentication
-                        args:
-                            requiredRole: USER,MERCHANT,ADMIN
 
                 - id: order-service-add-rating
                   uri: lb://order-service
@@ -333,16 +307,95 @@ spring:
                         args:
                             requiredRole: USER
 
-                # Cart Service
-                - id: cart-service-get
+                - id: order-service-checkout-from-cart
                   uri: lb://order-service
                   predicates:
-                      - Path=/api/cart/**
+                      - Path=/api/orders/checkout/cart
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                # ====================== ORDER SERVICE - MERCHANT ======================
+                - id: merchant-accept-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/accept
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-reject-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/reject
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-cancel-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/cancel
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-preparing-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/preparing
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-ready-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/ready
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-get-all-orders
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders
                       - Method=GET
                   filters:
                       - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
 
-                - id: cart-service-add
+                - id: merchant-get-restaurant-orders
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/restaurants/{restaurantId}/orders
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                # ====================== CART SERVICE (trong Order Service) ======================
+                - id: cart-get
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}
+                      - Method=GET
+
+                - id: cart-add-item
                   uri: lb://order-service
                   predicates:
                       - Path=/api/cart/{userId}
@@ -352,17 +405,63 @@ spring:
                         args:
                             requiredRole: USER
 
-                - id: cart-service-update
+                - id: cart-update-quantity
                   uri: lb://order-service
                   predicates:
-                      - Path=/api/cart/**
-                      - Method=PUT,PATCH,DELETE
+                      - Path=/api/cart/{userId}/restaurant/{restaurantId}/item/{productId}
+                      - Method=PATCH
                   filters:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER
 
-                - id: cart-service-checkout
+                - id: cart-remove-item
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/restaurant/{restaurantId}/item/{productId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-remove-restaurant
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/restaurant/{restaurantId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-clear
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-update-details
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/restaurant/{restaurantId}
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-summary
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/summary
+                      - Method=GET
+
+                - id: cart-validate-checkout
                   uri: lb://order-service
                   predicates:
                       - Path=/api/cart/{userId}/checkout
@@ -372,15 +471,26 @@ spring:
                         args:
                             requiredRole: USER
 
-                - id: cart-service-merge
+                # ====================== ADMIN ROUTES ======================
+                - id: admin-get-all-orders
                   uri: lb://order-service
                   predicates:
-                      - Path=/api/cart/{userId}/merge
-                      - Method=POST
+                      - Path=/api/orders
+                      - Method=GET
                   filters:
                       - name: JwtAuthentication
                         args:
-                            requiredRole: USER
+                            requiredRole: ADMIN
+
+                - id: admin-update-order-status
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/{orderId}/status
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
 
                 # Swagger Docs
                 - id: order-service-docs
