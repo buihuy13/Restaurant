@@ -579,7 +579,7 @@ spring:
                   uri: lb://blog-service
                   predicates:
                       - Path=/api/blogs/**
-                        - Method=POST
+                      - Method=POST
                   filters:
                       - name: JwtAuthentication
                         args:

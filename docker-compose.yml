@@ -217,8 +217,10 @@ services:
                 - MODULE_PATH=order-service
         ports:
             - '8082:8082'
-        environment:
+        env_file:
             - ./order-service/.env
+        environment:
+            - ORDER_SERVICE_DB_URL=${ORDER_SERVICE_DB_URL}
             - TZ=${ENV_TZ}
         depends_on:
             mongodb:

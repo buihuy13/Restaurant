@@ -151,24 +151,6 @@ class OrderController {
         }
     }
 
-    async getRestaurantOrders(req, res, next) {
-        try {
-            const { restaurantId } = req.params;
-            const filters = req.query;
-
-            const result = await orderService.getRestaurantOrders(restaurantId, filters);
-
-            res.status(200).json({
-                success: true,
-                data: result.orders.map(orderResponseDTO),
-                pagination: result.pagination,
-            });
-        } catch (error) {
-            logger.error('Get restaurant orders controller error:', error);
-            next(error);
-        }
-    }
-
     async getAllOrders(req, res, next) {
         try {
             const filters = req.query;
@@ -184,6 +166,36 @@ class OrderController {
             });
         } catch (error) {
             next(error);
+        }
+    }
+
+    async createOrdersFromCart(req, res) {
+        try {
+            const { userId, paymentMethod } = req.body;
+            const token = req.headers.authorization?.split(' ')[1];
+
+            if (!userId || !paymentMethod) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'userId and paymentMethod are required',
+                });
+            }
+
+            logger.info(`Batch checkout request for user: ${userId}`);
+
+            const result = await orderService.createOrdersFromCart(userId, token, paymentMethod);
+
+            return res.status(201).json({
+                status: 'success',
+                message: result.message,
+                data: result,
+            });
+        } catch (error) {
+            logger.error('Batch checkout error:', error.message);
+            return res.status(400).json({
+                status: 'error',
+                message: error.message,
+            });
         }
     }
 }
