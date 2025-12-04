@@ -488,6 +488,13 @@ spring:
                   filters:
                       - RewritePath=/v3/api-docs/order-service/(?<segment>.*), /v3/api-docs/order-service/${segment}
 
+                - id: order-service-websocket
+                  uri: lb:ws://order-service
+                  predicates:
+                      - Path=/socket.io/**
+                  filters:
+                      - RewritePath=/socket\.io/(?<segment>.*), /socket.io/${segment}
+
                 # Payment-Service
                 - id: payment-service-get
                   uri: lb://payment-service

@@ -92,8 +92,9 @@ const startServer = async () => {
         initOrderSocket(server);
 
         // Start server
-        app.listen(PORT, () => {
+        server.listen(PORT, () => {
             logger.info(`Order Service running on port ${PORT}`);
+            logger.info(`WebSocket ready on ws://localhost:${PORT}`);
             logger.info('Swagger docs: http://localhost:8082/v3/api-docs/order-service');
 
             eurekaClient.start((error) => {
