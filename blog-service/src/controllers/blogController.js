@@ -2,15 +2,15 @@ import logger from '../utils/logger.js';
 import blogService from '../services/blogService.js';
 import { createBlogSchema } from '../dtos/createBlogDto.js';
 import { updateBlogSchema } from '../dtos/updateBlogDto.js';
+import fs from 'fs/promises';
 
 class BlogController {
     createBlog = async (req, res, next) => {
         let featuredImageFile = null;
+        // 1. Xử lý dữ liệu đầu vào – hỗ trợ cả form-data và raw JSON
+        let blogData = {};
 
         try {
-            // 1. Xử lý dữ liệu đầu vào – hỗ trợ cả form-data và raw JSON
-            let blogData = {};
-
             if (req.file) {
                 // Trường hợp upload ảnh qua multer (form-data)
                 featuredImageFile = req.file;

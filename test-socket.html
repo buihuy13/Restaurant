@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test Order Service Socket.IO</title>
+        <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 900px;
+                margin: 30px auto;
+                padding: 20px;
+                background: #f5f5f5;
+            }
+            .container {
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            .status {
+                padding: 15px;
+                margin: 15px 0;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 18px;
+            }
+            .connected {
+                background: #4caf50;
+                color: white;
+            }
+            .disconnected {
+                background: #f44336;
+                color: white;
+            }
+            input {
+                padding: 10px;
+                width: 200px;
+                margin-right: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                font-size: 16px;
+            }
+            button {
+                padding: 10px 25px;
+                background: #2196f3;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+            }
+            button:hover {
+                background: #0b7dda;
+            }
+            button:disabled {
+                background: #ccc;
+                cursor: not-allowed;
+            }
+            .logs {
+                background: #263238;
+                color: #aed581;
+                padding: 15px;
+                border-radius: 5px;
+                max-height: 400px;
+                overflow-y: auto;
+                font-family: 'Courier New', monospace;
+                font-size: 13px;
+                margin-top: 20px;
+            }
+            .log-line {
+                margin: 5px 0;
+                padding: 5px;
+                border-left: 3px solid transparent;
+            }
+            .log-success {
+                color: #4caf50;
+                border-left-color: #4caf50;
+            }
+            .log-error {
+                color: #ff5252;
+                border-left-color: #ff5252;
+            }
+            .log-info {
+                color: #aed581;
+            }
+            .log-event {
+                color: #ffa726;
+                border-left-color: #ffa726;
+                font-weight: bold;
+            }
+            .notification {
+                background: #fff3cd;
+                border: 3px solid #ffc107;
+                padding: 20px;
+                margin: 15px 0;
+                border-radius: 8px;
+                animation: slideIn 0.5s;
+            }
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            .order-info {
+                background: #f9f9f9;
+                padding: 10px;
+                margin: 5px 0;
+                border-radius: 5px;
+                border-left: 4px solid #2196f3;
+            }
+            h2 {
+                color: #333;
+                margin-top: 30px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Order Service Socket.IO Test</h1>
+
+            <div id="status" class="status disconnected">Disconnected</div>
+
+            <div style="margin: 20px 0">
+                <h3>Restaurant ID:</h3>
+                <input type="text" id="restaurantId" placeholder="Enter Restaurant ID" value="123" />
+                <button id="joinBtn" onclick="joinRestaurant()">Join Restaurant</button>
+                <button id="leaveBtn" onclick="leaveRestaurant()" disabled>Leave Restaurant</button>
+            </div>
+
+            <div id="currentRoom" style="margin: 15px 0; color: #666; font-style: italic"></div>
+
+            <h2>New Orders</h2>
+            <div id="orders"></div>
+
+            <h2>Console Logs</h2>
+            <div id="logs" class="logs"></div>
+
+            <div style="margin-top: 20px">
+                <button onclick="clearLogs()">Clear Logs</button>
+                <button onclick="testConnection()">Test Connection</button>
+            </div>
+        </div>
+
+        <audio id="notificationSound" preload="auto">
+            <source src="notification-tone.mp3" type="audio/wav" />
+        </audio>
+
+        <script>
+            let socket;
+            let currentRestaurantId = null;
+
+            // Log function với màu sắc
+            function log(message, type = 'info') {
+                const logsDiv = document.getElementById('logs');
+                const timestamp = new Date().toLocaleTimeString();
+                const logClass = `log-${type}`;
+
+                logsDiv.innerHTML += `<div class="log-line ${logClass}">[${timestamp}] ${message}</div>`;
+                logsDiv.scrollTop = logsDiv.scrollHeight;
+
+                console.log(`[${timestamp}] ${message}`);
+            }
+
+            // Initialize Socket.IO connection
+            function initSocket() {
+                log('Initializing Socket.IO connection to Order Service...', 'info');
+
+                socket = io('http://localhost:8082', {
+                    transports: ['websocket', 'polling'],
+                    reconnection: true,
+                    reconnectionDelay: 1000,
+                    reconnectionAttempts: 10,
+                    timeout: 5000,
+                });
+
+                // Connection successful
+                socket.on('connect', () => {
+                    document.getElementById('status').className = 'status connected';
+                    document.getElementById('status').innerHTML = 'Connected to Order Service';
+                    log('Socket.IO connected! Socket ID: ' + socket.id, 'success');
+                    log('Transport: ' + socket.io.engine.transport.name, 'info');
+                    document.getElementById('joinBtn').disabled = false;
+                });
+
+                // Connection error
+                socket.on('connect_error', (error) => {
+                    log('Connection error: ' + error.message, 'error');
+                    log('Make sure Order Service is running on port 8082', 'error');
+                });
+
+                // Disconnection
+                socket.on('disconnect', (reason) => {
+                    document.getElementById('status').className = 'status disconnected';
+                    document.getElementById('status').innerHTML = 'Disconnected';
+                    log('Disconnected: ' + reason, 'error');
+                    document.getElementById('joinBtn').disabled = true;
+                    document.getElementById('leaveBtn').disabled = true;
+                });
+
+                // Reconnection attempt
+                socket.io.on('reconnect_attempt', () => {
+                    log('Attempting to reconnect...', 'info');
+                });
+
+                // Reconnection successful
+                socket.io.on('reconnect', (attemptNumber) => {
+                    log('Reconnected after ' + attemptNumber + ' attempts', 'success');
+                });
+
+                // Listen for new orders
+                socket.on('new-order', (data) => {
+                    log('NEW ORDER EVENT RECEIVED!', 'event');
+                    log('Order data: ' + JSON.stringify(data, null, 2), 'event');
+                    displayOrder(data);
+                    playNotificationSound();
+                });
+
+                // Listen for room joined confirmation (if server sends it)
+                socket.on('joined-room', (data) => {
+                    log('Room joined confirmation: ' + JSON.stringify(data), 'success');
+                });
+
+                // Generic error handler
+                socket.on('error', (error) => {
+                    log('Socket error: ' + error, 'error');
+                });
+            }
+
+            // Join restaurant room
+            function joinRestaurant() {
+                const restaurantId = document.getElementById('restaurantId').value.trim();
+
+                if (!restaurantId) {
+                    alert('Please enter a Restaurant ID');
+                    return;
+                }
+
+                if (!socket || !socket.connected) {
+                    alert('Socket not connected. Wait for connection...');
+                    return;
+                }
+
+                // Leave previous room if exists
+                if (currentRestaurantId) {
+                    socket.emit('leave-restaurant', currentRestaurantId);
+                    log(`Left room: restaurant_${currentRestaurantId}`, 'info');
+                }
+
+                // Join new room
+                log(`Emitting: join-restaurant("${restaurantId}")`, 'info');
+                socket.emit('join-restaurant', restaurantId);
+                currentRestaurantId = restaurantId;
+
+                document.getElementById(
+                    'currentRoom',
+                ).innerHTML = `Listening to orders for <strong>Restaurant ID: ${restaurantId}</strong>`;
+
+                log(`Joined room: restaurant_${restaurantId}`, 'success');
+
+                document.getElementById('joinBtn').disabled = true;
+                document.getElementById('leaveBtn').disabled = false;
+            }
+
+            // Leave restaurant room
+            function leaveRestaurant() {
+                if (currentRestaurantId) {
+                    socket.emit('leave-restaurant', currentRestaurantId);
+                    log(`Left room: restaurant_${currentRestaurantId}`, 'info');
+
+                    document.getElementById('currentRoom').innerHTML = '';
+                    currentRestaurantId = null;
+
+                    document.getElementById('joinBtn').disabled = false;
+                    document.getElementById('leaveBtn').disabled = true;
+                }
+            }
+
+            // Display order notification
+            function displayOrder(orderData) {
+                const ordersDiv = document.getElementById('orders');
+                const data = orderData.data || orderData;
+
+                const orderHtml = `
+                <div class="notification">
+                    <h3>New Order Received!</h3>
+                    <div class="order-info">
+                        <strong>Order ID:</strong> ${data.orderId || 'N/A'}
+                    </div>
+                    <div class="order-info">
+                        <strong>Total Amount:</strong> $${data.totalAmount || 0}
+                    </div>
+                    <div class="order-info">
+                        <strong>Items:</strong> ${data.itemCount || 0} item(s)
+                    </div>
+                    <div class="order-info">
+                        <strong>Customer Note:</strong> ${data.customerNote || 'None'}
+                    </div>
+                    <div class="order-info">
+                        <strong>Timestamp:</strong> ${new Date(orderData.timestamp || Date.now()).toLocaleString()}
+                    </div>
+                </div>
+            `;
+
+                ordersDiv.insertAdjacentHTML('afterbegin', orderHtml);
+            }
+
+            // Play notification sound
+            function playNotificationSound() {
+                const audio = document.getElementById('notificationSound');
+                audio.play().catch((err) => {
+                    log('Cannot play sound: ' + err.message, 'error');
+                });
+            }
+
+            // Clear logs
+            function clearLogs() {
+                document.getElementById('logs').innerHTML = '';
+                log('Logs cleared', 'info');
+            }
+
+            // Test connection
+            function testConnection() {
+                log('Testing connection...', 'info');
+                log('Socket connected: ' + (socket?.connected || false), 'info');
+                log('Socket ID: ' + (socket?.id || 'N/A'), 'info');
+                log('Current room: ' + (currentRestaurantId ? `restaurant_${currentRestaurantId}` : 'None'), 'info');
+            }
+
+            // Initialize on page load
+            window.onload = () => {
+                log('Page loaded, initializing Socket.IO client...', 'info');
+                initSocket();
+            };
+
+            // Cleanup on page unload
+            window.onbeforeunload = () => {
+                if (socket) {
+                    socket.disconnect();
+                }
+            };
+        </script>
+    </body>
+</html>
