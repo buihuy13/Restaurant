@@ -25,6 +25,14 @@ public class UserPrinciple implements UserDetails {
                 .collect(Collectors.toList());
     }
 
+    public String getRole() {
+        return user.getRole();
+    }
+
+    public String getId() {
+        return user.getId();
+    }
+
     @Override
     public String getPassword() {
         return user.getPassword();

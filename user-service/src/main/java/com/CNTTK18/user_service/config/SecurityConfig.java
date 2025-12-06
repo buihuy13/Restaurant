@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.CNTTK18.user_service.service.CustomOauth2UserService;
 import com.CNTTK18.user_service.service.MyUserDetailsService;
@@ -24,11 +25,13 @@ public class SecurityConfig {
     private final MyUserDetailsService userDetailsService;
     private final CustomOauth2UserService CustomOauth2UserService;
     private final Oauth2LoginSuccessHandler oauth2LoginSuccessHandler;
+    private final InternalFilter internalFilter;
     public SecurityConfig(MyUserDetailsService userDetailsService, CustomOauth2UserService CustomOauth2UserService, 
-                            Oauth2LoginSuccessHandler oauth2LoginSuccessHandler) {
+                            Oauth2LoginSuccessHandler oauth2LoginSuccessHandler, InternalFilter internalFilter) {
         this.userDetailsService = userDetailsService;
         this.CustomOauth2UserService = CustomOauth2UserService;
         this.oauth2LoginSuccessHandler = oauth2LoginSuccessHandler;
+        this.internalFilter = internalFilter;
     }
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -37,6 +40,7 @@ public class SecurityConfig {
                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                    .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.userService(CustomOauth2UserService))
                                                 .successHandler(oauth2LoginSuccessHandler))
+                   .addFilterBefore(internalFilter, UsernamePasswordAuthenticationFilter.class)
                    .build();
     }
 

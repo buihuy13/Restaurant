@@ -23,4 +23,11 @@ public class MyUserDetailsService implements UserDetailsService {
 
         return new UserPrinciple(user);
     }
+
+    public UserPrinciple loadUserByUserId(String id) throws UsernameNotFoundException {
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
+
+        return new UserPrinciple(user);
+    }
 }
