@@ -23,9 +23,7 @@ allprojects {
 }
 
 subprojects {
-	if (name != "Common") {
-		apply(plugin = "io.spring.dependency-management")
-	}
+	apply(plugin = "io.spring.dependency-management")
 
 	configurations {
 	    compileOnly {
