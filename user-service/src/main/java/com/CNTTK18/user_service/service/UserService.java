@@ -106,7 +106,7 @@ public class UserService {
         if (existingUsers.isEnabled() == false) {
             throw new InactivateException("Your account is not activated. Please activate your account before logging in.");
         }
-        return new TokenResponse(jwtService.generateToken(user.getUsername(), existingUsers.getRole()), jwtService.generateRefreshToken(user.getUsername(), existingUsers.getRole()));
+        return new TokenResponse(jwtService.generateToken(user.getUsername(), existingUsers.getRole(), existingUsers.getId()), jwtService.generateRefreshToken(user.getUsername(), existingUsers.getRole(), existingUsers.getId()));
     }
 
     public String refreshAccessToken(String refreshToken) throws Exception {

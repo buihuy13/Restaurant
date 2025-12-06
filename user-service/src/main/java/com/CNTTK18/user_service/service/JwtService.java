@@ -25,9 +25,10 @@ public class JwtService {
     private String secretkey;
 
     //Generate token
-    public String generateToken(String username, String role) {
+    public String generateToken(String username, String role, String id) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
+        claims.put("id", id);
         return Jwts.builder()
                 .claims()
                 .add(claims)
@@ -85,11 +86,12 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    public String generateRefreshToken(String username, String role)
+    public String generateRefreshToken(String username, String role, String id)
     {
         Map<String, Object> claims = new HashMap<>();
         claims.put("tokenType", "refresh");
         claims.put("role", role);
+        claims.put("id", id);
     
         return Jwts.builder()
                 .claims(claims)
@@ -112,8 +114,9 @@ public class JwtService {
          // Lấy thông tin người dùng từ token
          String username = claims.getSubject();
          String role = claims.get("role").toString();
+         String id = claims.get("id").toString();
          
          // Tạo access token mới
-         return generateToken(username, role);
+         return generateToken(username, role, id);
     }
 }
