@@ -1,13 +1,12 @@
+import mongoose from 'mongoose';
 import Blog from '../models/Blog.js';
 import logger from '../utils/logger.js';
 import CloudinaryService from './cloudinaryService.js';
 import slugify from 'slugify';
+import AppError from '../utils/appError.js';
 
 class BlogService {
     async createBlog(blogData, featuredImageFile = null) {
-        const session = await mongoose.startSession();
-        session.startTransaction();
-
         let uploadedPublicId = null;
 
         try {
@@ -19,18 +18,19 @@ class BlogService {
                 tags = [],
                 status = 'draft',
                 author,
+                seo,
             } = blogData;
 
-            // === 1. Validate cơ bản (bổ sung cho Joi) ===
+            // === 1. Validate cơ bản ===
             if (!title?.trim()) throw new AppError('Tiêu đề bài viết là bắt buộc', 400);
-            if (!content?.trim()) throw new AppError('Nội dung bài viết là bắt buộc', 400);
+            if (!content?.trim()) throw new AppError('Nội dung bài viết là bắt bại', 400);
             if (!author?.userId) throw new AppError('Thiếu thông tin tác giả', 400);
 
             // === 2. Upload ảnh bìa nếu có ===
             let featuredImage = null;
             if (featuredImageFile) {
                 const uploadResult = await CloudinaryService.uploadImage(
-                    featuredImageFile.buffer || featuredImageFile.path, // hỗ trợ cả buffer và path
+                    featuredImageFile.buffer || featuredImageFile.path,
                     'foodeats/blogs/covers',
                     title,
                 );
@@ -46,86 +46,62 @@ class BlogService {
 
             // === 3. Tạo slug duy nhất ===
             let slug = slugify(title, { lower: true, strict: true, trim: true });
-            const existingBlog = await Blog.findOne({ slug }).session(session).lean();
-
+            const existingBlog = await Blog.findOne({ slug }).lean();
             if (existingBlog) {
-                const suffix = `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
-                slug = `${slug}-${suffix}`;
+                slug = `${slug}-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
             }
 
-            // === 4. Tạo excerpt tự động nếu thiếu ===
-            let excerpt = providedExcerpt?.trim();
-            if (!excerpt && content) {
-                const plainText = content
-                    .replace(/<[^>]*>/g, ' ')
-                    .replace(/\s+/g, ' ')
-                    .trim();
-                excerpt = plainText.length > 200 ? plainText.slice(0, 197) + '...' : plainText;
-            }
+            // === 4. Tạo excerpt tự động ===
+            const cleanText = content
+                .replace(/<[^>]*>/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            const excerpt =
+                providedExcerpt?.trim() || (cleanText.length > 200 ? cleanText.slice(0, 197) + '...' : cleanText);
 
             // === 5. Tính thời gian đọc ===
-            const wordCount = content
-                .replace(/<[^>]*>/g, '')
-                .trim()
-                .split(/\s+/)
-                .filter(Boolean).length;
-            const readTime = Math.max(1, Math.ceil(wordCount / 200));
+            const readTime = Math.max(1, Math.ceil(cleanText.split(/\s+/).filter(Boolean).length / 200));
 
-            // === 6. Xác định publishedAt ===
-            const publishedAt = status === 'published' ? new Date() : null;
+            // === 6. TẠO BLOG – KHÔNG DÙNG TRANSACTION (an toàn với mọi môi trường) ===
+            const blog = await Blog.create({
+                title: title.trim(),
+                slug,
+                content: content.trim(),
+                excerpt,
+                featuredImage,
+                author: {
+                    userId: author.userId,
+                    name: author.name?.trim() || 'Ẩn danh',
+                    avatar: author.avatar || null,
+                },
+                category,
+                tags: [...new Set(tags.map((t) => t?.trim()?.toLowerCase()).filter(Boolean))],
+                status,
+                publishedAt: status === 'published' ? new Date() : null,
+                readTime,
+                seo: seo || undefined,
+            });
 
-            // === 7. Tạo blog ===
-            const blog = await Blog.create(
-                [
-                    {
-                        title: title.trim(),
-                        slug,
-                        content: content.trim(),
-                        excerpt,
-                        featuredImage,
-                        author: {
-                            userId: author.userId,
-                            name: author.name?.trim() || 'Ẩn danh',
-                            avatar: author.avatar || null,
-                        },
-                        category,
-                        tags: [...new Set(tags.map((t) => t?.trim().toLowerCase()).filter(Boolean))], // loại trùng
-                        status,
-                        publishedAt,
-                        readTime,
-                        views: 0,
-                    },
-                ],
-                { session },
-            );
+            logger.info(`Blog created successfully | ID: ${blog._id} | Title: ${title}`);
 
-            await session.commitTransaction();
-
-            logger.info(`Blog created | ID: ${blog[0]._id} | Slug: ${slug} | Author: ${author.userId}`);
-
-            // Trả về dữ liệu đẹp + virtuals
-            return await Blog.findById(blog[0]._id).select('-likes -comments -__v').lean({ virtuals: true });
+            // Trả về blog đầy đủ + virtuals
+            return await Blog.findById(blog._id).select('-likes -comments -__v').lean({ virtuals: true });
         } catch (error) {
-            await session.abortTransaction();
-
-            // Xóa ảnh trên Cloudinary nếu đã upload
+            // Xóa ảnh nếu upload thất bại
             if (uploadedPublicId) {
                 await CloudinaryService.deleteImage(uploadedPublicId).catch((err) =>
-                    logger.warn('Failed to delete uploaded image on rollback', err),
+                    logger.warn('Failed to delete uploaded image on error', err),
                 );
             }
 
             logger.error('blogService.createBlog failed:', {
                 message: error.message,
                 stack: error.stack,
-                authorId: blogData.author?.userId,
                 title: blogData.title,
+                authorId: blogData.author?.userId,
             });
 
-            // Ném lại lỗi (AppError hoặc Error bình thường)
             throw error instanceof AppError ? error : new AppError('Tạo bài viết thất bại', 500);
-        } finally {
-            session.endSession();
         }
     }
 
