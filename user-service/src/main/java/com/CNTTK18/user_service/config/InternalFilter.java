@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.CNTTK18.user_service.model.UserPrinciple;
@@ -15,6 +16,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@Component
 public class InternalFilter extends OncePerRequestFilter {
     private ApplicationContext applicationContext;
 
@@ -27,11 +29,12 @@ public class InternalFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String id = request.getHeader("user-id");
-            UserPrinciple userDetails = applicationContext.getBean(MyUserDetailsService.class).loadUserByUserId(id);
-            UsernamePasswordAuthenticationToken authenticationToken = 
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-            if (id != null) {
+            if (id != null && !id.isEmpty()) {
+                System.out.println("id in filter: " + id);
+                UserPrinciple userDetails = applicationContext.getBean(MyUserDetailsService.class).loadUserByUserId(id);
+                UsernamePasswordAuthenticationToken authenticationToken = 
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
 

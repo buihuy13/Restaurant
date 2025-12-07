@@ -28,13 +28,13 @@ import com.CNTTK18.user_service.dto.request.UserUpdateAfterLogin;
 import com.CNTTK18.user_service.dto.response.AddressResponse;
 import com.CNTTK18.user_service.dto.response.TokenResponse;
 import com.CNTTK18.user_service.dto.response.UserResponse;
+import com.CNTTK18.user_service.exception.ForbiddenException;
 import com.CNTTK18.user_service.model.UserPrinciple;
 import com.CNTTK18.user_service.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.ForbiddenException;
 
 @RestController
 @RequestMapping("/api/users")
@@ -112,7 +112,8 @@ public class UserController {
     public ResponseEntity<UserResponse> updateUser(@AuthenticationPrincipal UserPrinciple user, @PathVariable String id, 
                                                     @RequestBody @Valid UserRequest updateUserDTO) {
 
-        if (user == null || (!user.getId().equals(id) && !user.getRole().equals(Role.ADMIN.toString()))) {
+        String role = user.getAuthorities().stream().findFirst().get().getAuthority();
+        if (!user.getId().equals(id) && !role.equals(Role.ADMIN.toString())) {
             throw new ForbiddenException("You are not allowed to update this user.");
         }
         UserResponse updatedUser = userService.updateUser(id, updateUserDTO);
@@ -123,7 +124,8 @@ public class UserController {
     @Operation(summary = "Delete user")
     @DeleteMapping("/{id}")
     public ResponseEntity<MessageResponse> deleteUser(@AuthenticationPrincipal UserPrinciple user, @PathVariable String id) {
-        if (user == null || (!user.getId().equals(id) && !user.getRole().equals(Role.ADMIN.toString()))) {
+        String role = user.getAuthorities().stream().findFirst().get().getAuthority().toString();
+        if (!user.getId().equals(id) && !role.equals(Role.ADMIN.toString())) {
             throw new ForbiddenException("You are not allowed to update this user.");
         }
         userService.deleteUserById(id);
@@ -187,7 +189,11 @@ public class UserController {
     @Tag(name = "Put")
     @Operation(summary = "Update user after login")
     @PutMapping("/profile/{id}")
-    public ResponseEntity<UserResponse> updateUserAfterLogin(@PathVariable String id, @RequestBody @Valid UserUpdateAfterLogin userUpdate) {
+    public ResponseEntity<UserResponse> updateUserAfterLogin(@AuthenticationPrincipal UserPrinciple user, @PathVariable String id, @RequestBody @Valid UserUpdateAfterLogin userUpdate) {
+        String role = user.getAuthorities().stream().findFirst().get().getAuthority().toString();
+        if (!user.getId().equals(id) && !role.equals(Role.ADMIN.toString())) {
+            throw new ForbiddenException("You are not allowed to update this user.");
+        }
         UserResponse updatedUser = userService.updateUserAfterLogin(userUpdate, id);
         return ResponseEntity.ok(updatedUser);
     }
@@ -195,7 +201,11 @@ public class UserController {
     @Tag(name = "Put")
     @Operation(summary = "Update password")
     @PutMapping("/password/{id}")
-    public ResponseEntity<UserResponse> resetPassword(@PathVariable String id, @RequestBody @Valid Password password) {
+    public ResponseEntity<UserResponse> resetPassword(@AuthenticationPrincipal UserPrinciple user, @PathVariable String id, @RequestBody @Valid Password password) {
+        String role = user.getAuthorities().stream().findFirst().get().getAuthority().toString();
+        if (!user.getId().equals(id) && !role.equals(Role.ADMIN.toString())) {
+            throw new ForbiddenException("You are not allowed to update this user.");
+        }
         UserResponse updatedUser = userService.resetPassword(password, id);
         return ResponseEntity.ok(updatedUser);
     }

@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ResponseEntity<ErrorResponse> handleInactivateException(ForbiddenException ex) {
+    public ResponseEntity<ErrorResponse> handleForbiddenException(ForbiddenException ex) {
         ErrorResponse errorResponse = new ErrorResponse(
             "NOT_ALLOWED_ACTION", 
             ex.getMessage()
