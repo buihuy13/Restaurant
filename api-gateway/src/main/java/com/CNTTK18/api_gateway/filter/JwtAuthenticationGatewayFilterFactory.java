@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -107,6 +108,13 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                         return onError(exchange, 403, "Không có quyền");
                     }
                 }
+                String userId = jwtUtil.extractUserId(authHeader);
+
+                ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                        .header("user-id", userId) // Thêm header mới
+                        .build();
+
+                exchange = exchange.mutate().request(mutatedRequest).build();
             }
             return chain.filter(exchange);
         });
