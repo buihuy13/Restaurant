@@ -2,6 +2,7 @@ import express from 'express';
 import blogController from '../controllers/blogController.js';
 import commentRoutes from './commentRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
+import { authenticate } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -298,15 +299,18 @@ const router = express.Router();
  */
 
 router.use('/upload', uploadRoutes);
-router.use('/:blogId/comments', commentRoutes);
 
 router.post('/', blogController.createBlog);
 router.get('/', blogController.getBlogs);
+
 router.get('/popular', blogController.getPopularBlogs);
 router.get('/slug/:slug', blogController.getBlogBySlug);
+
 router.get('/:blogId', blogController.getBlogById);
-router.put('/:blogId', blogController.updateBlog);
-router.delete('/:blogId', blogController.deleteBlog);
-router.post('/:blogId/like', blogController.toggleLike);
+router.put('/:blogId', authenticate, blogController.updateBlog);
+router.delete('/:blogId', authenticate, blogController.deleteBlog);
+router.post('/:blogId/like', authenticate, blogController.toggleLike);
+
+router.use('/:blogId/comments', commentRoutes);
 
 export default router;

@@ -220,7 +220,7 @@ class BlogService {
             }
 
             if (blog.author.userId !== userId && userRole !== 'ADMIN') {
-                return res.status(403).json({ success: false, message: 'Forbidden: Unauthorized to update this blog' });
+                throw new AppError('Forbidden: Unauthorized to update this blog', 403);
             }
 
             Object.keys(updateData).forEach((key) => {
