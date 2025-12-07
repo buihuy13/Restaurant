@@ -2,6 +2,7 @@ package com.CNTTK18.user_service.service;
 
 import java.util.List;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,7 @@ import com.CNTTK18.user_service.model.Address;
 import com.CNTTK18.user_service.model.Users;
 import com.CNTTK18.user_service.repository.AddressRepository;
 import com.CNTTK18.user_service.repository.UserRepository;
+import com.CNTTK18.user_service.spec.UserSpecification;
 import com.CNTTK18.user_service.util.AddressUtil;
 import com.CNTTK18.user_service.util.UserUtil;
 
@@ -214,5 +216,14 @@ public class UserService {
         Address address = addressRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
         addressRepository.delete(address);
+    }
+
+    public List<UserResponse> getMerchantListNeedApprovement() {
+        Specification<Users> spec = Specification.allOf(UserSpecification.hasRole(Role.MERCHANT.toString()))
+                                                .and(UserSpecification.isEnabled(false));
+
+        return userRepository.findAll(spec).stream()
+                             .map(UserUtil::mapUsersToUserResponse)
+                             .toList();
     }
 }

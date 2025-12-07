@@ -218,4 +218,11 @@ public class UserController {
         List<AddressResponse> addresses = userService.getUserAddresses(id);
         return ResponseEntity.ok(addresses);
     }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get merchant list need approvement")
+    @GetMapping("/merchants/consideration")
+    public ResponseEntity<List<UserResponse>> getMerchantListNeedApprovement() {
+        return ResponseEntity.ok(userService.getMerchantListNeedApprovement());
+    }
 }
