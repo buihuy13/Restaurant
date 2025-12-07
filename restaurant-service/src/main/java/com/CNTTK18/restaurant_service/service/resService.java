@@ -26,6 +26,7 @@ import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
 import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponseWithProduct;
 import com.CNTTK18.restaurant_service.exception.DistanceDurationException;
+import com.CNTTK18.restaurant_service.exception.ForbiddenException;
 import com.CNTTK18.restaurant_service.exception.InvalidRequestException;
 import com.CNTTK18.restaurant_service.model.restaurants;
 import com.CNTTK18.restaurant_service.model.reviews;
@@ -184,9 +185,13 @@ public class resService {
     }
 
     @Transactional
-    public resResponseWithProduct updateRestaurant(String id, updateRes updateRes, MultipartFile imageFile) {
+    public resResponseWithProduct updateRestaurant(String id, updateRes updateRes, MultipartFile imageFile, String userId) {
         restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+
+        if (userId == null || !userId.equals(res.getMerchantId())) {
+            throw new ForbiddenException("You do not have permission to update this restaurant.");
+        }
         res.setAddress(updateRes.getAddress());
         res.setOpeningTime(updateRes.getOpeningTime());
         res.setClosingTime(updateRes.getClosingTime());
@@ -211,9 +216,13 @@ public class resService {
     }
 
     @Transactional
-    public void deleteRestaurant(String id) {
+    public void deleteRestaurant(String id, String userId) {
         restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+
+        if (userId == null || !userId.equals(res.getMerchantId())) {
+            throw new ForbiddenException("You do not have permission to delete this restaurant.");
+        }
 
         List<reviews> rv = reviewRepository.findByReviewId(id).stream()
                                 .filter(r -> r.getReviewType().equals(reviewType.RESTAURANT.toString())).toList();
@@ -233,9 +242,13 @@ public class resService {
         resRepository.save(res);
     }
 
-    public void deleteImage(String resId) {
+    public void deleteImage(String resId, String userId) {
         restaurants res = resRepository.findById(resId)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+
+        if (userId == null || !userId.equals(res.getMerchantId())) {
+            throw new ForbiddenException("You do not have permission to update this restaurant.");
+        }
         imageService.deleteImage(res.getPublicID());
         res.setImageURL(null);
         res.setPublicID(null);

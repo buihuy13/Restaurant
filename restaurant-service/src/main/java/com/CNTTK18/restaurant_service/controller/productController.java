@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -85,20 +86,20 @@ public class productController {
         return new ResponseEntity<>(productService.createProduct(productRequest, imageFile), HttpStatusCode.valueOf(201));
     }
 
-    @Tag(name = "Put") 
+    @Tag(name = "Put")
     @Operation(summary = "Update a product")
     @PutMapping("/{id}")
     public ResponseEntity<productResponse> updateProduct(@RequestPart(value = "product", required = true) @Valid updateProduct updateProduct,
                                         @RequestPart(value = "image", required = false) MultipartFile imageFile,
-                                        @PathVariable String id) {
-        return ResponseEntity.ok(productService.updateProduct(updateProduct, id, imageFile));
+                                        @PathVariable String id, @AuthenticationPrincipal String userId) {
+        return ResponseEntity.ok(productService.updateProduct(updateProduct, id, imageFile, userId));
     }
 
     @Tag(name = "Delete")
     @Operation(summary = "Delete a product")
     @DeleteMapping("/{id}")
-    public ResponseEntity<MessageResponse> deleteProduct(@PathVariable String id) {
-        productService.deleteProduct(id);
+    public ResponseEntity<MessageResponse> deleteProduct(@PathVariable String id, @AuthenticationPrincipal String userId) {
+        productService.deleteProduct(id, userId);
         return ResponseEntity.ok(new MessageResponse("Delete Successfully"));
     }
 
@@ -112,16 +113,16 @@ public class productController {
     @Tag(name = "Put") 
     @Operation(summary = "Update a product available status")
     @PutMapping("/availability/{id}")
-    public ResponseEntity<MessageResponse> updateProductAvailability(@PathVariable String id) {
-        productService.changeProductAvailability(id);
+    public ResponseEntity<MessageResponse> updateProductAvailability(@PathVariable String id, @AuthenticationPrincipal String userId) {
+        productService.changeProductAvailability(id, userId);
         return ResponseEntity.ok(new MessageResponse("Update availability successfully"));
     }
 
     @Tag(name = "Delete")
     @Operation(summary = "Delete product image")
     @DeleteMapping("/image/{id}")
-    public ResponseEntity<MessageResponse> deleteProductImage(@PathVariable String id) {
-        productService.deleteImage(id);
+    public ResponseEntity<MessageResponse> deleteProductImage(@PathVariable String id, @AuthenticationPrincipal String userId) {
+        productService.deleteImage(id, userId);
         return ResponseEntity.ok(new MessageResponse("Delete image successfully"));
     }
 

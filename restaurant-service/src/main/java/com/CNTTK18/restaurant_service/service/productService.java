@@ -43,6 +43,7 @@ import com.CNTTK18.restaurant_service.dto.product.request.updateProduct;
 import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
 import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
+import com.CNTTK18.restaurant_service.exception.ForbiddenException;
 
 @Service
 public class productService {
@@ -228,7 +229,7 @@ public class productService {
     }
 
     @Transactional
-    public productResponse updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile) {
+    public productResponse updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile, String userId) {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         categories cate = cateRepository.findById(updateProduct.getCategoryId())
@@ -237,6 +238,9 @@ public class productService {
         restaurants res = resRepository.findById(product.getRestaurant().getId())
                                     .orElseThrow(() -> new ResourceNotFoundException("restaurant not found"));
         
+        if (userId == null || !userId.equals(res.getMerchantId())) {
+            throw new ForbiddenException("You do not have permission to update this product.");
+        }
         categories oldCategory = product.getCategory();
         boolean categoryChanged = !oldCategory.getId().equals(cate.getId());
 
@@ -295,8 +299,12 @@ public class productService {
     }
 
     @Transactional
-    public void deleteProduct(String id) {
+    public void deleteProduct(String id, String userId) {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if (userId == null || !userId.equals(product.getRestaurant().getMerchantId())) {
+            throw new ForbiddenException("You do not have permission to update this product.");
+        }
         List<reviews> rv = reviewRepository.findByReviewId(id).stream()
                                 .filter(r -> r.getReviewType().equals(reviewType.PRODUCT.toString())).toList();
         if (product.getPublicID() != null && !product.getPublicID().isEmpty()) {
@@ -314,8 +322,11 @@ public class productService {
     }
 
     @Transactional
-    public void changeProductAvailability(String id) {
+    public void changeProductAvailability(String id, String userId) {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (userId == null || !userId.equals(product.getRestaurant().getMerchantId())) {
+            throw new ForbiddenException("You do not have permission to update this product.");
+        }
         product.setAvailable(!product.isAvailable());
         productRepo.save(product);
     }
@@ -329,9 +340,12 @@ public class productService {
         return newVolume;
     }
 
-    public void deleteImage(String productId) {
+    public void deleteImage(String productId, String userId) {
         products product = productRepo.findById(productId)
                             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (userId == null || !userId.equals(product.getRestaurant().getMerchantId())) {
+            throw new ForbiddenException("You do not have permission to update this product.");
+        }
         imageFileService.deleteImage(product.getPublicID());
         product.setImageURL(null);
         product.setPublicID(null);

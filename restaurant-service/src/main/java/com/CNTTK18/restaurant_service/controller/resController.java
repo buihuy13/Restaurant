@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -95,8 +96,9 @@ public class resController {
     @PutMapping("/{id}")
     public ResponseEntity<resResponseWithProduct> updateRestaurant(@PathVariable String id, 
                     @RequestPart(value = "restaurant", required = true) @Valid updateRes updateRes,
-                    @RequestPart(value = "image", required = false) MultipartFile imageFile) {
-        return ResponseEntity.ok(resService.updateRestaurant(id, updateRes, imageFile));
+                    @RequestPart(value = "image", required = false) MultipartFile imageFile,
+                    @AuthenticationPrincipal String userId) {
+        return ResponseEntity.ok(resService.updateRestaurant(id, updateRes, imageFile, userId));
     }
 
     @Tag(name = "Post")
@@ -123,8 +125,9 @@ public class resController {
     @Tag(name = "Delete")
     @Operation(summary = "Delete a restaurant")
     @DeleteMapping("/{id}")
-    public ResponseEntity<MessageResponse> deleteRes(@PathVariable String id) {
-        resService.deleteRestaurant(id);
+    public ResponseEntity<MessageResponse> deleteRes(@PathVariable String id, 
+                    @AuthenticationPrincipal String userId) {
+        resService.deleteRestaurant(id, userId);
         return ResponseEntity.ok(new MessageResponse("Delete Successfully"));
     }
 
@@ -140,8 +143,9 @@ public class resController {
     @Tag(name = "Delete")
     @Operation(summary = "Delete restaurant image")
     @DeleteMapping("/image/{id}")
-    public ResponseEntity<MessageResponse> deleteResImage(@PathVariable String id) {
-        resService.deleteImage(id);
+    public ResponseEntity<MessageResponse> deleteResImage(@PathVariable String id, 
+                    @AuthenticationPrincipal String userId) {
+        resService.deleteImage(id, userId);
         return ResponseEntity.ok(new MessageResponse("Delete image successfully"));
     }
 }
