@@ -2,6 +2,7 @@ import express from 'express';
 import blogController from '../controllers/blogController.js';
 import commentRoutes from './commentRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
+import { authenticate } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -297,16 +298,74 @@ const router = express.Router();
  *               message: "Blog deleted successfully"
  */
 
+/**
+ * @swagger
+ * /api/blogs/bulk-delete:
+ *   post:
+ *     summary: Xóa nhiều bài viết cùng lúc (Bulk Delete)
+ *     description: |
+ *       Cho phép xóa nhiều blog trong một request.
+ *       - **ADMIN**: xóa được tất cả blog
+ *       - **AUTHOR**: chỉ xóa được blog của chính mình
+ *     tags: [Blogs]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - blogIds
+ *             properties:
+ *               blogIds:
+ *                 type: array
+ *                 description: Danh sách ID blog cần xóa
+ *                 items:
+ *                   type: string
+ *                   example: "667fae6d3d9e3a4123abcd01"
+ *           example:
+ *             blogIds:
+ *               - "667fae6d3d9e3a4123abcd01"
+ *               - "667fae6d3d9e3a4123abcd02"
+ *               - "667fae6d3d9e3a4123abcd03"
+ *     responses:
+ *       200:
+ *         description: Xóa blog hàng loạt thành công
+ *         content:
+ *           application/json:
+ *             example:
+ *               success: true
+ *               message: "Xóa blog hàng loạt thành công"
+ *               data:
+ *                 deletedCount: 3
+ *       400:
+ *         description: Dữ liệu không hợp lệ
+ *       401:
+ *         description: Chưa xác thực
+ *       403:
+ *         description: Không có quyền xóa một hoặc nhiều blog
+ *       404:
+ *         description: Không tìm thấy blog
+ *       500:
+ *         description: Lỗi server
+ */
+
 router.use('/upload', uploadRoutes);
-router.use('/:blogId/comments', commentRoutes);
 
 router.post('/', blogController.createBlog);
 router.get('/', blogController.getBlogs);
+
 router.get('/popular', blogController.getPopularBlogs);
 router.get('/slug/:slug', blogController.getBlogBySlug);
+
 router.get('/:blogId', blogController.getBlogById);
-router.put('/:blogId', blogController.updateBlog);
-router.delete('/:blogId', blogController.deleteBlog);
-router.post('/:blogId/like', blogController.toggleLike);
+router.put('/:blogId', authenticate, blogController.updateBlog);
+router.delete('/:blogId', authenticate, blogController.deleteBlog);
+router.post('/:blogId/like', authenticate, blogController.toggleLike);
+router.post('/bulk-delete', authenticate, blogController.bulkDeleteBlogs);
+
+router.use('/:blogId/comments', commentRoutes);
 
 export default router;

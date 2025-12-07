@@ -2,6 +2,7 @@
 import express from 'express';
 import commentController from '../controllers/commentController.js';
 import { uploadCommentImages } from '../middlewares/uploadMiddleware.js';
+import { authenticate } from '../middlewares/authMiddleware.js';
 
 const router = express.Router({ mergeParams: true });
 
@@ -279,9 +280,12 @@ const router = express.Router({ mergeParams: true });
  */
 
 router.get('/', commentController.getComments);
+router.get('/:commentId/replies', commentController.getReplies);
+
+router.use(authenticate);
+
 router.post('/', uploadCommentImages, commentController.createComment);
 router.post('/:commentId/reply', uploadCommentImages, commentController.replyComment);
-router.get('/:commentId/replies', commentController.getReplies);
 router.post('/:commentId/like', commentController.likeComment);
 router.put('/:commentId', uploadCommentImages, commentController.updateComment);
 router.delete('/:commentId', commentController.deleteComment);

@@ -172,6 +172,25 @@ class BlogController {
             return next(error);
         }
     };
+
+    bulkDeleteBlogs = async (req, res, next) => {
+        try {
+            const { blogIds } = req.body;
+            const userId = req.user?.userId;
+            const userRole = req.user?.role;
+
+            const result = await blogService.deleteBlogsBulk(blogIds, userId, userRole);
+
+            return res.status(200).json({
+                success: true,
+                message: 'Xóa blog hàng loạt thành công',
+                data: result,
+            });
+        } catch (error) {
+            logger.error('Bulk delete blog error:', error);
+            next(error);
+        }
+    };
 }
 
 export default new BlogController();

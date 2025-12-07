@@ -220,7 +220,7 @@ class BlogService {
             }
 
             if (blog.author.userId !== userId && userRole !== 'ADMIN') {
-                return res.status(403).json({ success: false, message: 'Forbidden: Unauthorized to update this blog' });
+                throw new AppError('Forbidden: Unauthorized to update this blog', 403);
             }
 
             Object.keys(updateData).forEach((key) => {
@@ -300,6 +300,55 @@ class BlogService {
             return relatedBlogs;
         } catch (error) {
             logger.error('Get related blogs error:', error);
+            throw error;
+        }
+    }
+
+    async deleteBlogsBulk(blogIds = [], userId, userRole) {
+        try {
+            if (!Array.isArray(blogIds) || blogIds.length === 0) {
+                throw new AppError('Danh sách blogIds không hợp lệ', 400);
+            }
+
+            // Validate ObjectId
+            const validIds = blogIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
+            if (validIds.length === 0) {
+                throw new AppError('Không có blogId hợp lệ', 400);
+            }
+
+            // Lấy danh sách blog
+            const blogs = await Blog.find({ _id: { $in: validIds } });
+
+            if (!blogs.length) {
+                throw new AppError('Không tìm thấy blog nào', 404);
+            }
+
+            // Phân quyền
+            if (userRole !== 'ADMIN') {
+                const unauthorized = blogs.filter((b) => b.author.userId !== userId);
+                if (unauthorized.length > 0) {
+                    throw new AppError('Không có quyền xóa một số blog', 403);
+                }
+            }
+
+            // Xóa ảnh Cloudinary
+            const imagePublicIds = blogs.map((b) => b.featuredImage?.publicId).filter(Boolean);
+
+            await Promise.all(imagePublicIds.map((id) => CloudinaryService.deleteImage(id).catch(() => null)));
+
+            // Xóa blogs
+            const result = await Blog.deleteMany({ _id: { $in: validIds } });
+
+            // Xóa comments liên quan
+            await Comment.deleteMany({ blogId: { $in: validIds } });
+
+            logger.info(`Bulk delete blogs | Count: ${result.deletedCount}`);
+
+            return {
+                deletedCount: result.deletedCount,
+            };
+        } catch (error) {
+            logger.error('Bulk delete blogs error:', error);
             throw error;
         }
     }
