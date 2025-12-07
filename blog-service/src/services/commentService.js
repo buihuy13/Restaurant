@@ -10,10 +10,23 @@ class CommentService {
                 throw new Error('Comment content cannot be empty');
             }
 
+            let path;
+
+            if (parentId) {
+                const parent = await Comment.findById(parentId);
+                if (!parent) throw new Error('Parent comment not found');
+
+                path = `${parent.path}.${parent._id}`;
+            } else {
+                // tạm thời gán placeholder
+                path = 'root';
+            }
+
             const comment = new Comment({
                 blogId,
                 parentId: parentId || null,
                 content: content.trim(),
+                path: parentId ? `${parent.path}.${parentId}` : null,
                 images: images.map((img) => ({
                     url: img.secure_url || img.url,
                     publicId: img.public_id,
@@ -23,7 +36,7 @@ class CommentService {
                 })),
                 author: {
                     userId: user.userId,
-                    name: user.name,
+                    name: user.username,
                     avatar: user.avatar || '',
                 },
             });
