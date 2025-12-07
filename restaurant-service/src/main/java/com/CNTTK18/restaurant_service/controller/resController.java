@@ -63,7 +63,7 @@ public class resController {
 
     @Tag(name = "Get")
     @Operation(summary = "Get restaurant by ID")
-    @GetMapping("/{id}")
+    @GetMapping("/admin/{id}")
     public Mono<ResponseEntity<resResponseWithProduct>> getRestaurantById(@PathVariable String id,
                                                         @RequestParam(required = false) Double lat,
                                                         @RequestParam(required = false) Double lon) {
@@ -77,6 +77,13 @@ public class resController {
     }
 
     @Tag(name = "Get")
+    @Operation(summary = "Get restaurant by Slug")
+    @GetMapping("/{slug}")
+    public ResponseEntity<resResponseWithProduct> getRestaurantBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok(resService.getRestaurantBySlug(slug));
+    }
+
+    @Tag(name = "Get")
     @Operation(summary = "Get restaurants by merchant id")
     @GetMapping("/merchant/{id}")
     public ResponseEntity<List<resResponseWithProduct>> getRestaurantByMerchantId(@PathVariable String id) {
@@ -86,7 +93,7 @@ public class resController {
     @Tag(name = "Put")
     @Operation(summary = "Update restaurant")
     @PutMapping("/{id}")
-    public ResponseEntity<restaurants> updateRestaurant(@PathVariable String id, 
+    public ResponseEntity<resResponseWithProduct> updateRestaurant(@PathVariable String id, 
                     @RequestPart(value = "restaurant", required = true) @Valid updateRes updateRes,
                     @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         return ResponseEntity.ok(resService.updateRestaurant(id, updateRes, imageFile));

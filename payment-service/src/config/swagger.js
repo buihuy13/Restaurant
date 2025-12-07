@@ -1,104 +1,125 @@
-import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerJSDoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 const options = {
-    definition: {
-        openapi: '3.0.0',
+    swaggerDefinition: {
+        swagger: '2.0',
         info: {
-            title: 'Payment Service API',
+            title: 'Payment & Wallet Service API',
             version: '1.0.0',
-            description: 'Food Delivery Payment Management API',
+            description: 'Thanh toán khách hàng + Ví đối tác (nhà hàng)',
             contact: {
                 name: 'API Support',
-                email: 'support@foodeats.com',
+                email: 'support@example.com',
             },
         },
-        servers: [
-            {
-                url: 'http://localhost:8083',
-                description: 'Development server',
+        host: process.env.PAYMENT_SERVICE_URL || 'localhost:8083',
+        basePath: '/api',
+        schemes: ['http', 'https'],
+        securityDefinitions: {
+            Bearer: {
+                type: 'apiKey',
+                name: 'Authorization',
+                in: 'header',
+                description: 'Nhập token theo định dạng: Bearer <your-jwt-token>',
             },
-            {
-                url: 'http://localhost:8080',
-                description: 'API Gateway',
-            },
-        ],
-        components: {
-            securitySchemes: {
-                bearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT',
+        },
+        definitions: {
+            Payment: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    paymentId: { type: 'string' },
+                    orderId: { type: 'string' },
+                    userId: { type: 'string' },
+                    amount: { type: 'number' },
+                    currency: { type: 'string' },
+                    paymentMethod: { type: 'string', enum: ['cash', 'card', 'wallet'] },
+                    status: { type: 'string', enum: ['pending', 'processing', 'completed', 'failed', 'refunded'] },
+                    transactionId: { type: 'string' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                    updatedAt: { type: 'string', format: 'date-time' },
                 },
             },
-            schemas: {
-                Payment: {
-                    type: 'object',
-                    properties: {
-                        id: {
-                            type: 'string',
-                            format: 'uuid',
-                        },
-                        paymentId: {
-                            type: 'string',
-                            example: 'PAY1234567890ABC',
-                        },
-                        orderId: {
-                            type: 'string',
-                            example: 'ORD1234567890ABC',
-                        },
-                        userId: {
-                            type: 'string',
-                        },
-                        amount: {
-                            type: 'number',
-                            example: 50.0,
-                        },
-                        currency: {
-                            type: 'string',
-                            example: 'USD',
-                        },
-                        paymentMethod: {
-                            type: 'string',
-                            enum: ['cash', 'card', 'wallet'],
-                        },
-                        status: {
-                            type: 'string',
-                            enum: ['pending', 'processing', 'completed', 'failed', 'refunded'],
-                        },
-                        transactionId: {
-                            type: 'string',
-                        },
-                        createdAt: {
-                            type: 'string',
-                            format: 'date-time',
-                        },
-                        updatedAt: {
-                            type: 'string',
-                            format: 'date-time',
-                        },
-                    },
+
+            Wallet: {
+                type: 'object',
+                properties: {
+                    balance: { type: 'number', example: 1850000 },
+                    totalEarned: { type: 'number', example: 2100000 },
+                    totalWithdrawn: { type: 'number', example: 250000 },
                 },
-                Error: {
-                    type: 'object',
-                    properties: {
-                        success: {
-                            type: 'boolean',
-                            example: false,
-                        },
-                        message: {
-                            type: 'string',
+            },
+
+            WalletTransaction: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    type: { type: 'string', enum: ['EARN', 'WITHDRAW'] },
+                    amount: { type: 'number' },
+                    status: { type: 'string', enum: ['PENDING', 'COMPLETED', 'FAILED'] },
+                    description: { type: 'string' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                },
+            },
+
+            PayoutRequest: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    amount: { type: 'number' },
+                    bankInfo: {
+                        type: 'object',
+                        properties: {
+                            bankName: { type: 'string' },
+                            accountNumber: { type: 'string' },
+                            accountHolderName: { type: 'string' },
                         },
                     },
+                    status: { type: 'string', enum: ['pending', 'processing', 'completed', 'failed'] },
+                    note: { type: 'string' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                },
+            },
+
+            Error: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: false },
+                    message: { type: 'string' },
                 },
             },
         },
-        security: [
-            {
-                bearerAuth: [],
-            },
-        ],
     },
-    apis: ['./src/routes/*.js', './src/controllers/*.js'],
+    apis: ['./src/routes/**/*.js', './src/controllers/**/*.js', './src/routes/adminWalletRoutes.js'],
 };
 
-export const swaggerSpec = swaggerJsdoc(options);
+const swaggerSpec = swaggerJSDoc(options);
+
+export const setupSwagger = (app) => {
+    app.use(
+        '/api-docs',
+        swaggerUi.serve,
+        swaggerUi.setup(swaggerSpec, {
+            explorer: true,
+            swaggerOptions: {
+                persistAuthorization: true,
+            },
+            customCss: `
+                .swagger-ui .topbar { display: none; }
+                .swagger-ui .info { margin: 20px 0; }
+            `,
+            customSiteTitle: 'Payment & Wallet Service API',
+        }),
+    );
+
+    // Cho API Gateway gọi
+    app.get('/v3/api-docs/payment-service', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.send(swaggerSpec);
+    });
+
+    app.get('/swagger-health', (req, res) => {
+        res.json({ status: 'ok', url: '/api-docs' });
+    });
+};

@@ -1,0 +1,33 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
+import mongoose from 'mongoose';
+import logger from '../utils/logger.js';
+
+const connectDB = async () => {
+    try {
+        const options = {
+            maxPoolSize: 10,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+        };
+
+        const conn = await mongoose.connect(process.env.BLOG_SERVICE_DB_URL, options);
+        logger.info(`MongoDB Connected: ${conn.connection.host}`);
+
+        mongoose.connection.on('error', (err) => {
+            logger.error('MongoDB connection error:', err);
+        });
+
+        mongoose.connection.on('disconnected', () => {
+            logger.warn('MongoDB disconnected');
+        });
+
+        return mongoose.connection;
+    } catch (error) {
+        logger.error(`Error connecting to MongoDB: ${error.message}`);
+        process.exit(1);
+    }
+};
+
+export default connectDB;

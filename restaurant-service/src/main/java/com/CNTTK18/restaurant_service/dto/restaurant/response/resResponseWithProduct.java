@@ -33,6 +33,7 @@ public class resResponseWithProduct {
     private int totalReview;
     private double distance;
     private double duration;
+    private String slug;
     private List<productResponseWithoutRes> products;
     private List<cateResponse> cate;
 }

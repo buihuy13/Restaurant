@@ -8,10 +8,14 @@ import errorHandler from './middleware/errorHandler.js';
 import logger from './utils/logger.js';
 import rateLimit from 'express-rate-limit';
 import orderRouter from './routes/orderRoutes.js';
+import cartRouter from './routes/cartRoutes.js';
 import redisClient from './config/redis.js';
 import startPaymentConsumer from './consumers/paymentConsumer.js';
 import eurekaClient from './config/eureka.js';
-import { setupSwagger } from './config/swagger.js';
+import orderMerchantRoutes from './routes/orderMerchantRoutes.js';
+import openapiRoute from './routes/openapiRoute.js';
+import http from 'http';
+import { initOrderSocket } from './config/socket.js';
 
 dotenv.config();
 
@@ -49,9 +53,11 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api/orders', orderRouter);
+app.use('/api/cart', cartRouter);
+app.use('/api/merchant/orders', orderMerchantRoutes);
 
 // Setup swagger
-setupSwagger(app);
+app.use('/', openapiRoute);
 
 // Error handler
 app.use(errorHandler);
@@ -79,9 +85,16 @@ const startServer = async () => {
         // Start payment consumer
         startPaymentConsumer();
 
+        // Tạo HTTP server để gắn socket
+        const server = http.createServer(app);
+
+        // Khởi động socket.IO
+        initOrderSocket(server);
+
         // Start server
-        app.listen(PORT, () => {
+        server.listen(PORT, () => {
             logger.info(`Order Service running on port ${PORT}`);
+            logger.info(`WebSocket ready on ws://localhost:${PORT}`);
             logger.info('Swagger docs: http://localhost:8082/v3/api-docs/order-service');
 
             eurekaClient.start((error) => {

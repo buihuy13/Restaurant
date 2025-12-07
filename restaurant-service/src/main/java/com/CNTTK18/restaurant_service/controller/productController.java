@@ -65,9 +65,16 @@ public class productController {
 
     @Tag(name = "Get")
     @Operation(summary = "Get product by ID")
-    @GetMapping("/{id}")
+    @GetMapping("/admin/{id}")
     public ResponseEntity<productResponse> getProductById(@PathVariable String id) {
         return ResponseEntity.ok(productService.getProductById(id));
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get product by Slug")
+    @GetMapping("/{slug}")
+    public ResponseEntity<productResponse> getProductBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok(productService.getProductBySlug(slug));
     }
 
     @Tag(name = "Post")

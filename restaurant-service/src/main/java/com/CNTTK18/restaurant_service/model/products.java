@@ -51,6 +51,7 @@ public class products {
     @JoinColumn(name = "restaurant_id", nullable = false)
     @JsonIgnore
     private restaurants restaurant;
+    private String slug;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProductSize> productSizes;

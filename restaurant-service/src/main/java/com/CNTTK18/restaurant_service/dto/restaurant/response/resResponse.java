@@ -32,5 +32,6 @@ public class resResponse {
     private int totalReview;
     private double distance;
     private double duration;
+    private String slug;
     private List<cateResponse> cate;
 }

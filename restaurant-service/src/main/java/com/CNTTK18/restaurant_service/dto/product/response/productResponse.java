@@ -28,5 +28,6 @@ public class productResponse {
     private resResponse restaurant;
     private int totalReview;
     private float rating;
+    private String slug;
     private List<ProductSizeResponse> productSizes;
 }

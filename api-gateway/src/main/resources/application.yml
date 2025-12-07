@@ -48,7 +48,14 @@ spring:
                   uri: lb://user-service
                   predicates:
                       - Path=/api/users/**
-                      - Method=GET, PUT
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                - id: user-service-put-password
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/password/*
+                      - Method=PUT
                   filters:
                       - name: JwtAuthentication
                 - id: user-service-put
@@ -69,7 +76,7 @@ spring:
                   uri: lb://user-service
                   predicates:
                       - Path=/api/users/**
-                      - Method=POST, DELETE
+                      - Method=POST, DELETE, PUT
                   filters:
                       - name: JwtAuthentication
                         args:
@@ -165,7 +172,7 @@ spring:
                   filters:
                       - name: JwtAuthentication
                         args:
-                            requiredRole: MERCHANT
+                            requiredRole: ADMIN,MERCHANT
                 - id: restaurant-service-res-ADMIN
                   uri: lb://restaurant-service
                   predicates:
@@ -233,7 +240,28 @@ spring:
                   filters:
                       - name: JwtAuthentication
 
-                - id: order-service-create
+                # ====================== ORDER SERVICE - USER ======================
+                - id: order-service-get-order-by-id
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/{orderId}
+                      - Method=GET
+
+                - id: order-service-get-by-slug
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/slug/{slug}
+                      - Method=GET
+
+                - id: order-service-get-user-orders
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/user/{userId}
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+
+                - id: order-service-create-order
                   uri: lb://order-service
                   predicates:
                       - Path=/api/orders
@@ -243,41 +271,229 @@ spring:
                         args:
                             requiredRole: USER
 
-                - id: order-service-status
+                - id: order-service-cancel-order
                   uri: lb://order-service
                   predicates:
-                      - Path=/api/orders/*/status
+                      - Path=/api/orders/{orderId}/cancel
                       - Method=PATCH
                   filters:
                       - name: JwtAuthentication
-                        args:
-                            requiredRole: MERCHANT,ADMIN
 
-                - id: order-service-cancel
+                - id: order-service-add-rating
                   uri: lb://order-service
                   predicates:
-                      - Path=/api/orders/*/cancel
-                      - Method=PATCH
-                  filters:
-                      - name: JwtAuthentication
-                        args:
-                            requiredRole: USER,MERCHANT,ADMIN
-
-                - id: order-service-rating
-                  uri: lb://order-service
-                  predicates:
-                      - Path=/api/orders/*/rating
+                      - Path=/api/orders/{orderId}/rating
                       - Method=POST
                   filters:
                       - name: JwtAuthentication
                         args:
                             requiredRole: USER
+
+                - id: order-service-checkout-from-cart
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/checkout/cart
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                # ====================== ORDER SERVICE - MERCHANT ======================
+                - id: merchant-accept-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/accept
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-reject-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/reject
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-cancel-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/cancel
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-preparing-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/preparing
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-ready-order
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/{orderId}/ready
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-get-all-orders
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-get-restaurant-orders
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/orders/restaurants/{restaurantId}/orders
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT, ADMIN
+
+                # ====================== CART SERVICE (trong Order Service) ======================
+                - id: cart-get
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}
+                      - Method=GET
+
+                - id: cart-add-item
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-update-quantity
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/restaurant/{restaurantId}/item/{productId}
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-remove-item
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/restaurant/{restaurantId}/item/{productId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-remove-restaurant
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/restaurant/{restaurantId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-clear
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-update-details
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/restaurant/{restaurantId}
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: cart-summary
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/summary
+                      - Method=GET
+
+                - id: cart-validate-checkout
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/cart/{userId}/checkout
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                # ====================== ADMIN ROUTES ======================
+                - id: admin-get-all-orders
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
+                - id: admin-update-order-status
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/{orderId}/status
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
+                # Swagger Docs
                 - id: order-service-docs
                   uri: lb://order-service
                   predicates:
-                      - Path=/order-service/v3/api-docs/order-service/**
+                      - Path=/api-docs/order-service/**
+
+                # Order Service - Swagger JSON
+                - id: order-service-swagger-json
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/v3/api-docs/order-service/**
                   filters:
-                      - RewritePath=/order-service/v3/api-docs/order-service/(?<segment>.*), /v3/api-docs/order-service/${segment}
+                      - RewritePath=/v3/api-docs/order-service/(?<segment>.*), /v3/api-docs/order-service/${segment}
+
+                - id: order-service-websocket
+                  uri: lb:ws://order-service
+                  predicates:
+                      - Path=/socket.io/**
+                  filters:
+                      - RewritePath=/socket\.io/(?<segment>.*), /socket.io/${segment}
 
                 # Payment-Service
                 - id: payment-service-get
@@ -320,12 +536,215 @@ spring:
                   args:
                       requiredRole: ADMIN
 
-                - id: payment-service-docs
+                - id: wallet-service-jwt
+                  uri: lb://wallet-service
+                  predicates:
+                      - Path=/api/wallet,/api/wallet/**,/api/wallet/transactions,/api/wallet/withdraw
+                  filters:
+                      - name: JwtAuthentication
+                  args:
+                      requiredRole: MERCHANT
+
+                - id: admin-wallet-service
+                  uri: lb://wallet-service
+                  predicates:
+                      - Path=/api/admin/wallets/payout-requests,/api/admin/wallets/payout-requests/**
+                  filters:
+                      - name: JwtAuthentication
+                  args:
+                      requiredRole: ADMIN
+
+                - id: payment-service-swagger
                   uri: lb://payment-service
                   predicates:
-                      - Path=/payment-service/v3/api-docs/payment-service/**
+                      - Path=/v3/api-docs/payment-service/**
                   filters:
                       - RewritePath=/v3/api-docs/payment-service/(?<segment>.*), /v3/api-docs/payment-service/${segment}
+
+                - id: chat-service-api
+                  uri: lb://chat-service
+                  predicates:
+                      - Path=/api/chat/roomId/**, /api/chat/rooms/**
+                  filters:
+                      - name: JwtAuthentication
+                - id: chat-service-websocket
+                  uri: lb://chat-service
+                  predicates:
+                      - Path=/ws/**
+
+                # ====================== BLOG SERVICE  ======================
+
+                # PUBLIC - ĐỌC BLOG (không cần JWT)
+                - id: blog-get-list
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs
+                      - Method=GET
+
+                - id: blog-get-by-slug
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/slug/{slug}
+                      - Method=GET
+
+                - id: blog-get-by-id
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}
+                      - Method=GET
+
+                - id: blog-get-popular
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/popular
+                      - Method=GET
+
+                - id: blog-get-comments
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments
+                      - Method=GET
+
+                - id: blog-get-comment-replies
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments/{commentId}/replies
+                      - Method=GET
+
+                - id: blog-create
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-update
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-delete
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-like
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/like
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-create-comment
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-reply-comment
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments/{commentId}/reply
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-like-comment
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments/{commentId}/like
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-update-comment
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments/{commentId}
+                      - Method=PUT
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-delete-comment
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/{blogId}/comments/{commentId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                # UPLOAD ROUTES (ảnh bìa, ảnh comment)
+                - id: blog-upload-image
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/upload/image
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-upload-images
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/upload/images
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-delete-upload
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/upload/delete
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                # Swagger Docs
+                - id: blog-service-docs
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api-docs/blog-service/**
+
+                # Blog Service - Swagger JSON
+                - id: blog-service-swagger-json
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/v3/api-docs/blog-service/**
+                  filters:
+                      - RewritePath=/v3/api-docs/blog-service/(?<segment>.*), /v3/api-docs/blog-service/${segment}
 
 eureka:
     instance:
@@ -350,6 +769,8 @@ springdoc:
             - name: Restaurant Service
               url: /v3/api-docs/restaurant-service
             - name: Payment Service
-              url: http://payment-service:8083/v3/api-docs/payment-service
+              url: /v3/api-docs/payment-service
             - name: Order Service
-              url: http://order-service:8082/v3/api-docs/order-service
+              url: /v3/api-docs/order-service
+            - name: Blog Service
+              url: /v3/api-docs/blog-service
