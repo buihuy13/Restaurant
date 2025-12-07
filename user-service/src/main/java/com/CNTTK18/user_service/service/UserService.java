@@ -30,6 +30,9 @@ import com.CNTTK18.user_service.repository.UserRepository;
 import com.CNTTK18.user_service.util.AddressUtil;
 import com.CNTTK18.user_service.util.UserUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -38,16 +41,18 @@ public class UserService {
     private final JwtService jwtService;
     private final MailService mailService;
     private final AddressRepository addressRepository;
+    private final CookiesService cookiesService;
 
     public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, 
                        AuthenticationManager authenticationManager, JwtService jwtService, 
-                       MailService mailService, AddressRepository addressRepository) {
+                       MailService mailService, AddressRepository addressRepository, CookiesService cookiesService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.mailService = mailService;
         this.addressRepository = addressRepository;
+        this.cookiesService = cookiesService;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -99,17 +104,26 @@ public class UserService {
         }
     }
 
-    public TokenResponse login(Login user) {
+    public TokenResponse login(Login user, HttpServletResponse response) {
         @SuppressWarnings("unused")
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         Users existingUsers = userRepository.findByEmail(user.getUsername()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
         if (existingUsers.isEnabled() == false) {
             throw new InactivateException("Your account is not activated. Please activate your account before logging in.");
         }
-        return new TokenResponse(jwtService.generateToken(user.getUsername(), existingUsers.getRole(), existingUsers.getId()), jwtService.generateRefreshToken(user.getUsername(), existingUsers.getRole(), existingUsers.getId()));
+        cookiesService.addRefreshTokenToCookie(jwtService.generateRefreshToken(user.getUsername(), existingUsers.getRole(), existingUsers.getId()), response);
+        return new TokenResponse(jwtService.generateToken(user.getUsername(), existingUsers.getRole(), existingUsers.getId()));
     }
 
-    public String refreshAccessToken(String refreshToken) throws Exception {
+    public void logoutUser(HttpServletResponse response) {
+        cookiesService.deleteRefreshTokenInCookie(response);
+    }
+
+    public String refreshAccessToken(HttpServletRequest request) throws Exception {
+        String refreshToken = cookiesService.extractRefreshTokenFromCookie(request);
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            throw new IllegalArgumentException("Refresh token is missing");
+        }
         return jwtService.refreshAccessToken(refreshToken);
     }
 

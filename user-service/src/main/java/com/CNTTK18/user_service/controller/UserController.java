@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +33,8 @@ import com.CNTTK18.user_service.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 @RestController
@@ -50,9 +51,17 @@ public class UserController {
     @Tag(name = "Post")
     @Operation(summary = "Login")
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody @Valid Login login) {
-        TokenResponse token = userService.login(login);
+    public ResponseEntity<TokenResponse> login(@RequestBody @Valid Login login, HttpServletResponse response) {
+        TokenResponse token = userService.login(login, response);
         return ResponseEntity.ok(token);
+    }
+
+    @Tag(name = "Post")
+    @Operation(summary = "Logout")
+    @PostMapping("/logout")
+    public ResponseEntity<MessageResponse> logout(HttpServletResponse response) {
+        userService.logoutUser(response);
+        return ResponseEntity.ok(new MessageResponse("User logged out successfully"));
     }
 
     @Tag(name = "Post")
@@ -73,23 +82,15 @@ public class UserController {
     @Tag(name = "Get")
     @Operation(summary = "Get user by access token")
     @GetMapping("/accesstoken")
-    public ResponseEntity<UserResponse> getUserByAccessToken(@RequestHeader("Authorization") String authHeader) throws Exception {
-        if (authHeader.startsWith("Bearer"))
-        {
-            authHeader = authHeader.substring(7);
-        }
-        return ResponseEntity.ok(userService.getUserByAccessToken(authHeader));
+    public ResponseEntity<UserResponse> getUserByAccessToken(@AuthenticationPrincipal UserPrinciple user) {
+        return ResponseEntity.ok(userService.getUserById(user.getId()));
     }
 
     @Tag(name = "Get")
     @Operation(summary = "Get new access token by refresh token")
     @GetMapping("/refreshtoken")
-    public ResponseEntity<MessageResponse> getNewAccessToken(@RequestHeader("Refresh-Token") String authHeader) throws Exception {
-        if (authHeader.startsWith("Bearer"))
-        {
-            authHeader = authHeader.substring(7);
-        }
-        return ResponseEntity.ok(new MessageResponse(userService.refreshAccessToken(authHeader)));
+    public ResponseEntity<MessageResponse> getNewAccessToken(HttpServletRequest request) throws Exception {
+        return ResponseEntity.ok(new MessageResponse(userService.refreshAccessToken(request)));
     }
 
     @Tag(name = "Get")
