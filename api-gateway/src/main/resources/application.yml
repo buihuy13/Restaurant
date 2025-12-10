@@ -271,6 +271,16 @@ spring:
                         args:
                             requiredRole: USER
 
+                - id: order-service-update-status
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/orders/{orderId}/status
+                      - Method=PATCH
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT,ADMIN
+
                 - id: order-service-cancel-order
                   uri: lb://order-service
                   predicates:
