@@ -1,5 +1,6 @@
 import express from 'express';
 import orderMerchantController from '../controllers/orderMerchantController.js';
+import { authenticate } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -43,7 +44,7 @@ const router = express.Router();
  *       404:
  *         description: Không tìm thấy đơn hàng
  */
-router.post('/:orderId/accept', orderMerchantController.acceptOrder);
+router.post('/:orderId/accept', authenticate, orderMerchantController.acceptOrder);
 
 /**
  * @swagger
@@ -84,7 +85,7 @@ router.post('/:orderId/accept', orderMerchantController.acceptOrder);
  *       400:
  *         description: Không thể từ chối (đơn đã được chuẩn bị, đã giao, v.v.)
  */
-router.post('/:orderId/reject', orderMerchantController.rejectOrder);
+router.post('/:orderId/reject', authenticate, orderMerchantController.rejectOrder);
 
 /**
  * @swagger
@@ -124,7 +125,7 @@ router.post('/:orderId/reject', orderMerchantController.rejectOrder);
  *       400:
  *         description: Không thể hủy ở trạng thái hiện tại
  */
-router.post('/:orderId/cancel', orderMerchantController.cancelAcceptedOrder);
+router.post('/:orderId/cancel', authenticate, orderMerchantController.cancelAcceptedOrder);
 
 /**
  * @swagger
@@ -171,6 +172,6 @@ router.post('/:orderId/cancel', orderMerchantController.cancelAcceptedOrder);
  *       403:
  *         description: Không có quyền truy cập quán này
  */
-router.get('/restaurants/:restaurantId/orders', orderMerchantController.getRestaurantOrders);
+router.get('/restaurants/:restaurantId/orders', authenticate, orderMerchantController.getRestaurantOrders);
 
 export default router;
