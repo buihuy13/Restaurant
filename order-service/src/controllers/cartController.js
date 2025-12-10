@@ -40,7 +40,7 @@ class CartController {
         }
     }
 
-    // ✅ POST /api/cart/{userId} - Add item to cart
+    // POST /api/cart/{userId} - Add item to cart
     async addItemToCart(req, res) {
         try {
             const { userId } = req.params;
@@ -85,7 +85,7 @@ class CartController {
         }
     }
 
-    // ✅ PATCH /api/cart/{userId}/restaurant/{restaurantId}/item/{productId} - Update quantity
+    // PATCH /api/cart/{userId}/restaurant/{restaurantId}/item/{productId} - Update quantity
     async updateItemQuantity(req, res) {
         try {
             const { userId, restaurantId, productId } = req.params;
@@ -105,7 +105,7 @@ class CartController {
                 });
             }
 
-            logger.info(`📝 PATCH - Update quantity: ${userId} - ${restaurantId} - ${productId} -> ${quantity}`);
+            logger.info(`PATCH - Update quantity: ${userId} - ${restaurantId} - ${productId} -> ${quantity}`);
 
             const cart = await cartService.updateItemQuantity(userId, restaurantId, productId, quantity);
 
@@ -115,7 +115,7 @@ class CartController {
                 data: cart,
             });
         } catch (error) {
-            logger.error(`❌ Update quantity error: ${error.message}`);
+            logger.error(`Update quantity error: ${error.message}`);
             res.status(400).json({
                 status: 'error',
                 message: error.message,
@@ -123,7 +123,7 @@ class CartController {
         }
     }
 
-    // ✅ DELETE /api/cart/{userId}/restaurant/{restaurantId}/item/{productId} - Remove item
+    // DELETE /api/cart/{userId}/restaurant/{restaurantId}/item/{productId} - Remove item
     async removeItemFromCart(req, res) {
         try {
             const { userId, restaurantId, productId } = req.params;
@@ -135,7 +135,7 @@ class CartController {
                 });
             }
 
-            logger.info(`🗑️ DELETE - Remove item: ${userId} - ${restaurantId} - ${productId}`);
+            logger.info(`DELETE - Remove item: ${userId} - ${restaurantId} - ${productId}`);
 
             const cart = await cartService.removeItemFromCart(userId, restaurantId, productId);
 
@@ -153,7 +153,7 @@ class CartController {
         }
     }
 
-    // ✅ DELETE /api/cart/{userId}/restaurant/{restaurantId} - Remove restaurant
+    // DELETE /api/cart/{userId}/restaurant/{restaurantId} - Remove restaurant
     async removeRestaurantFromCart(req, res) {
         try {
             const { userId, restaurantId } = req.params;

@@ -1,51 +1,38 @@
-import logger from "../utils/logger.js";
-import jwt from "jsonwebtoken";
+import jwt from 'jsonwebtoken';
+import logger from '../utils/logger.js';
 
 export const authenticate = (req, res, next) => {
-  try {
-    // Lấy token từ header Authorization
-    const authHeader = req.headers.authorization;
+    try {
+        // 1. Lấy token từ header
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                message: 'Authentication required',
+            });
+        }
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Missing or invalid token" });
+        const token = authHeader.split(' ')[1];
+
+        // 2. Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRETKEY);
+
+        // 3. Gắn user vào request
+        req.user = {
+            userId: decoded.id,
+            role: decoded.role,
+            username: decoded.sub,
+        };
+
+        next();
+    } catch (error) {
+        logger.warn('JWT authentication failed', {
+            message: error.message,
+        });
+
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid or expired token',
+        });
     }
-
-    // Cắt chuỗi "Bearer " để lấy token thật
-    const token = authHeader.split(" ")[1];
-
-    // Xác thực token với secret key
-    const decoded = jwt.verify(token, process.env.JWT_SECRETKEY);
-
-    // Lưu thông tin user đã decode vào request (để các route khác dùng)
-    req.user = decoded;
-
-    // Tiếp tục đến middleware/route handler tiếp theo
-    next();
-  } catch (error) {
-    logger.error("Authentication error:", error);
-    return res.status(401).json({
-      success: false,
-      message: "Invalid or expired token",
-    });
-  }
-};
-
-export const authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized",
-      });
-    }
-
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: "Forbidden: Insufficient permissions",
-      });
-    }
-
-    next();
-  };
 };
