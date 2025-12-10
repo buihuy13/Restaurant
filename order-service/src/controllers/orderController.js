@@ -94,11 +94,11 @@ class OrderController {
 
     async updateOrderStatus(req, res, next) {
         try {
-            const { slug } = req.params;
+            const { orderId } = req.params;
             const { error } = updateOrderStatusSchema.validate(req.body);
             if (error) return res.status(400).json({ success: false, message: error.details[0].message });
 
-            const order = await orderService.updateOrderStatus(slug, req.body);
+            const order = await orderService.updateOrderStatus(orderId, req.body);
 
             res.status(200).json({
                 success: true,
@@ -113,11 +113,11 @@ class OrderController {
 
     async cancelOrder(req, res, next) {
         try {
-            const { slug } = req.params;
+            const { orderId } = req.params;
             const { userId, reason } = req.body;
             if (!reason) return res.status(400).json({ success: false, message: 'Cancellation reason is required' });
 
-            const order = await orderService.cancelOrder(slug, userId, reason);
+            const order = await orderService.cancelOrder(orderId, userId, reason);
 
             res.status(200).json({
                 success: true,
@@ -132,13 +132,13 @@ class OrderController {
 
     async addRating(req, res, next) {
         try {
-            const { slug } = req.params;
+            const { orderId } = req.params;
             const { userId, rating, review } = req.body;
 
             if (!rating || rating < 1 || rating > 5)
                 return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5' });
 
-            const order = await orderService.addRating(slug, userId, rating, review);
+            const order = await orderService.addRating(orderId, userId, rating, review);
 
             res.status(200).json({
                 success: true,
