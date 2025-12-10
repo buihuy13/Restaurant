@@ -114,7 +114,8 @@ class OrderController {
     async cancelOrder(req, res, next) {
         try {
             const { orderId } = req.params;
-            const { userId, reason } = req.body;
+            const userId = req.user?.id || req.body.userId;
+            const { reason } = req.body;
             if (!reason) return res.status(400).json({ success: false, message: 'Cancellation reason is required' });
 
             const order = await orderService.cancelOrder(orderId, userId, reason);
@@ -133,7 +134,8 @@ class OrderController {
     async addRating(req, res, next) {
         try {
             const { orderId } = req.params;
-            const { userId, rating, review } = req.body;
+            const userId = req.user?.id || req.body.userId;
+            const { rating, review } = req.body;
 
             if (!rating || rating < 1 || rating > 5)
                 return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5' });
@@ -171,7 +173,9 @@ class OrderController {
 
     async createOrdersFromCart(req, res) {
         try {
-            const { userId, paymentMethod } = req.body;
+            // const { userId, paymentMethod } = req.body;
+            const paymentMethod = req.body.paymentMethod?.trim();
+            const userId = req.user?.id || req.body.userId;
             const token = req.headers.authorization?.split(' ')[1];
 
             if (!userId || !paymentMethod) {

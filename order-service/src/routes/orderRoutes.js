@@ -4,6 +4,7 @@ import orderController from '../controllers/orderController.js';
 import { validateRequest } from '../middleware/validateRequest.js';
 import { createOrderSchema } from '../dtos/request/createOrderDto.js';
 import { updateOrderStatusSchema, addRatingSchema } from '../dtos/request/updateOrderDto.js';
+import { authenticate } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -181,7 +182,12 @@ router.get('/user/:userId', orderController.getUserOrders);
  *             schema:
  *               $ref: '#/components/schemas/Order'
  */
-router.patch('/:orderId/status', validateRequest(updateOrderStatusSchema), orderController.updateOrderStatus);
+router.patch(
+    '/:orderId/status',
+    validateRequest(updateOrderStatusSchema),
+    authenticate,
+    orderController.updateOrderStatus,
+);
 
 /**
  * @swagger
@@ -217,7 +223,7 @@ router.patch('/:orderId/status', validateRequest(updateOrderStatusSchema), order
  *       400:
  *         description: Không thể hủy ở trạng thái hiện tại
  */
-router.patch('/:orderId/cancel', orderController.cancelOrder);
+router.patch('/:orderId/cancel', authenticate, orderController.cancelOrder);
 
 /**
  * @swagger
@@ -251,7 +257,7 @@ router.patch('/:orderId/cancel', orderController.cancelOrder);
  *       201:
  *         description: Đánh giá thành công
  */
-router.post('/:orderId/rating', validateRequest(addRatingSchema), orderController.addRating);
+router.post('/:orderId/rating', authenticate, validateRequest(addRatingSchema), orderController.addRating);
 
 /**
  * @swagger
@@ -300,6 +306,6 @@ router.post('/:orderId/rating', validateRequest(addRatingSchema), orderControlle
  *                       restaurantName: { type: string }
  *                       error: { type: string }
  */
-router.post('/checkout/cart', orderController.createOrdersFromCart);
+router.post('/checkout/cart', authenticate, orderController.createOrdersFromCart);
 
 export default router;
