@@ -1,8 +1,5 @@
 package com.CNTTK18.restaurant_service.model;
 
-import java.time.LocalTime;
-import java.util.Set;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +8,8 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.LocalTime;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,18 +24,22 @@ import lombok.Setter;
 @Setter
 @Builder
 public class restaurants {
-    @Id
-    private String id;
+    @Id private String id;
+
     @Column(name = "resname", nullable = false)
     private String resName;
+
     private String address;
-    private double longitude; //kinh độ
-    private double latitude; //vĩ độ
+    private double longitude; // kinh độ
+    private double latitude; // vĩ độ
     private float rating;
+
     @Column(name = "openingtime", nullable = false)
     private LocalTime openingTime;
+
     @Column(name = "closingtime", nullable = false)
     private LocalTime closingTime;
+
     private String phone;
 
     @Column(name = "imageurl")
@@ -44,6 +47,7 @@ public class restaurants {
 
     @Column(name = "publicid")
     private String publicID; // Cho việc xóa ảnh trong cloud
+
     @Column(name = "merchant_id", nullable = false)
     private String merchantId;
 
@@ -54,10 +58,9 @@ public class restaurants {
 
     @ManyToMany
     @JoinTable(
-        name = "restaurant_categories",
-        joinColumns = @jakarta.persistence.JoinColumn(name = "restaurant_id"),
-        inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "category_id")
-    )
+            name = "restaurant_categories",
+            joinColumns = @jakarta.persistence.JoinColumn(name = "restaurant_id"),
+            inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "category_id"))
     private Set<categories> categories;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -1,11 +1,10 @@
 package com.CNTTK18.chat_service.model;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,12 +19,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class ChatRoom {
-    @Id
-    private String id;
+    @Id private String id;
+
     @Column(name = "user1_id")
     private String user1Id;
+
     @Column(name = "user2_id")
     private String user2Id;
+
     @Column(name = "last_message_time")
     private LocalDateTime lastMessageTime;
 

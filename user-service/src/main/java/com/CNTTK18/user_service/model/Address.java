@@ -18,8 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Address {
-    @Id
-    private String id;
+    @Id private String id;
     private String location;
     private double longitude;
     private double latitude;

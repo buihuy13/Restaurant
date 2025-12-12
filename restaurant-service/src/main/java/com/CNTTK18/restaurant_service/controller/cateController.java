@@ -1,7 +1,13 @@
 package com.CNTTK18.restaurant_service.controller;
 
+import com.CNTTK18.restaurant_service.dto.cate.request.cateRequest;
+import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
+import com.CNTTK18.restaurant_service.model.categories;
+import com.CNTTK18.restaurant_service.service.cateService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
-
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,19 +20,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.CNTTK18.restaurant_service.dto.cate.request.cateRequest;
-import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
-import com.CNTTK18.restaurant_service.model.categories;
-import com.CNTTK18.restaurant_service.service.cateService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/category")
 public class cateController {
     private cateService cateService;
+
     public cateController(cateService cateService) {
         this.cateService = cateService;
     }
@@ -56,13 +54,15 @@ public class cateController {
     @Operation(summary = "Create new category")
     @PostMapping("")
     public ResponseEntity<categories> createCate(@RequestBody @Valid cateRequest cateRequest) {
-        return new ResponseEntity<>(cateService.createCate(cateRequest), HttpStatusCode.valueOf(201));
+        return new ResponseEntity<>(
+                cateService.createCate(cateRequest), HttpStatusCode.valueOf(201));
     }
 
-    @Tag(name = "Put") 
+    @Tag(name = "Put")
     @Operation(summary = "Update a category")
     @PutMapping("/{id}")
-    public ResponseEntity<categories> updateCate(@RequestBody @Valid cateRequest cateRequest, @PathVariable String id) {
+    public ResponseEntity<categories> updateCate(
+            @RequestBody @Valid cateRequest cateRequest, @PathVariable String id) {
         return ResponseEntity.ok(cateService.updateCate(id, cateRequest));
     }
 

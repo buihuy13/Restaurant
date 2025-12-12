@@ -1,11 +1,13 @@
 package com.CNTTK18.api_gateway.filter;
 
+import com.CNTTK18.api_gateway.config.RouterValidator;
+import com.CNTTK18.api_gateway.util.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -17,19 +19,15 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
-
-import com.CNTTK18.api_gateway.config.RouterValidator;
-import com.CNTTK18.api_gateway.util.JwtUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import reactor.core.publisher.Mono;
 
 @Component
-public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilterFactory<JwtAuthenticationGatewayFilterFactory.Config> {
+public class JwtAuthenticationGatewayFilterFactory
+        extends AbstractGatewayFilterFactory<JwtAuthenticationGatewayFilterFactory.Config> {
 
     private final JwtUtil jwtUtil;
     private final RouterValidator routerValidator;
-    
+
     public JwtAuthenticationGatewayFilterFactory(JwtUtil jwtUtil, RouterValidator routerValidator) {
         super(Config.class);
         this.jwtUtil = jwtUtil;
@@ -38,17 +36,17 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
 
     public static class Config {
         private String requiredRole;
-        
+
         public String getRequiredRole() {
             return requiredRole;
         }
+
         public void setRequiredRole(String role) {
             this.requiredRole = role;
         }
     }
 
-    private Mono<Void> onError(ServerWebExchange exchange, int statusCode, String message)
-    {
+    private Mono<Void> onError(ServerWebExchange exchange, int statusCode, String message) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatusCode.valueOf(statusCode));
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
@@ -63,8 +61,7 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
             byte[] bytes = mapper.writeValueAsBytes(errorResponse);
             DataBuffer buffer = response.bufferFactory().wrap(bytes);
             return response.writeWith(Mono.just(buffer));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return response.setComplete();
         }
     }
@@ -82,8 +79,7 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                 String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     authHeader = authHeader.substring(7); // Bỏ "Bearer "
-                }
-                else {
+                } else {
                     return onError(exchange, 401, "Token lỗi");
                 }
 
@@ -102,7 +98,7 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                 if (requiredRole != null && !requiredRole.isEmpty()) {
                     String userRoles = jwtUtil.extractRole(authHeader);
                     List<String> roles = Arrays.asList(requiredRole.split(","));
-                    
+
                     // Kiểm tra xem người dùng có quyền yêu cầu không
                     if (userRoles == null || !roles.stream().anyMatch(r -> r.equals(userRoles))) {
                         return onError(exchange, 403, "Không có quyền");
@@ -110,9 +106,11 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                 }
                 String userId = jwtUtil.extractUserId(authHeader);
 
-                ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-                        .header("user-id", userId) // Thêm header mới
-                        .build();
+                ServerHttpRequest mutatedRequest =
+                        exchange.getRequest()
+                                .mutate()
+                                .header("user-id", userId) // Thêm header mới
+                                .build();
 
                 exchange = exchange.mutate().request(mutatedRequest).build();
             }

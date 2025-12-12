@@ -1,15 +1,5 @@
 package com.CNTTK18.chat_service.controller;
 
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.CNTTK18.chat_service.dto.request.roomDTO;
 import com.CNTTK18.chat_service.dto.response.Data;
 import com.CNTTK18.chat_service.dto.response.ResponseMessage;
@@ -17,6 +7,14 @@ import com.CNTTK18.chat_service.dto.response.roomIdResponse;
 import com.CNTTK18.chat_service.model.ChatRoom;
 import com.CNTTK18.chat_service.model.Message;
 import com.CNTTK18.chat_service.service.ChatMessageService;
+import java.util.List;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -30,7 +28,8 @@ public class ChatMessageController {
     private final int LIMIT_MESSAGE = 20;
 
     @GetMapping("/roomId/{userId1}/{userId2}")
-    public ResponseEntity<roomIdResponse> getRoomId(@PathVariable String userId1, @PathVariable String userId2) {
+    public ResponseEntity<roomIdResponse> getRoomId(
+            @PathVariable String userId1, @PathVariable String userId2) {
         roomDTO roomDTO = new roomDTO(userId1, userId2);
         String roomId = chatMessageService.getRoomId(roomDTO);
         return ResponseEntity.ok(new roomIdResponse(roomId));
@@ -49,21 +48,24 @@ public class ChatMessageController {
     }
 
     @GetMapping("/rooms/{roomId}/unreadCount/{userId}")
-    public ResponseEntity<Data> countUnreadMessagesByRoomIdAndReceiverId(@PathVariable String roomId, @PathVariable String userId) {
+    public ResponseEntity<Data> countUnreadMessagesByRoomIdAndReceiverId(
+            @PathVariable String roomId, @PathVariable String userId) {
         long count = chatMessageService.countUnreadMessagesByRoomIdAndReceiverId(roomId, userId);
         return ResponseEntity.ok(new Data(count));
     }
 
     @PutMapping("/rooms/{roomId}/read/{userId}")
-    public ResponseEntity<ResponseMessage> markMessagesAsRead(@PathVariable String roomId, @PathVariable String userId) {
+    public ResponseEntity<ResponseMessage> markMessagesAsRead(
+            @PathVariable String roomId, @PathVariable String userId) {
         chatMessageService.markMessagesAsRead(roomId, userId);
         return ResponseEntity.ok(new ResponseMessage("Marked as read successfully"));
     }
 
     @GetMapping("/rooms/{roomId}/messages")
-    public ResponseEntity<List<Message>> getAllMessageDescInRoom(@PathVariable String roomId,
-                                                                @RequestParam(defaultValue = "0") int page) {
-        List<Message> messages = chatMessageService.getRecentMessageByPagination(roomId, page, LIMIT_MESSAGE);
+    public ResponseEntity<List<Message>> getAllMessageDescInRoom(
+            @PathVariable String roomId, @RequestParam(defaultValue = "0") int page) {
+        List<Message> messages =
+                chatMessageService.getRecentMessageByPagination(roomId, page, LIMIT_MESSAGE);
         return ResponseEntity.ok(messages);
     }
 }

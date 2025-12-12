@@ -1,13 +1,5 @@
 package com.CNTTK18.user_service.service;
 
-import java.util.List;
-
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.Common.Util.SlugGenerator;
@@ -30,6 +22,12 @@ import com.CNTTK18.user_service.repository.AddressRepository;
 import com.CNTTK18.user_service.repository.UserRepository;
 import com.CNTTK18.user_service.util.AddressUtil;
 import com.CNTTK18.user_service.util.UserUtil;
+import java.util.List;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
@@ -40,9 +38,13 @@ public class UserService {
     private final MailService mailService;
     private final AddressRepository addressRepository;
 
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, 
-                       AuthenticationManager authenticationManager, JwtService jwtService, 
-                       MailService mailService, AddressRepository addressRepository) {
+    public UserService(
+            UserRepository userRepository,
+            BCryptPasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            JwtService jwtService,
+            MailService mailService,
+            AddressRepository addressRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
@@ -56,25 +58,38 @@ public class UserService {
     }
 
     public UserResponse getUserById(String id) {
-        return userRepository.findById(id).map(UserUtil::mapUsersToUserResponse)
-                                          .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return userRepository
+                .findById(id)
+                .map(UserUtil::mapUsersToUserResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     public UserResponse updateUser(String id, UserRequest user) {
-        Users existingUser = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Users existingUser =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         if (!existingUser.getUsername().equals(user.getUsername())) {
             existingUser.setUsername(user.getUsername());
             existingUser.setSlug(SlugGenerator.generate(user.getUsername()));
         }
         existingUser.setPhone(user.getPhone());
         userRepository.save(existingUser);
-        return new UserResponse(existingUser.getId(),user.getUsername(),existingUser.getEmail(), 
-                                existingUser.isEnabled(), existingUser.getRole(), user.getPhone(), existingUser.getSlug());
+        return new UserResponse(
+                existingUser.getId(),
+                user.getUsername(),
+                existingUser.getEmail(),
+                existingUser.isEnabled(),
+                existingUser.getRole(),
+                user.getPhone(),
+                existingUser.getSlug());
     }
 
     public UserResponse getUserBySlug(String slug) {
-        return userRepository.findBySlug(slug).map(UserUtil::mapUsersToUserResponse)
-                                          .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return userRepository
+                .findBySlug(slug)
+                .map(UserUtil::mapUsersToUserResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     public void deleteUserById(String id) {
@@ -95,17 +110,26 @@ public class UserService {
         newUser.setRole(user.getRole());
         newUser.setSlug(SlugGenerator.generate(user.getUsername()));
         userRepository.save(newUser);
-        mailService.sendConfirmationEmail(newUser.getEmail(),newUser.getVerficationCode());
+        mailService.sendConfirmationEmail(newUser.getEmail(), newUser.getVerficationCode());
     }
 
     public TokenResponse login(Login user) {
         @SuppressWarnings("unused")
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-        Users existingUsers = userRepository.findByEmail(user.getUsername()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                user.getUsername(), user.getPassword()));
+        Users existingUsers =
+                userRepository
+                        .findByEmail(user.getUsername())
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         if (existingUsers.isEnabled() == false) {
-            throw new InactivateException("Your account is not activated. Please activate your account before logging in.");
+            throw new InactivateException(
+                    "Your account is not activated. Please activate your account before logging in.");
         }
-        return new TokenResponse(jwtService.generateToken(user.getUsername(), existingUsers.getRole()), jwtService.generateRefreshToken(user.getUsername(), existingUsers.getRole()));
+        return new TokenResponse(
+                jwtService.generateToken(user.getUsername(), existingUsers.getRole()),
+                jwtService.generateRefreshToken(user.getUsername(), existingUsers.getRole()));
     }
 
     public String refreshAccessToken(String refreshToken) throws Exception {
@@ -114,18 +138,28 @@ public class UserService {
 
     public UserResponse getUserByAccessToken(String accessToken) throws Exception {
         String email = jwtService.extractUserName(accessToken);
-        Users user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Users user =
+                userRepository
+                        .findByEmail(email)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return UserUtil.mapUsersToUserResponse(user);
     }
 
     public void activateAccount(String code) {
-        Users user = userRepository.findByVerficationCode(code).orElseThrow(() -> new ResourceNotFoundException("Invalid verification code"));
+        Users user =
+                userRepository
+                        .findByVerficationCode(code)
+                        .orElseThrow(
+                                () -> new ResourceNotFoundException("Invalid verification code"));
         user.setEnabled(true);
         userRepository.save(user);
     }
 
     public void sendVerificationEmail(String email) {
-        Users user = userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Users user =
+                userRepository
+                        .findByEmail(email)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         if (user.isEnabled()) {
             throw new IllegalStateException("Account is already activated");
         }
@@ -133,11 +167,15 @@ public class UserService {
     }
 
     public List<String> getRoles() {
-        return java.util.Arrays.asList(Role.USER.toString(), Role.ADMIN.toString(), Role.MERCHANT.toString());
+        return java.util.Arrays.asList(
+                Role.USER.toString(), Role.ADMIN.toString(), Role.MERCHANT.toString());
     }
 
     public void approveMerchant(String id) {
-        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Users user =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         if (!user.getRole().equals(Role.MERCHANT.toString())) {
             throw new IllegalStateException("User is not a merchant");
         }
@@ -148,7 +186,10 @@ public class UserService {
     }
 
     public void rejectMerchant(String id, Rejection rejection) {
-        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Users user =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         if (!user.getRole().equals(Role.MERCHANT.toString())) {
             throw new IllegalStateException("User is not a merchant");
         }
@@ -157,7 +198,10 @@ public class UserService {
     }
 
     public UserResponse updateUserAfterLogin(UserUpdateAfterLogin userUpdate, String id) {
-        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Users user =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setPhone(userUpdate.getPhone());
         Address address = new Address();
         address.setId(RandomIdGenerator.generate(99));
@@ -170,25 +214,40 @@ public class UserService {
     }
 
     public List<AddressResponse> getUserAddresses(String id) {
-        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Users user =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         List<Address> addresses = user.getAddressList();
-        return addresses.stream().map(AddressUtil::mapAddressToAddressResponseWithUserNull).toList();
+        return addresses.stream()
+                .map(AddressUtil::mapAddressToAddressResponseWithUserNull)
+                .toList();
     }
 
     public UserResponse resetPassword(Password password, String id) {
         if (!password.getPassword().equals(password.getConfirmPassword())) {
-            throw new IllegalArgumentException("Password and Confirm Password do not match"); 
+            throw new IllegalArgumentException("Password and Confirm Password do not match");
         }
-        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Users user =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setPassword(passwordEncoder.encode(password.getPassword()));
         userRepository.save(user);
         return UserUtil.mapUsersToUserResponse(user);
     }
 
     public AddressResponse addNewAddress(String id, AddressRequest addressRequest) {
-        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Address address = new Address(RandomIdGenerator.generate(250), addressRequest.getLocation(),
-                                     addressRequest.getLongitude(),addressRequest.getLatitude());
+        Users user =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Address address =
+                new Address(
+                        RandomIdGenerator.generate(250),
+                        addressRequest.getLocation(),
+                        addressRequest.getLongitude(),
+                        addressRequest.getLatitude());
 
         user.addAddress(address);
         userRepository.save(user);
@@ -196,7 +255,10 @@ public class UserService {
     }
 
     public void deleteAddress(String id) {
-        Address address = addressRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Address not found"));
+        Address address =
+                addressRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Address not found"));
 
         addressRepository.delete(address);
     }
@@ -219,7 +281,10 @@ public class UserService {
     }
 
     public void upgradeUserToMerchant(String id) {
-        Users user = userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Users user =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         user.setRole(Role.MERCHANT.toString());
         userRepository.save(user);
     }

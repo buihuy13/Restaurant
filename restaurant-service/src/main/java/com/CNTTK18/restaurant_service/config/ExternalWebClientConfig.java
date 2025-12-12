@@ -7,7 +7,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class ExternalWebClientConfig {
-    // Loại bỏ đi LoadBalanced để có thể route ra internet chứ không phải là tìm service trong service-discovery
+    // Loại bỏ đi LoadBalanced để có thể route ra internet chứ không phải là tìm service trong
+    // service-discovery
     @Bean
     @Qualifier("externalWebClient")
     public WebClient webClient() {

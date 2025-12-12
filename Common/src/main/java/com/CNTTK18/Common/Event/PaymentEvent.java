@@ -9,7 +9,8 @@ public class PaymentEvent {
 
     public PaymentEvent() {}
 
-    public PaymentEvent(String email, String orderId, double amount, String transactionId, String url) {
+    public PaymentEvent(
+            String email, String orderId, double amount, String transactionId, String url) {
         this.email = email;
         this.orderId = orderId;
         this.amount = amount;
@@ -17,18 +18,43 @@ public class PaymentEvent {
         this.url = url;
     }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getOrderId() { return orderId; }
-    public void setOrderId(String orderId) { this.orderId = orderId; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public double getAmount() { return amount; }
-    public void setAmount(double amount) { this.amount = amount; }
+    public String getOrderId() {
+        return orderId;
+    }
 
-    public String getTransactionId() { return transactionId; }
-    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
 
-    public String getUrl() { return url; }
-    public void setUrl(String url) { this.url = url; }
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
 }

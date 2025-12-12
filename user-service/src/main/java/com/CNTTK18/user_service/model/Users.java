@@ -1,8 +1,5 @@
 package com.CNTTK18.user_service.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +9,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,24 +25,34 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class Users {
-    @Id
-    private String id;
+    @Id private String id;
+
     @NotBlank(message = "Username is mandatory")
     private String username;
+
     @Email
     @NotBlank(message = "Email is mandatory")
     private String email;
+
     private String password;
     private boolean enabled;
+
     @Column(name = "verificationcode")
     private String verficationCode;
+
     private String role;
     private String phone;
+
     @Column(name = "authprovider")
     private String authProvider;
+
     private String slug;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true)
     private List<Address> addressList;
 
     public List<Address> getAddressList() {

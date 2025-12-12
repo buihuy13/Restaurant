@@ -1,7 +1,13 @@
 package com.CNTTK18.restaurant_service.controller;
 
+import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
+import com.CNTTK18.restaurant_service.dto.size.request.sizeRequest;
+import com.CNTTK18.restaurant_service.model.size;
+import com.CNTTK18.restaurant_service.service.sizeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
-
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,19 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
-import com.CNTTK18.restaurant_service.dto.size.request.sizeRequest;
-import com.CNTTK18.restaurant_service.model.size;
-import com.CNTTK18.restaurant_service.service.sizeService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/size")
 public class sizeController {
     private sizeService sizeService;
+
     public sizeController(sizeService sizeService) {
         this.sizeService = sizeService;
     }
@@ -48,13 +46,15 @@ public class sizeController {
     @Operation(summary = "Create new size")
     @PostMapping("")
     public ResponseEntity<size> createSize(@RequestBody @Valid sizeRequest sizeRequest) {
-        return new ResponseEntity<>(sizeService.createSize(sizeRequest), HttpStatusCode.valueOf(201));
+        return new ResponseEntity<>(
+                sizeService.createSize(sizeRequest), HttpStatusCode.valueOf(201));
     }
 
-    @Tag(name = "Put") 
+    @Tag(name = "Put")
     @Operation(summary = "Update a size")
     @PutMapping("/{id}")
-    public ResponseEntity<size> updateSize(@RequestBody @Valid sizeRequest sizeRequest, @PathVariable String id) {
+    public ResponseEntity<size> updateSize(
+            @RequestBody @Valid sizeRequest sizeRequest, @PathVariable String id) {
         return ResponseEntity.ok(sizeService.updateSize(id, sizeRequest));
     }
 

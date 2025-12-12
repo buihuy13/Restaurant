@@ -1,5 +1,8 @@
 package com.CNTTK18.user_service.config;
 
+import com.CNTTK18.user_service.service.CustomOauth2UserService;
+import com.CNTTK18.user_service.service.MyUserDetailsService;
+import com.CNTTK18.user_service.service.Oauth2LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,31 +16,41 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.CNTTK18.user_service.service.CustomOauth2UserService;
-import com.CNTTK18.user_service.service.MyUserDetailsService;
-import com.CNTTK18.user_service.service.Oauth2LoginSuccessHandler;
-
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     private final MyUserDetailsService userDetailsService;
     private final CustomOauth2UserService CustomOauth2UserService;
     private final Oauth2LoginSuccessHandler oauth2LoginSuccessHandler;
-    public SecurityConfig(MyUserDetailsService userDetailsService, CustomOauth2UserService CustomOauth2UserService, 
-                            Oauth2LoginSuccessHandler oauth2LoginSuccessHandler) {
+
+    public SecurityConfig(
+            MyUserDetailsService userDetailsService,
+            CustomOauth2UserService CustomOauth2UserService,
+            Oauth2LoginSuccessHandler oauth2LoginSuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.CustomOauth2UserService = CustomOauth2UserService;
         this.oauth2LoginSuccessHandler = oauth2LoginSuccessHandler;
     }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(customizer -> customizer.disable())
-                   .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().anyRequest().permitAll())
-                   .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                   .oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfo -> userInfo.userService(CustomOauth2UserService))
-                                                .successHandler(oauth2LoginSuccessHandler))
-                   .build();
+                .authorizeHttpRequests(
+                        request ->
+                                request.requestMatchers(HttpMethod.OPTIONS, "/**")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .permitAll())
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2Login(
+                        oauth2 ->
+                                oauth2.userInfoEndpoint(
+                                                userInfo ->
+                                                        userInfo.userService(
+                                                                CustomOauth2UserService))
+                                        .successHandler(oauth2LoginSuccessHandler))
+                .build();
     }
 
     @Bean
@@ -48,7 +61,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 

@@ -1,10 +1,8 @@
 package com.CNTTK18.restaurant_service.dto.product.response;
 
-import java.util.List;
-
 import com.CNTTK18.restaurant_service.dto.productSize.response.ProductSizeResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
-
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

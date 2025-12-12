@@ -1,8 +1,17 @@
 package com.CNTTK18.restaurant_service.controller;
 
+import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
+import com.CNTTK18.restaurant_service.dto.review.request.reviewRequest;
+import com.CNTTK18.restaurant_service.model.reviews;
+import com.CNTTK18.restaurant_service.service.reviewService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,22 +23,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
-import com.CNTTK18.restaurant_service.dto.review.request.reviewRequest;
-import com.CNTTK18.restaurant_service.model.reviews;
-import com.CNTTK18.restaurant_service.service.reviewService;
-
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/review")
 public class reviewController {
     private reviewService reviewService;
+
     public reviewController(reviewService reviewService) {
         this.reviewService = reviewService;
     }
@@ -37,8 +35,9 @@ public class reviewController {
     @Tag(name = "Get")
     @Operation(summary = "Get all reviews")
     @GetMapping("")
-    public ResponseEntity<List<reviews>> getAllReviews(@RequestParam(required = false) String resId,
-                                                        @RequestParam(required = false) String productId) {
+    public ResponseEntity<List<reviews>> getAllReviews(
+            @RequestParam(required = false) String resId,
+            @RequestParam(required = false) String productId) {
         return ResponseEntity.ok(reviewService.getAllReviews(resId, productId));
     }
 
@@ -55,17 +54,20 @@ public class reviewController {
     @CircuitBreaker(name = "create", fallbackMethod = "fallbackMethod")
     @TimeLimiter(name = "create")
     @Retry(name = "create")
-    public CompletableFuture<ResponseEntity<reviews>> createReview(@RequestBody @Valid reviewRequest reviewRequest) {
-        return CompletableFuture.supplyAsync(() -> 
-                    new ResponseEntity<>(reviewService.createReview(reviewRequest), HttpStatusCode.valueOf(201)));
+    public CompletableFuture<ResponseEntity<reviews>> createReview(
+            @RequestBody @Valid reviewRequest reviewRequest) {
+        return CompletableFuture.supplyAsync(
+                () ->
+                        new ResponseEntity<>(
+                                reviewService.createReview(reviewRequest),
+                                HttpStatusCode.valueOf(201)));
     }
 
-    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(reviewRequest reviewRequest, Throwable ex)
-    {
+    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(
+            reviewRequest reviewRequest, Throwable ex) {
         System.out.println("Lỗi khi gọi createReview, kích hoạt fallback. Lỗi: " + ex.getMessage());
         return CompletableFuture.completedFuture(
-            ResponseEntity.status(503).body(new MessageResponse(ex.getMessage()))
-        );
+                ResponseEntity.status(503).body(new MessageResponse(ex.getMessage())));
     }
 
     @Tag(name = "Delete")

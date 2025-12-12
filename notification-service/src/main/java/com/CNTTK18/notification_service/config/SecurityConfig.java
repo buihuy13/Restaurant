@@ -9,13 +9,19 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity //Security run
+@EnableWebSecurity // Security run
 public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(customizer -> customizer.disable()) //disable csrf
-                   .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().anyRequest().permitAll())
-                   .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                   .build();
+        return http.csrf(customizer -> customizer.disable()) // disable csrf
+                .authorizeHttpRequests(
+                        request ->
+                                request.requestMatchers(HttpMethod.OPTIONS, "/**")
+                                        .permitAll()
+                                        .anyRequest()
+                                        .permitAll())
+                .sessionManagement(
+                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .build();
     }
 }

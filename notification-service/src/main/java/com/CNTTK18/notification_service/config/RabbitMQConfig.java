@@ -1,7 +1,5 @@
 package com.CNTTK18.notification_service.config;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -10,6 +8,8 @@ import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
@@ -25,6 +25,7 @@ public class RabbitMQConfig {
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
+
     @Bean
     Queue confirmationQueue() {
         return QueueBuilder.durable("Confirmation_queue")
@@ -53,7 +54,7 @@ public class RabbitMQConfig {
     TopicExchange confirmationExchange() {
         return new TopicExchange("Confirmation_exchange");
     }
-    
+
     @Bean
     TopicExchange merchantExchange() {
         return new TopicExchange("Merchant_exchange");
@@ -66,26 +67,21 @@ public class RabbitMQConfig {
 
     @Bean
     Binding paymentCompletedBinding() {
-        return BindingBuilder
-                .bind(paymentCompletedQueue())
+        return BindingBuilder.bind(paymentCompletedQueue())
                 .to(paymentExchange())
                 .with("payment.completed");
     }
-    
+
     @Bean
     Binding confirmationBinding() {
-        return BindingBuilder
-                .bind(confirmationQueue())
+        return BindingBuilder.bind(confirmationQueue())
                 .to(confirmationExchange())
                 .with("Confirmation");
     }
 
     @Bean
     Binding merchantBinding() {
-        return BindingBuilder
-                .bind(merchantQueue())
-                .to(merchantExchange())
-                .with("Merchant");
+        return BindingBuilder.bind(merchantQueue()).to(merchantExchange()).with("Merchant");
     }
 
     @Bean
@@ -100,9 +96,6 @@ public class RabbitMQConfig {
 
     @Bean
     Binding deadLetterBinding() {
-        return BindingBuilder
-                .bind(deadLetterQueue())
-                .to(deadLetterExchange())
-                .with(DLX_KEY);
+        return BindingBuilder.bind(deadLetterQueue()).to(deadLetterExchange()).with(DLX_KEY);
     }
 }

@@ -14,13 +14,17 @@ import lombok.Setter;
 public class Register {
     @NotBlank(message = "Username is required")
     private String username;
+
     @Email
     @NotBlank(message = "Email is required")
     private String email;
+
     @NotBlank(message = "Password is required")
     private String password;
+
     @NotBlank(message = "Confirm Password is required")
     private String confirmPassword;
+
     @NotBlank(message = "Role is required")
     private String role;
 }

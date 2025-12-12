@@ -15,15 +15,20 @@ import lombok.Setter;
 public class reviewRequest {
     @NotBlank(message = "userId is required")
     private String userId;
+
     @NotBlank(message = "Id of restaurant or product is required")
     private String reviewId;
+
     @NotBlank(message = "Type should be PRODUCT or RESTAURANT")
     private String reviewType;
+
     @NotBlank(message = "Title is required")
     @Size(max = 100)
     private String title;
+
     @NotBlank(message = "Content is required")
     private String content;
+
     @NotNull(message = "Rating is required")
     private float rating;
 }

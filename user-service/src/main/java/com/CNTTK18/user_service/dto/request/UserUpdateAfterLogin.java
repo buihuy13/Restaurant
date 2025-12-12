@@ -14,10 +14,10 @@ import lombok.Setter;
 public class UserUpdateAfterLogin {
     @NotBlank(message = "Phone is required")
     private String phone;
+
     @NotBlank(message = "Default address is required")
     private String defaultAddress;
-    @NotNull
-    private double longitude;
-    @NotNull
-    private double latitude;
+
+    @NotNull private double longitude;
+    @NotNull private double latitude;
 }

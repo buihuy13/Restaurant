@@ -1,10 +1,9 @@
 package com.CNTTK18.restaurant_service.dto.product.request;
 
-import java.util.List;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,14 +17,19 @@ public class productRequest {
     @NotBlank(message = "Product name is required")
     @Size(max = 100)
     private String productName;
+
     @NotBlank(message = "Description is required")
     private String description;
+
     @NotBlank(message = "Category is required")
     private String categoryId;
+
     @NotNull(message = "Product should be available")
     private boolean available;
+
     @NotBlank(message = "Restaurant is required")
     private String restaurantId;
+
     @NotNull(message = "List of sizes is required")
     private List<sizePrice> sizeIds;
 }

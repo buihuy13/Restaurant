@@ -10,13 +10,14 @@ import org.springframework.web.socket.messaging.StompSubProtocolErrorHandler;
 
 public class WebSocketExceptionHandler extends StompSubProtocolErrorHandler {
     private static final Logger log = LoggerFactory.getLogger(WebSocketExceptionHandler.class);
+
     @Override
-    public Message<byte[]> handleClientMessageProcessingError(Message<byte[]> clientMessage, Throwable ex) {
-        
-        String errorMsg = (ex != null && ex.getMessage() != null) 
-            ? ex.getMessage() 
-            : "Unknown error";
-        
+    public Message<byte[]> handleClientMessageProcessingError(
+            Message<byte[]> clientMessage, Throwable ex) {
+
+        String errorMsg =
+                (ex != null && ex.getMessage() != null) ? ex.getMessage() : "Unknown error";
+
         log.error("WebSocket error: {}", errorMsg, ex);
 
         if (clientMessage != null && clientMessage.getPayload() != null) {

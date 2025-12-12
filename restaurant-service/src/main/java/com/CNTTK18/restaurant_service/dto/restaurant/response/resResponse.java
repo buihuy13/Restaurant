@@ -1,10 +1,8 @@
 package com.CNTTK18.restaurant_service.dto.restaurant.response;
 
+import com.CNTTK18.restaurant_service.dto.cate.response.cateResponse;
 import java.time.LocalTime;
 import java.util.List;
-
-import com.CNTTK18.restaurant_service.dto.cate.response.cateResponse;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,8 +18,8 @@ public class resResponse {
     private String id;
     private String resName;
     private String address;
-    private double longitude; //kinh độ
-    private double latitude; //vĩ độ
+    private double longitude; // kinh độ
+    private double latitude; // vĩ độ
     private float rating;
     private LocalTime openingTime;
     private LocalTime closingTime;

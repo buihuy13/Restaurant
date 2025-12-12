@@ -1,19 +1,17 @@
 package com.CNTTK18.user_service.service;
 
-import java.util.Optional;
-
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.stereotype.Service;
-
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.Common.Util.SlugGenerator;
 import com.CNTTK18.user_service.data.Provider;
 import com.CNTTK18.user_service.data.Role;
 import com.CNTTK18.user_service.model.Users;
 import com.CNTTK18.user_service.repository.UserRepository;
+import java.util.Optional;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
 
 @Service
 public class CustomOauth2UserService extends DefaultOAuth2UserService {
@@ -33,21 +31,22 @@ public class CustomOauth2UserService extends DefaultOAuth2UserService {
 
         Optional<Users> userFound = userRepository.findByEmail(email);
         if (userFound.isEmpty()) {
-            Users user = Users.builder()
-                    .id(RandomIdGenerator.generate(99))
-                    .username(name)
-                    .email(email)
-                    .role(Role.USER.toString())
-                    .enabled(true)
-                    .authProvider(Provider.GOOGLE.toString())
-                    .slug(SlugGenerator.generate(name))
-                    .build();
+            Users user =
+                    Users.builder()
+                            .id(RandomIdGenerator.generate(99))
+                            .username(name)
+                            .email(email)
+                            .role(Role.USER.toString())
+                            .enabled(true)
+                            .authProvider(Provider.GOOGLE.toString())
+                            .slug(SlugGenerator.generate(name))
+                            .build();
             userRepository.save(user);
-        }
-        else {
+        } else {
             Users user = userFound.get();
             if (!user.getAuthProvider().equals(Provider.GOOGLE.toString())) {
-                throw new OAuth2AuthenticationException("Please use your " + user.getAuthProvider() + " account to login.");
+                throw new OAuth2AuthenticationException(
+                        "Please use your " + user.getAuthProvider() + " account to login.");
             }
             user.setUsername(name);
             userRepository.save(user);

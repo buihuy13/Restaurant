@@ -1,8 +1,22 @@
 package com.CNTTK18.user_service.controller;
 
+import com.CNTTK18.user_service.dto.request.AddressRequest;
+import com.CNTTK18.user_service.dto.request.Login;
+import com.CNTTK18.user_service.dto.request.ManagerRequest;
+import com.CNTTK18.user_service.dto.request.Password;
+import com.CNTTK18.user_service.dto.request.Register;
+import com.CNTTK18.user_service.dto.request.Rejection;
+import com.CNTTK18.user_service.dto.request.UserRequest;
+import com.CNTTK18.user_service.dto.request.UserUpdateAfterLogin;
+import com.CNTTK18.user_service.dto.response.AddressResponse;
+import com.CNTTK18.user_service.dto.response.TokenResponse;
+import com.CNTTK18.user_service.dto.response.UserResponse;
+import com.CNTTK18.user_service.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
-
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,33 +30,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.CNTTK18.user_service.dto.request.AddressRequest;
-import com.CNTTK18.user_service.dto.request.Login;
-import com.CNTTK18.user_service.dto.request.ManagerRequest;
-import com.CNTTK18.user_service.dto.request.Password;
-import com.CNTTK18.user_service.dto.request.Register;
-import com.CNTTK18.user_service.dto.request.Rejection;
-import com.CNTTK18.user_service.dto.request.UserRequest;
-import com.CNTTK18.user_service.dto.request.UserUpdateAfterLogin;
-import com.CNTTK18.user_service.dto.response.AddressResponse;
-import com.CNTTK18.user_service.dto.response.TokenResponse;
-import com.CNTTK18.user_service.dto.response.UserResponse;
-import com.CNTTK18.user_service.service.UserService;
-
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
+
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    record MessageResponse(String message) {
-    }
+    record MessageResponse(String message) {}
 
     @Tag(name = "Post")
     @Operation(summary = "Login")
@@ -78,9 +75,9 @@ public class UserController {
     @Tag(name = "Get")
     @Operation(summary = "Get user by access token")
     @GetMapping("/accesstoken")
-    public ResponseEntity<UserResponse> getUserByAccessToken(@RequestHeader("Authorization") String authHeader) throws Exception {
-        if (authHeader.startsWith("Bearer"))
-        {
+    public ResponseEntity<UserResponse> getUserByAccessToken(
+            @RequestHeader("Authorization") String authHeader) throws Exception {
+        if (authHeader.startsWith("Bearer")) {
             authHeader = authHeader.substring(7);
         }
         return ResponseEntity.ok(userService.getUserByAccessToken(authHeader));
@@ -89,9 +86,9 @@ public class UserController {
     @Tag(name = "Get")
     @Operation(summary = "Get new access token by refresh token")
     @GetMapping("/refreshtoken")
-    public ResponseEntity<MessageResponse> getNewAccessToken(@RequestHeader("Refresh-Token") String authHeader) throws Exception {
-        if (authHeader.startsWith("Bearer"))
-        {
+    public ResponseEntity<MessageResponse> getNewAccessToken(
+            @RequestHeader("Refresh-Token") String authHeader) throws Exception {
+        if (authHeader.startsWith("Bearer")) {
             authHeader = authHeader.substring(7);
         }
         return ResponseEntity.ok(new MessageResponse(userService.refreshAccessToken(authHeader)));
@@ -114,7 +111,8 @@ public class UserController {
     @Tag(name = "Put")
     @Operation(summary = "Update user")
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable String id, @RequestBody @Valid UserRequest updateUserDTO) {
+    public ResponseEntity<UserResponse> updateUser(
+            @PathVariable String id, @RequestBody @Valid UserRequest updateUserDTO) {
         UserResponse updatedUser = userService.updateUser(id, updateUserDTO);
         return ResponseEntity.ok(updatedUser);
     }
@@ -138,7 +136,8 @@ public class UserController {
     @Tag(name = "Get")
     @Operation(summary = "Confirm account")
     @GetMapping("/confirmation")
-    public ResponseEntity<Void> confirmUser(@RequestParam String code) throws SQLIntegrityConstraintViolationException {
+    public ResponseEntity<Void> confirmUser(@RequestParam String code)
+            throws SQLIntegrityConstraintViolationException {
         userService.activateAccount(code);
         return ResponseEntity.ok().build();
     }
@@ -154,8 +153,10 @@ public class UserController {
     @Tag(name = "Post")
     @Operation(summary = "Added new address for user")
     @PostMapping("/address/{id}")
-    public ResponseEntity<AddressResponse> addNewAddress(@PathVariable String id, @RequestBody @Valid AddressRequest addressRequest) {
-        return new ResponseEntity<>(userService.addNewAddress(id, addressRequest), HttpStatusCode.valueOf(201));
+    public ResponseEntity<AddressResponse> addNewAddress(
+            @PathVariable String id, @RequestBody @Valid AddressRequest addressRequest) {
+        return new ResponseEntity<>(
+                userService.addNewAddress(id, addressRequest), HttpStatusCode.valueOf(201));
     }
 
     @Tag(name = "Delete")
@@ -184,7 +185,8 @@ public class UserController {
     @Tag(name = "Delete")
     @Operation(summary = "Reject merchant")
     @DeleteMapping("/rejection/{id}")
-    public ResponseEntity<MessageResponse> rejectMerchant(@PathVariable String id, @RequestBody @Valid Rejection rejection) {
+    public ResponseEntity<MessageResponse> rejectMerchant(
+            @PathVariable String id, @RequestBody @Valid Rejection rejection) {
         userService.rejectMerchant(id, rejection);
         return ResponseEntity.ok(new MessageResponse("Merchant rejected successfully"));
     }
@@ -192,7 +194,8 @@ public class UserController {
     @Tag(name = "Put")
     @Operation(summary = "Update user after login")
     @PutMapping("/profile/{id}")
-    public ResponseEntity<UserResponse> updateUserAfterLogin(@PathVariable String id, @RequestBody @Valid UserUpdateAfterLogin userUpdate) {
+    public ResponseEntity<UserResponse> updateUserAfterLogin(
+            @PathVariable String id, @RequestBody @Valid UserUpdateAfterLogin userUpdate) {
         UserResponse updatedUser = userService.updateUserAfterLogin(userUpdate, id);
         return ResponseEntity.ok(updatedUser);
     }
@@ -200,7 +203,8 @@ public class UserController {
     @Tag(name = "Put")
     @Operation(summary = "Update password")
     @PutMapping("/password/{id}")
-    public ResponseEntity<UserResponse> resetPassword(@PathVariable String id, @RequestBody @Valid Password password) {
+    public ResponseEntity<UserResponse> resetPassword(
+            @PathVariable String id, @RequestBody @Valid Password password) {
         UserResponse updatedUser = userService.resetPassword(password, id);
         return ResponseEntity.ok(updatedUser);
     }
