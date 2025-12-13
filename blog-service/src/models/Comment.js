@@ -18,7 +18,6 @@ const CommentSchema = new mongoose.Schema(
         // Dùng để sort thứ tự và lấy comment theo cây chính xác
         path: {
             type: String,
-            required: true,
             index: true,
             // Ví dụ: "0001.0003.0007" → comment con của 0007, 0007 con của 0003...
         },

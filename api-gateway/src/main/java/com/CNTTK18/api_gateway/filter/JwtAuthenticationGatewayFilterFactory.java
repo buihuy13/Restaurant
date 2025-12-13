@@ -109,9 +109,11 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                     }
                 }
                 String userId = jwtUtil.extractUserId(authHeader);
+                String role = jwtUtil.extractRole(authHeader);
 
                 ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                         .header("user-id", userId) // Thêm header mới
+                        .header("user-role", role)
                         .build();
 
                 exchange = exchange.mutate().request(mutatedRequest).build();

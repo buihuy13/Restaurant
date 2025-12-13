@@ -3,6 +3,12 @@ import Blog from '../models/Blog.js';
 import logger from '../utils/logger.js';
 
 class CommentService {
+    async getCommentById(commentId) {
+        const comment = await Comment.findById(commentId);
+        if (!comment) throw new Error('Comment not found');
+        return comment;
+    }
+
     async addComment({ blogId, content = '', images = [], user, parentId = null }) {
         try {
             // Validate input
@@ -10,23 +16,16 @@ class CommentService {
                 throw new Error('Comment content cannot be empty');
             }
 
-            let path;
-
+            // Nếu là reply thì chỉ check tồn tại parent
             if (parentId) {
                 const parent = await Comment.findById(parentId);
                 if (!parent) throw new Error('Parent comment not found');
-
-                path = `${parent.path}.${parent._id}`;
-            } else {
-                // tạm thời gán placeholder
-                path = 'root';
             }
 
             const comment = new Comment({
                 blogId,
                 parentId: parentId || null,
                 content: content.trim(),
-                path: parentId ? `${parent.path}.${parentId}` : null,
                 images: images.map((img) => ({
                     url: img.secure_url || img.url,
                     publicId: img.public_id,
@@ -36,12 +35,16 @@ class CommentService {
                 })),
                 author: {
                     userId: user.userId,
-                    name: user.username,
+                    name: user.username || user.name || 'Anonymous',
                     avatar: user.avatar || '',
                 },
             });
 
             await comment.save();
+
+            if (!comment.path) {
+                throw new Error('Path generation failed');
+            }
 
             // Chỉ update Blog nếu là comment gốc
             if (!parentId) {
@@ -107,7 +110,7 @@ class CommentService {
                     .sort({ createdAt: -1 })
                     .skip(skip)
                     .limit(limit)
-                    .select('-__v') // ✅ Bỏ __v không cần thiết
+                    .select('-__v')
                     .lean(),
                 Comment.countDocuments({
                     blogId,

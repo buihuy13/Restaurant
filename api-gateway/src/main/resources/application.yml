@@ -651,6 +651,16 @@ spring:
                         args:
                             requiredRole: USER,ADMIN,MERCHANT
 
+                - id: blog-bulk-delete
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/bulk-delete
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
                 - id: blog-like
                   uri: lb://blog-service
                   predicates:
