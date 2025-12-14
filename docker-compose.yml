@@ -65,7 +65,7 @@ services:
     service-discovery:
         build:
             context: .
-            dockerfile: ./service-discovery/dockerfile
+            dockerfile: ./service-discovery/Dockerfile
             args:
                 MODULE_PATH: service-discovery
         ports:
@@ -87,7 +87,7 @@ services:
     api-gateway:
         build:
             context: .
-            dockerfile: ./api-gateway/dockerfile
+            dockerfile: ./api-gateway/Dockerfile
             args:
                 MODULE_PATH: api-gateway
         ports:
@@ -109,7 +109,7 @@ services:
     user-service:
         build:
             context: .
-            dockerfile: ./user-service/dockerfile
+            dockerfile: ./user-service/Dockerfile
             args:
                 MODULE_PATH: user-service
         ports:
@@ -137,7 +137,7 @@ services:
     notification-service:
         build:
             context: .
-            dockerfile: ./notification-service/dockerfile
+            dockerfile: ./notification-service/Dockerfile
             args:
                 MODULE_PATH: notification-service
         ports:
@@ -158,7 +158,7 @@ services:
     chat-service:
         build:
             context: .
-            dockerfile: ./chat-service/dockerfile
+            dockerfile: ./chat-service/Dockerfile
             args:
                 - MODULE_PATH=chat-service
         ports:
@@ -184,7 +184,7 @@ services:
     restaurant-service:
         build:
             context: .
-            dockerfile: ./restaurant-service/dockerfile
+            dockerfile: ./restaurant-service/Dockerfile
             args:
                 - MODULE_PATH=restaurant-service
         ports:
