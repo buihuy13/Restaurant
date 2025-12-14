@@ -16,6 +16,6 @@ public class UserSpecification {
 
     public static Specification<Users> isEnabled(Boolean isEnabled) {
         return (root, query, criteriaBuilder) -> 
-            criteriaBuilder.equal(root.get("isEnabled"), isEnabled);
+            criteriaBuilder.equal(root.get("enabled"), isEnabled);
     }
 }
