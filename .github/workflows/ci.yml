@@ -6,12 +6,17 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+env:
+  REGISTRY: docker.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}
+  IMAGE_RESTAURANT: restaurant
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [ user-service, notification-service, restaurant-service, api-gateway, service-discovery ]
+        service: [ user-service, notification-service, restaurant-service, api-gateway, service-discovery, chat-service ]
     steps:
     - uses: actions/checkout@v4
 
@@ -26,15 +31,15 @@ jobs:
       working-directory: ./${{ matrix.service }}
       run: chmod +x gradlew
       
-    - name: Check code format with Spotless
+    - name: Check java code format with Spotless
       run: ./gradlew spotlessCheck
 
-  test:
+  java-build:
     runs-on: ubuntu-latest
     needs: lint
     strategy:
       matrix:
-        service: [ user-service, notification-service, restaurant-service, api-gateway, service-discovery ]
+        service: [ user-service, notification-service, restaurant-service, api-gateway, service-discovery, chat-service ]
     steps:
     - uses: actions/checkout@v4
 
@@ -45,26 +50,45 @@ jobs:
         distribution: 'temurin'
         cache: 'gradle'
 
-    - name: Grant execute permission for gradlew
-      working-directory: ./${{ matrix.service }}
-      run: chmod +x gradlew
-
-    - name: Run tests
-      working-directory: ./${{ matrix.service }}
-      run: ./gradlew test
+    - name: Run build
+      run: ./gradlew :${{ matrix.service }}:assemble
   
   docker:
     runs-on: ubuntu-latest
-    needs: test
+    needs: java-build
+    if: github.event_name == 'push' 
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
-        service: [ user-service, notification-service, restaurant-service, api-gateway, service-discovery ]
+        service: [ user-service, notification-service, restaurant-service, api-gateway, service-discovery, chat-service, blog-service, order-service, payment-service ]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-    - name: Build Docker image
-      working-directory: ./${{ matrix.service }}
-      run: |
-        IMAGE_NAME=${{ matrix.service }}-image
-        docker build -t $IMAGE_NAME .
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ env.IMAGE_RESTAURANT }}-${{ matrix.service }}
+        tags: |
+          type=raw,value=latest
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./${{ matrix.service }}/Dockerfile
+        push: true #Build xong đẩy lên dockerhub luôn
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        # Sử dụng cache để tăng tốc độ build
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
