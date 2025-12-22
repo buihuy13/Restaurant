@@ -564,6 +564,8 @@ spring:
                   uri: lb://chat-service
                   predicates:
                       - Path=/ws/**
+                  filters:
+                      - name: JwtAuthentication
 
                 # Blog-service
                 - id: blog-service-get

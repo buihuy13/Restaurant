@@ -74,17 +74,23 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
         return ((exchange, chain) -> {
             // Kiểm tra xem request có cần xác thực không
             if (routerValidator.isSecured.test(exchange.getRequest())) {
-                // Kiểm tra header có chứa token không
-                if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    return onError(exchange, 401, "Header không chứa token");
+                // Kiểm tra header hoặc query có chứa token không
+                Boolean hasAuthHeader = exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION);
+                Boolean hasAuthQuery = exchange.getRequest().getQueryParams().containsKey("token");
+                if (!hasAuthHeader && !hasAuthQuery) {
+                    return onError(exchange, 401, "Header hoặc query không chứa token");
                 }
 
-                String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+                String authHeader = null;
+                if (hasAuthHeader) {
+                    authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+                }
+                else if (hasAuthQuery) {
+                    authHeader = exchange.getRequest().getQueryParams().getFirst("token");
+                }
+
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     authHeader = authHeader.substring(7); // Bỏ "Bearer "
-                }
-                else {
-                    return onError(exchange, 401, "Token lỗi");
                 }
 
                 try {
