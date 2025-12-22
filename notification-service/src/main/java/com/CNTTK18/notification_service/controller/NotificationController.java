@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.Common.Event.ConfirmationEvent;
-import com.CNTTK18.Common.Event.NotificationEvent;
 import com.CNTTK18.notification_service.service.EmailService;
 
 @RestController
@@ -18,12 +17,6 @@ public class NotificationController {
 
 	public NotificationController(EmailService emailService) {
 		this.emailService = emailService;
-	}
-
-	@PostMapping
-	public ResponseEntity<String> sendEmail(NotificationEvent requestBody) {
-		emailService.sendEmail(requestBody);
-		return new ResponseEntity<>("Gửi mail thành công", HttpStatus.OK);
 	}
 
 	@PostMapping("/confirmation")

@@ -8,9 +8,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.CNTTK18.Common.Exception.ErrorResponse;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
@@ -24,6 +26,14 @@ public class GlobalExceptionHandler {
                 "RESOURCE_NOT_FOUND",
                 ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(WebClientResponseException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(WebClientResponseException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                "Error while calling another service",
+                ex.getMessage());
+        return new ResponseEntity<>(errorResponse, ex.getStatusCode());
     }
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
@@ -71,6 +81,29 @@ public class GlobalExceptionHandler {
                 ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     } 
+
+    @ExceptionHandler(DistanceDurationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleDistanceDurationException(DistanceDurationException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+            "Invalid distance or duration",
+            ex.getMessage()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleMissingParams(MissingServletRequestParameterException ex) {
+        String message = "Tham số bắt buộc '" + ex.getParameterName() + "' bị thiếu.";
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+            "BAD_REQUEST",
+            message
+        );
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
 
     // Xử lý exception chung
     @ExceptionHandler(Exception.class)

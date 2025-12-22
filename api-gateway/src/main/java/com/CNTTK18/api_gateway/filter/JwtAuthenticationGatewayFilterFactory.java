@@ -1,7 +1,9 @@
 package com.CNTTK18.api_gateway.filter;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -71,17 +74,23 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
         return ((exchange, chain) -> {
             // Kiểm tra xem request có cần xác thực không
             if (routerValidator.isSecured.test(exchange.getRequest())) {
-                // Kiểm tra header có chứa token không
-                if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    return onError(exchange, 401, "Header không chứa token");
+                // Kiểm tra header hoặc query có chứa token không
+                Boolean hasAuthHeader = exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION);
+                Boolean hasAuthQuery = exchange.getRequest().getQueryParams().containsKey("token");
+                if (!hasAuthHeader && !hasAuthQuery) {
+                    return onError(exchange, 401, "Header hoặc query không chứa token");
                 }
 
-                String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+                String authHeader = null;
+                if (hasAuthHeader) {
+                    authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+                }
+                else if (hasAuthQuery) {
+                    authHeader = exchange.getRequest().getQueryParams().getFirst("token");
+                }
+
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     authHeader = authHeader.substring(7); // Bỏ "Bearer "
-                }
-                else {
-                    return onError(exchange, 401, "Token lỗi");
                 }
 
                 try {
@@ -98,12 +107,20 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                 // Nếu route này có yêu cầu quyền cụ thể
                 if (requiredRole != null && !requiredRole.isEmpty()) {
                     String userRoles = jwtUtil.extractRole(authHeader);
+                    List<String> roles = Arrays.asList(requiredRole.split(","));
                     
                     // Kiểm tra xem người dùng có quyền yêu cầu không
-                    if (userRoles == null || !userRoles.equals(requiredRole)) {
+                    if (userRoles == null || !roles.stream().anyMatch(r -> r.equals(userRoles))) {
                         return onError(exchange, 403, "Không có quyền");
                     }
                 }
+                String userId = jwtUtil.extractUserId(authHeader);
+
+                ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                        .header("user-id", userId) // Thêm header mới
+                        .build();
+
+                exchange = exchange.mutate().request(mutatedRequest).build();
             }
             return chain.filter(exchange);
         });

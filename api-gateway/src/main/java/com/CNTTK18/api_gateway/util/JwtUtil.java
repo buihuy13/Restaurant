@@ -30,6 +30,11 @@ public class JwtUtil {
         return claims.get("role").toString();
     }
 
+    public String extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("id").toString();
+    }
+
     //Lấy 1 claim từ token
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
         final Claims claims = extractAllClaims(token);

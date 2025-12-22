@@ -6,22 +6,26 @@ create table users (
     id varchar(100) primary key,
     username varchar(255) not null,
     email varchar(255) not null unique,
-    `password` varchar(255) not null,
+    `password` varchar(255),
     `role` varchar(10) not null,
     `enabled` boolean not null,
-    verificationcode varchar(255) not null,
-    phone varchar(15) not null
+    verificationcode varchar(255),
+    phone varchar(15),
+    slug varchar(255) not null unique,
+    authprovider varchar(20) default 'LOCAL'
 );
 
 create index idx_email on users(email);
 
-insert into users(id, `password`, username, email, phone, `role`, `enabled`, `verificationcode`) values 
-("testadminid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testadmin", "testadmin@gmail.com", "0762612698", "ADMIN", true, "abcxyz123"),
-("testuserid", "$2a$12$CydeMvJj1Hvu/824Lh2NuOEIrZnlhRMIUM736cYXa7bSD3LUmGW7K", "testuser", "testuser@gmail.com", "0762612699", "USER", true, "abcxyz456");
-
+insert into users(id, `password`, username, email, phone, `role`, `enabled`, `verificationcode`, `slug`) values 
+("testadminid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testadmin", "testadmin@gmail.com", "0762612698", "ADMIN", true, "abcxyz123", `abcxyz`),
+("testuserid", "$2a$12$CydeMvJj1Hvu/824Lh2NuOEIrZnlhRMIUM736cYXa7bSD3LUmGW7K", "testuser", "testuser@gmail.com", "0762612699", "USER", true, "abcxyz456", `abc`),
+("testmerchantid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testmerchant", "testmerchant@gmail.com", "0762612697", "MERCHANT", true, "abcxyz789", `xyz`);
 create table address (
     id varchar(255) primary key,
     `location` varchar(255) not null,
+    longitude double not null,
+    latitude double not null,
     user_id varchar(100) not null references users(id)
 );
 
@@ -40,13 +44,17 @@ create table restaurants (
     id varchar(255) primary key,
     `resname` varchar(255) not null,
     `address` varchar(255) not null,
+    longitude double not null,
+    latitude double not null,
     rating float,
     openingtime time not null,
     closingtime time not null,
     imageurl varchar(255),
     publicid varchar(255),
     phone varchar(15),
+    total_review int default 0,
     merchant_id varchar(100) not null,
+    slug varchar(255) not null unique,
     `enabled` boolean not null
 );
 
@@ -76,6 +84,7 @@ create table products (
     volume int not null,
     total_review int,
     rating float,
+    slug varchar(255) not null unique,
     available boolean not null
 );
 
@@ -84,10 +93,10 @@ create index idx_restaurantid on products(restaurant_id);
 create index idx_categoryid on products(category_id);
 
 create table product_sizes (
+    id varchar(255) primary key,
     product_id varchar(255) not null,
     size_id varchar(10) not null,
     price decimal not null,
-    PRIMARY KEY (product_id, size_id),
     FOREIGN KEY (product_id) REFERENCES products(id),
     FOREIGN KEY (size_id) REFERENCES size(id)
 );
@@ -139,3 +148,35 @@ create index idx_receiverid on messages(receiver_id);
 
 -- Hiệu quả khi truy vấn tin nhắn trong một phòng theo thời gian gần nhất
 CREATE INDEX idx_messages_room_timestamp ON messages(room_id, `timestamp` DESC);
+
+
+CREATE DATABASE IF NOT EXISTS `payment-service`;
+
+CREATE TABLE payments (
+  id CHAR(36) NOT NULL PRIMARY KEY, -- UUID dạng string
+  paymentId VARCHAR(100) NOT NULL UNIQUE,
+  orderId VARCHAR(100) NOT NULL,
+  userId VARCHAR(100) NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL CHECK (amount >= 0),
+  currency CHAR(3) DEFAULT 'USD',
+  paymentMethod ENUM('cash', 'card', 'wallet') NOT NULL,
+  paymentGateway VARCHAR(50) DEFAULT 'stripe',
+  transactionId VARCHAR(200),
+  status ENUM('pending', 'processing', 'completed', 'failed', 'refunded') DEFAULT 'pending',
+  failureReason TEXT,
+  refundAmount DECIMAL(10, 2) DEFAULT 0,
+  refundReason TEXT,
+  refundTransactionId VARCHAR(200),
+  metadata JSON,
+  processedAt DATETIME,
+  refundedAt DATETIME,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  -- Indexes
+  INDEX idx_orderId (orderId),
+  INDEX idx_userId (userId),
+  INDEX idx_status (status),
+  INDEX idx_createdAt (createdAt)
+);
+

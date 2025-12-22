@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
@@ -36,8 +37,9 @@ public class reviewController {
     @Tag(name = "Get")
     @Operation(summary = "Get all reviews")
     @GetMapping("")
-    public ResponseEntity<List<reviews>> getAllReviews() {
-        return ResponseEntity.ok(reviewService.getAllReviews());
+    public ResponseEntity<List<reviews>> getAllReviews(@RequestParam(required = false) String resId,
+                                                        @RequestParam(required = false) String productId) {
+        return ResponseEntity.ok(reviewService.getAllReviews(resId, productId));
     }
 
     @Tag(name = "Get")
@@ -58,10 +60,12 @@ public class reviewController {
                     new ResponseEntity<>(reviewService.createReview(reviewRequest), HttpStatusCode.valueOf(201)));
     }
 
-    public CompletableFuture<String> fallbackMethod(reviewRequest reviewRequest, Throwable ex)
+    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(reviewRequest reviewRequest, Throwable ex)
     {
         System.out.println("Lỗi khi gọi createReview, kích hoạt fallback. Lỗi: " + ex.getMessage());
-        return CompletableFuture.supplyAsync(() -> "Oops! Something went wrong, please wait for 5 more minutes~");
+        return CompletableFuture.completedFuture(
+            ResponseEntity.status(503).body(new MessageResponse(ex.getMessage()))
+        );
     }
 
     @Tag(name = "Delete")

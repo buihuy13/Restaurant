@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.tomcat.util.buf.StringUtils;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,7 +15,8 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import com.CNTTK18.Common.Event.ConfirmationEvent;
-import com.CNTTK18.Common.Event.NotificationEvent;
+import com.CNTTK18.Common.Event.MerchantEvent;
+import com.CNTTK18.Common.Event.PaymentEvent;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -37,30 +38,7 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String username;
 
-    @KafkaListener(topics = "notificationTopic")
-    public void sendEmail(NotificationEvent request) {
-        try {
-            Context context = new Context();
-            Map<String, Object> map = new HashMap<>();
-            map.put("name", request.getEmail());
-            map.put("success", request.isSuccess());
-            context.setVariables(map);
-            String process = springTemplateEngine.process("welcome", context);
-            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
-            String subject = StringUtils
-                    .join(Arrays.asList("Greetings", request.getEmail(), "!!!"), ' ');
-            helper.setSubject(subject);
-            helper.setText(process, true);
-            helper.setTo(request.getEmail());
-            helper.setFrom(username);
-            javaMailSender.send(mimeMessage);
-        } catch (MessagingException | MailException ex) {
-            throw new RuntimeException("Lỗi khi gửi mail, " + ex.getMessage(), ex);
-        }
-    }
-
-    @KafkaListener(topics = "confirmationTopic")
+    @RabbitListener(queues = "Confirmation_queue")
     public void sendConfirmationEmail(ConfirmationEvent request) {
         try {
             Context context = new Context();
@@ -72,7 +50,7 @@ public class EmailService {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
             String subject = StringUtils
-                    .join(Arrays.asList("Greetings", request.getEmail(), "!!!"), ' ');
+                    .join(Arrays.asList("Greetings", request.getEmail()), ' ');
             helper.setSubject(subject);
             helper.setText(process, true);
             helper.setTo(request.getEmail());
@@ -82,4 +60,56 @@ public class EmailService {
             throw new RuntimeException("Lỗi khi gửi mail, " + ex.getMessage(), ex);
         }
     }
+
+    @RabbitListener(queues = "Merchant_queue")
+    public void sendMerchantEmail(MerchantEvent request) {
+        try {
+            Context context = new Context();
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", request.getEmail());
+            map.put("success", request.isSuccess());
+            context.setVariables(map);
+            String process = springTemplateEngine.process("merchant", context);
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+            String subject = StringUtils
+                    .join(Arrays.asList("Greetings", request.getEmail()), ' ');
+            helper.setSubject(subject);
+            helper.setText(process, true);
+            helper.setTo(request.getEmail());
+            helper.setFrom(username);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException | MailException ex) {
+            throw new RuntimeException("Lỗi khi gửi mail, " + ex.getMessage(), ex);
+        }
+    }
+
+    @RabbitListener(queues = "payment.completed")
+    public void sendPaymentEmail(PaymentEvent request) {
+        try {
+            Context context = new Context();
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("name", request.getEmail());
+            variables.put("orderId", request.getOrderId());
+            variables.put("amount", request.getAmount());
+            variables.put("transactionId", request.getTransactionId());
+            variables.put("url", url + request.getUrl());
+            context.setVariables(variables);
+
+            String content = springTemplateEngine.process("payment_completed", context);
+
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage);
+
+            helper.setSubject("Payment Completed - Order " + request.getOrderId());
+            helper.setText(content, true);
+            helper.setTo(request.getEmail());
+            helper.setFrom(username);
+
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException | MailException e) {
+            throw new RuntimeException("Lỗi khi gửi mail: " + e.getMessage(), e);
+        }
+    }
+
 }

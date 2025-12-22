@@ -1,9 +1,17 @@
 package com.CNTTK18.restaurant_service.service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,11 +33,15 @@ import com.CNTTK18.restaurant_service.repository.resRepository;
 import com.CNTTK18.restaurant_service.repository.reviewRepository;
 import com.CNTTK18.restaurant_service.repository.sizeRepository;
 import com.CNTTK18.restaurant_service.util.productUtil;
+import com.CNTTK18.restaurant_service.util.resUtil;
 
 import jakarta.transaction.Transactional;
+import reactor.core.publisher.Mono;
 
 import com.CNTTK18.restaurant_service.dto.product.request.updateProduct;
 import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
+import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
 
 @Service
 public class productService {
@@ -39,31 +51,30 @@ public class productService {
     private sizeRepository sizeRepository;
     private ImageHandleService imageFileService;
     private reviewRepository reviewRepository;
+    private DistanceService distanceService;
 
     public productService(productRepository productRepo, cateRepository cateRepository, 
                             resRepository resRepository, sizeRepository sizeRepository, ImageHandleService imageFileService,
-                            reviewRepository reviewRepository) {
+                            reviewRepository reviewRepository, DistanceService distanceService) {
         this.productRepo = productRepo;
         this.cateRepository = cateRepository;
         this.resRepository = resRepository;
         this.sizeRepository = sizeRepository;
         this.imageFileService = imageFileService;
         this.reviewRepository = reviewRepository;
+        this.distanceService = distanceService;
     }
 
-    public List<productResponse> getAllProducts(String rating, String category, BigDecimal minPrice, BigDecimal maxPrice) {
+    public Mono<List<productResponse>> getAllProducts(String rating, String category, BigDecimal minPrice, 
+                                BigDecimal maxPrice, String order, String locationsorted, String search, 
+                                Integer nearby, Coordinates location) {
         List<products> products = productRepo.findAll();
-        if (rating != null) {
-            if (rating.equals("asc")) {
-                products = products.stream().sorted((p1, p2) -> Float.compare(p1.getRating(), p2.getRating())).toList();
-            } 
-            else if (rating.equals("desc")) {
-                products = products.stream().sorted((p1, p2) -> Float.compare(p2.getRating(), p1.getRating())).toList();
-            }
+        if (search != null && !search.isEmpty()) {
+            products = products.stream().filter(p -> p.getProductName().toLowerCase().contains(search.toLowerCase())).toList();
         }
-        List<String> categoryNames = Arrays.asList(category.split(","));
-        if (category != null) {
-            products = products.stream().filter(p -> categoryNames.contains(p.getCategory().getCateName())).toList();
+        if (category != null && !category.isEmpty()) {
+            List<String> categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
+            products = products.stream().filter(p -> categoryNames.contains(p.getCategory().getCateName().toLowerCase())).toList();
         }
 
         if (minPrice != null) {
@@ -75,17 +86,91 @@ public class productService {
             products = products.stream().filter(p -> p.getProductSizes().stream()
                                             .anyMatch(ps -> ps.getPrice().compareTo(maxPrice) <= 0)).toList();
         }
-        return products.stream().map(productUtil::mapProductToProductResponse).toList();
+        if (rating != null) {
+            if (rating.equals("asc")) {
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getRating)).toList();
+            } 
+            else if (rating.equals("desc")) {
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getRating).reversed())
+                                            .toList();
+            }
+        }
+        if (order != null) {
+            if (order.equals("asc")) {
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getVolume)).toList();
+            }
+            else if (order.equals("desc")) {
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getVolume).reversed())
+                                            .toList();
+            }
+        }
+        if (location == null) {
+            return Mono.just(products.stream().map(productUtil::mapProductToProductResponseWitoutResParam).toList());
+        }
+
+        List<restaurants> res = products.stream().map(r -> r.getRestaurant()).distinct().toList();
+        
+        // Lấy các res trong bán kính nearby (theo đường chim bay)
+        res = res.stream().filter(
+            r -> {
+                Double distance = distanceService.calculateHaversineDistance(location.getLongitude(), location.getLatitude(),
+                                                                            r.getLongitude(), r.getLatitude());
+                if (nearby == null || nearby > 20000) {
+                    return distance <= 20000;
+                }                                         
+                return distance <= nearby;
+            }
+        ).toList();
+
+        if (res.isEmpty()) {
+            return Mono.just(Collections.emptyList());
+        }
+        final List<restaurants> filteredRes = res;
+
+        List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
+        List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
+        final List<products> filteredProducts = products;
+
+        return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
+                    .map(response -> {
+                        List<Double> durations = response.getDurations().get(0);
+                        List<Double> distances = response.getDistances().get(0);
+
+                        Map<String,resResponse> listResResponse =  IntStream.range(0, filteredRes.size()).mapToObj(i -> {
+                            restaurants resIndex = filteredRes.get(i);
+
+                            resResponse resResponseIndex = resUtil.mapResToResResponse(resIndex);
+                            resResponseIndex.setDuration(durations.get(i));
+                            resResponseIndex.setDistance(distances.get(i));
+                            return resResponseIndex;
+                        }).collect(Collectors.toMap(resResponse::getId, Function.identity()));
+
+                        List<productResponse> productResponses = filteredProducts.stream()
+                                                                .map(p -> productUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId()))) 
+                                                                .toList();
+                        if (locationsorted != null) {
+                            if (locationsorted.equals("asc")) {
+                                productResponses = productResponses.stream()
+                                                    .sorted((p1, p2) -> Double.compare(p1.getRestaurant().getDistance(), p2.getRestaurant().getDistance()))
+                                                    .toList();
+                            }
+                            else if (locationsorted.equals("desc")) {
+                                productResponses = productResponses.stream()
+                                                    .sorted((p1, p2) -> Double.compare(p2.getRestaurant().getDistance(), p1.getRestaurant().getDistance()))
+                                                    .toList();
+                            }
+                        }
+                        return productResponses;
+                    });
     }
 
     public productResponse getProductById(String id) {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        return productUtil.mapProductToProductResponse(product);
+        return productUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
     @Transactional
-    public products createProduct(productRequest productRequest, MultipartFile imageFile) {
+    public productResponse createProduct(productRequest productRequest, MultipartFile imageFile) {
         categories cate = cateRepository.findById(productRequest.getCategoryId())
                                     .orElseThrow(() -> new ResourceNotFoundException("category not found"));
 
@@ -125,17 +210,18 @@ public class productService {
             }
         }
 
-        if (imageFile != null) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             Map<String, String> image = imageFileService.saveImageFile(imageFile);
             product.setImageURL(image.get("url"));
             product.setPublicID(image.get("public_id"));
         }
 
-        return productRepo.save(product);
+        productRepo.save(product);
+        return productUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
     @Transactional
-    public products updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile) {
+    public productResponse updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile) {
         products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         categories cate = cateRepository.findById(updateProduct.getCategoryId())
@@ -183,7 +269,7 @@ public class productService {
             }
         }
 
-        if (imageFile != null) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             String oldPublicId = product.getPublicID();
             Map<String, String> image = imageFileService.saveImageFile(imageFile);
             product.setImageURL(image.get("url"));
@@ -193,7 +279,8 @@ public class productService {
                 imageFileService.deleteImage(oldPublicId);
             }
         }
-        return productRepo.save(product);
+        productRepo.save(product);
+        return productUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
     @Transactional
@@ -223,9 +310,8 @@ public class productService {
     }
 
     @Transactional
-    // Có thể bị race condition
     public int increaseProductVolume(String id) {
-        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        products product = productRepo.findProductById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         int newVolume = product.getVolume() + 1;
         product.setVolume(newVolume);
         productRepo.save(product);
@@ -238,5 +324,30 @@ public class productService {
         imageFileService.deleteImage(product.getPublicID());
         product.setImageURL(null);
         product.setPublicID(null);
+    }
+
+    public Set<ProductSize> getAllProductSizeOfProduct(String id) {
+        products product = productRepo.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        return product.getProductSizes();
+    }
+
+    public List<productResponse> getAllProductsByRestaurantId(String id) {
+        restaurants res = resRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cannot find restaurant"));
+
+        Optional<List<products>> products = productRepo.findProductsByRestaurant(res);
+
+        if (!products.isPresent()) {
+            return new ArrayList<>();
+        }
+        return products.get().stream().map(productUtil::mapProductToProductResponseWitoutResParam).toList();
+    }
+
+    public restaurants getRestaurantByProductId(String id) {
+        products product = productRepo.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                        
+        return product.getRestaurant();
     }
 }

@@ -15,11 +15,12 @@ public class RouterValidator {
         "/api/users/register",
         "/eureka/web",
         "/api/users/confirmation",
-        "/api/users/email",
         "/v3/api-docs/**",
         "/swagger-ui.html",
         "/swagger-ui/**",
-        "/api-docs/swagger-ui.html"
+        "/api-docs/swagger-ui.html",
+        "/login/oauth2/code/google",
+        "/oauth2/authorization/google"
     );
 
     public Predicate<ServerHttpRequest> isSecured =

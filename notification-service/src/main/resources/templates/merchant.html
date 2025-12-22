@@ -1,0 +1,58 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Merchant Application Update</title>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 0;
+      margin: 0;
+    "
+  >
+    <div
+      style="
+        max-width: 600px;
+        margin: auto;
+        background: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <div
+        style="
+          background-color: #0070f3;
+          padding: 24px;
+          color: #fff;
+          text-align: center;
+        "
+      >
+        <img
+          src="https://img.icons8.com/ios-filled/50/ffffff/email.png"
+          alt="Email Confirmation Icon"
+          width="50"
+        />
+        <h1 style="margin: 16px 0 0">Merchant Application Update</h1>
+      </div>
+      <div style="padding: 24px">
+        <p>Hi <strong><span th:text="${name}"></span></strong>,</p>
+        <p th:if="${success == true}">Following our thorough review process, we're excited to announce that your merchant application has been approved! 
+          We look forward to having you as part of our community.</p>
+
+	      <p th:if="${success == false}"> After careful consideration of your application, we regret to inform you that we are unable to approve your merchant request at this time.
+          We appreciate your interest in our platform.</p>
+        <p style="margin-top: 30px">Best regards,<br />CNTTK18 TEAM</p>
+      </div>
+      <div style="background-color: #f0f0f0; text-align: center; padding: 16px">
+        <p style="margin: 0; font-size: 12px">
+          📧 Visit us on
+          <a href="https://www.facebook.com/quoc.huy.677647" target="_blank">Facebook</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

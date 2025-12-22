@@ -12,9 +12,9 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     implementation("io.github.cdimascio:dotenv-java:3.2.0")
-    //implementation("org.springframework.boot:spring-boot-starter-actuator")
-    //implementation("io.micrometer:micrometer-tracing-bridge-brave")
-    //implementation("io.zipkin.reporter2:zipkin-reporter-brave")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-tracing-bridge-brave")
+    implementation("io.zipkin.reporter2:zipkin-reporter-brave")
 	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
 	implementation("io.jsonwebtoken:jjwt-api:0.12.5")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.5")
@@ -26,8 +26,8 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
-	implementation("org.springframework.kafka:spring-kafka")
-	testImplementation("org.springframework.kafka:spring-kafka-test")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("org.springframework.boot:spring-boot-starter-amqp")
 }
 
 dependencyManagement {

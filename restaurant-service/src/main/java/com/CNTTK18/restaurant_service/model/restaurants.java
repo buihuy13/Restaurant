@@ -30,6 +30,8 @@ public class restaurants {
     @Column(name = "resname", nullable = false)
     private String resName;
     private String address;
+    private double longitude; //kinh độ
+    private double latitude; //vĩ độ
     private float rating;
     @Column(name = "openingtime", nullable = false)
     private LocalTime openingTime;
@@ -72,5 +74,19 @@ public class restaurants {
     public void removeCate(categories cate) {
         this.categories.remove(cate);
         cate.getRestaurants().remove(this);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        restaurants that = (restaurants) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        // Các đối tượng bằng nhau phải có hashCode bằng nhau
+        return id != null ? id.hashCode() : 0;
     }
 }

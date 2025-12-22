@@ -1,19 +1,19 @@
 package com.CNTTK18.Common.Event;
 
-public class NotificationEvent {
+public class MerchantEvent {
     private String email;
-    private boolean success;
-
-    public NotificationEvent(String email, boolean success) {
+    public MerchantEvent(String email, boolean success) {
         this.email = email;
         this.success = success;
     }
-
     public String getEmail() {
         return email;
     }
     public void setEmail(String email) {
         this.email = email;
+    }
+    private boolean success;
+    public MerchantEvent() {
     }
     public boolean isSuccess() {
         return success;

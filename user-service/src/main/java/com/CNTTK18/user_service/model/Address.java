@@ -21,8 +21,17 @@ public class Address {
     @Id
     private String id;
     private String location;
+    private double longitude;
+    private double latitude;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Users user;
+
+    public Address(String id, String location, double longitude, double latitude) {
+        this.id = id;
+        this.location = location;
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
 }

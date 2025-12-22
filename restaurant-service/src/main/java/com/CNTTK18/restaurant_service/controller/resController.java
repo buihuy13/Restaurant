@@ -3,6 +3,7 @@ package com.CNTTK18.restaurant_service.controller;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,13 +11,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
+import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponseWithProduct;
 import com.CNTTK18.restaurant_service.model.restaurants;
 import com.CNTTK18.restaurant_service.service.resService;
 
@@ -26,11 +30,13 @@ import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/restaurant")
 public class resController {
     private resService resService;
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(resController.class);
 
     public resController(resService resService) {
         this.resService = resService;
@@ -39,15 +45,42 @@ public class resController {
     @Tag(name = "Get")
     @Operation(summary = "Get all restaurants")
     @GetMapping()
-    public ResponseEntity<List<restaurants>> getAllRestaurants() {
-        return ResponseEntity.ok(resService.getAllRestaurants());
+    public Mono<ResponseEntity<List<resResponseWithProduct>>> getAllRestaurants(@RequestParam(required = false) Double lat,
+                                                               @RequestParam(required = false) Double lon,
+                                                               @RequestParam(required = false) String search, 
+                                                               @RequestParam(required = false) Integer nearby,
+                                                               @RequestParam(required = false) String rating,
+                                                               @RequestParam(required = false) String category) {
+
+        Coordinates location = null;
+        if (lon != null && lat != null) {
+            location = new Coordinates(lon, lat);
+        }
+        return resService.getAllRestaurants(location, search, nearby, rating, category).map(
+            resList -> ResponseEntity.ok(resList)
+        );
     }
 
     @Tag(name = "Get")
     @Operation(summary = "Get restaurant by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<restaurants> getRestaurantById(@PathVariable String id) {
-        return ResponseEntity.ok(resService.getRestaurantById(id));
+    public Mono<ResponseEntity<resResponseWithProduct>> getRestaurantById(@PathVariable String id,
+                                                        @RequestParam(required = false) Double lat,
+                                                        @RequestParam(required = false) Double lon) {
+        Coordinates location = null;
+        if (lon != null && lat != null) {
+            location = new Coordinates(lon, lat);
+        }
+        return resService.getRestaurantById(id,location).map(
+            res -> ResponseEntity.ok(res)
+        );
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get restaurants by merchant id")
+    @GetMapping("/merchant/{id}")
+    public ResponseEntity<List<resResponseWithProduct>> getRestaurantByMerchantId(@PathVariable String id) {
+        return ResponseEntity.ok(resService.getRestaurantsByMerchantId(id));
     }
 
     @Tag(name = "Put")
@@ -67,14 +100,17 @@ public class resController {
     @Retry(name = "create")
     public CompletableFuture<ResponseEntity<restaurants>> createRestaurant(@RequestPart(value = "restaurant", required = true) @Valid resRequest resRequest,
                     @RequestPart(value = "image", required = false) MultipartFile imageFile) {
-        return CompletableFuture.supplyAsync(() -> ResponseEntity.ok(resService.createRestaurant(resRequest, imageFile)));
+        return resService.createRestaurant(resRequest, imageFile)
+                        .map(savedRestaurant -> ResponseEntity.ok(savedRestaurant)).toFuture();
     }
 
-    public CompletableFuture<String> fallbackMethod(resRequest resRequest, 
+    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(resRequest resRequest, 
         MultipartFile imageFile, Throwable ex)
     {
-        System.out.println("Lỗi khi gọi createRestaurant, kích hoạt fallback. Lỗi: " + ex.getMessage());
-        return CompletableFuture.supplyAsync(() -> "Oops! Something went wrong, please wait for 5 more minutes~");
+        log.error("Lỗi khi gọi createRestaurant, kích hoạt fallback. Lỗi: " + ex.getMessage());
+        return CompletableFuture.completedFuture(
+            ResponseEntity.status(503).body(new MessageResponse(ex.getMessage()))
+        );
     }
 
     @Tag(name = "Delete")

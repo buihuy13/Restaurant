@@ -33,20 +33,22 @@ public class Users {
     @Email
     @NotBlank(message = "Email is mandatory")
     private String email;
-    @NotBlank(message = "Password is mandatory")
     private String password;
     private boolean enabled;
     @Column(name = "verificationcode")
     private String verficationCode;
     private String role;
     private String phone;
+    @Column(name = "authprovider")
+    private String authProvider;
+    private String slug;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Address> addressList;
 
     public List<Address> getAddressList() {
-        if (addressList == null) {
-            return new ArrayList<Address>();
+        if (this.addressList == null) {
+            this.addressList = new ArrayList<Address>();
         }
         return addressList;
     }
@@ -57,5 +59,13 @@ public class Users {
             return;
         }
         this.addressList = addressList;
+    }
+
+    public void addAddress(Address address) {
+        if (this.addressList == null) {
+            this.addressList = new ArrayList<Address>();
+        }
+        this.addressList.add(address);
+        address.setUser(this);
     }
 }
