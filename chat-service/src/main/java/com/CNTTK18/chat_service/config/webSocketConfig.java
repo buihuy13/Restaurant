@@ -9,6 +9,11 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class webSocketConfig implements WebSocketMessageBrokerConfigurer  {
+    private final WebsocketHandshakeInterceptor handshakeInterceptor;
+
+    public webSocketConfig(WebsocketHandshakeInterceptor handshakeInterceptor) {
+        this.handshakeInterceptor = handshakeInterceptor;
+    }
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // Enable simple broker for topics (in-memory broker)
@@ -25,6 +30,7 @@ public class webSocketConfig implements WebSocketMessageBrokerConfigurer  {
         // endpoint tại /ws, client sẽ kết nối tới đây
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
+                .addInterceptors(handshakeInterceptor)
                 .withSockJS(); // Phòng khi trình duyệt cũ không hỗ trợ WebSocket
     }
 }
