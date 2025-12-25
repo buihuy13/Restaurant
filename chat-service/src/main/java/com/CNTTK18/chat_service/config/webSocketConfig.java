@@ -30,7 +30,6 @@ public class webSocketConfig implements WebSocketMessageBrokerConfigurer  {
         // endpoint tại /ws, client sẽ kết nối tới đây
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
-                .addInterceptors(handshakeInterceptor)
-                .withSockJS(); // Phòng khi trình duyệt cũ không hỗ trợ WebSocket
+                .addInterceptors(handshakeInterceptor);
     }
 }

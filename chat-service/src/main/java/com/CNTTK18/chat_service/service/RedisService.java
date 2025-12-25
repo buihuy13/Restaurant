@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RedisService {
-    private final RedisTemplate<String, Boolean> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
-    public RedisService(RedisTemplate<String, Boolean> redisTemplate) {
+    public RedisService(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
@@ -18,7 +18,7 @@ public class RedisService {
     }
 
     public Boolean getValue(String key) {
-        return redisTemplate.opsForValue().get(key);
+        return (Boolean) redisTemplate.opsForValue().get(key);
     }
 
     public void deleteValue(String key) {
