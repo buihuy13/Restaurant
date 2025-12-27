@@ -554,6 +554,8 @@ spring:
                   filters:
                       - RewritePath=/v3/api-docs/payment-service/(?<segment>.*), /v3/api-docs/payment-service/${segment}
 
+
+                # Chat-service
                 - id: chat-service-api
                   uri: lb://chat-service
                   predicates:
@@ -561,7 +563,7 @@ spring:
                   filters:
                       - name: JwtAuthentication
                 - id: chat-service-websocket
-                  uri: lb://chat-service
+                  uri: lb:ws://chat-service
                   predicates:
                       - Path=/ws/**
                   filters:

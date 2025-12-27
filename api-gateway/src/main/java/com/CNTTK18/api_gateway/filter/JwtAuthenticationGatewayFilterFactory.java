@@ -76,7 +76,7 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
             if (routerValidator.isSecured.test(exchange.getRequest())) {
                 // Kiểm tra header hoặc query có chứa token không
                 Boolean hasAuthHeader = exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION);
-                Boolean hasAuthQuery = exchange.getRequest().getQueryParams().containsKey("token");
+                Boolean hasAuthQuery = exchange.getRequest().getQueryParams().containsKey("token") && isWebSocketUpgradeRequest(exchange.getRequest());
                 if (!hasAuthHeader && !hasAuthQuery) {
                     return onError(exchange, 401, "Header hoặc query không chứa token");
                 }
@@ -124,5 +124,12 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
             }
             return chain.filter(exchange);
         });
+    }
+
+    private boolean isWebSocketUpgradeRequest(ServerHttpRequest request) {
+        var headers = request.getHeaders();
+        return "websocket".equalsIgnoreCase(headers.getFirst(HttpHeaders.UPGRADE)) &&
+           headers.getConnection().stream()
+                  .anyMatch(conn -> "upgrade".equalsIgnoreCase(conn));
     }
 }
