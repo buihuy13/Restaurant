@@ -2,6 +2,8 @@ package com.CNTTK18.user_service.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +27,7 @@ import com.CNTTK18.user_service.dto.response.TokenResponse;
 import com.CNTTK18.user_service.dto.response.UserResponse;
 import com.CNTTK18.user_service.exception.InactivateException;
 import com.CNTTK18.user_service.model.Address;
+import com.CNTTK18.user_service.model.UserPrinciple;
 import com.CNTTK18.user_service.model.Users;
 import com.CNTTK18.user_service.repository.AddressRepository;
 import com.CNTTK18.user_service.repository.UserRepository;
@@ -57,8 +60,8 @@ public class UserService {
         this.cookiesService = cookiesService;
     }
 
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream().map(UserUtil::mapUsersToUserResponse).toList();
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(UserUtil::mapUsersToUserResponse);
     }
 
     public UserResponse getUserById(String id) {
@@ -218,12 +221,16 @@ public class UserService {
         addressRepository.delete(address);
     }
 
-    public List<UserResponse> getMerchantListNeedApprovement() {
-        Specification<Users> spec = Specification.allOf(UserSpecification.hasRole(Role.MERCHANT.toString()))
-                                                .and(UserSpecification.isEnabled(false));
+    public Page<UserResponse> getMerchantListNeedApprovement(Pageable pageable) {
+        String role = Role.MERCHANT.toString();
+        Boolean isEnabled = false;
+        Specification<Users> spec = UserSpecification.allSpecification(role, isEnabled, null, null);
 
-        return userRepository.findAll(spec).stream()
-                             .map(UserUtil::mapUsersToUserResponse)
-                             .toList();
+        return userRepository.findAll(spec, pageable).map(UserUtil::mapUsersToUserResponse);
+    }
+
+    public String createOneTimeToken(UserPrinciple user) {
+        String role = user.getAuthorities().stream().findFirst().get().getAuthority().toString();
+        return jwtService.generateOneTimeToken(role, user.getId());
     }
 }

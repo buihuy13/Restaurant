@@ -3,6 +3,8 @@ package com.CNTTK18.user_service.controller;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -75,8 +77,8 @@ public class UserController {
     @Tag(name = "Get")
     @Operation(summary = "Get all users")
     @GetMapping("")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<Page<UserResponse>> getAllUsers(Pageable pageable) {
+        return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
     @Tag(name = "Get")
@@ -222,7 +224,15 @@ public class UserController {
     @Tag(name = "Get")
     @Operation(summary = "Get merchant list need approvement")
     @GetMapping("/merchants/consideration")
-    public ResponseEntity<List<UserResponse>> getMerchantListNeedApprovement() {
-        return ResponseEntity.ok(userService.getMerchantListNeedApprovement());
+    public ResponseEntity<Page<UserResponse>> getMerchantListNeedApprovement(Pageable pageable) {
+        return ResponseEntity.ok(userService.getMerchantListNeedApprovement(pageable));
+    }
+
+    @Tag(name = "Get")
+    @Operation(summary = "Get total user count")
+    @GetMapping("/one-time-token")
+    public ResponseEntity<String> getOneTimeToken(@AuthenticationPrincipal UserPrinciple user) {
+        String token = userService.createOneTimeToken(user);
+        return ResponseEntity.ok(token);
     }
 }
