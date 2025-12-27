@@ -24,7 +24,7 @@ public class UserSpecification {
             if (name == null || name.isEmpty()) {
                 return criteriaBuilder.conjunction();
             }
-            return criteriaBuilder.like(root.get("name"), "%" + name + "%");
+            return criteriaBuilder.like(root.get("username"), "%" + name + "%");
         };
     }
 
