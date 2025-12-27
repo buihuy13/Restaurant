@@ -18,4 +18,29 @@ public class UserSpecification {
         return (root, query, criteriaBuilder) -> 
             criteriaBuilder.equal(root.get("enabled"), isEnabled);
     }
+
+    public static Specification<Users> hasNameLike(String name) {
+        return (root, query, criteriaBuilder) -> {
+            if (name == null || name.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.like(root.get("name"), "%" + name + "%");
+        };
+    }
+
+    public static Specification<Users> hasAuthProvider(String authProvider) {
+        return (root, query, criteriaBuilder) -> {
+            if (authProvider == null || authProvider.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(root.get("authProvider"), authProvider);
+        };
+    }
+
+    public static Specification<Users> allSpecification(String role, Boolean isEnabled, String name, String authProvider) {
+        return Specification.allOf(hasRole(role))
+                            .and(isEnabled(isEnabled))
+                            .and(hasNameLike(name))
+                            .and(hasAuthProvider(authProvider));
+    }
 }

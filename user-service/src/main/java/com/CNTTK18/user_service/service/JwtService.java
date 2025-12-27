@@ -119,4 +119,19 @@ public class JwtService {
          // Tạo access token mới
          return generateToken(username, role, id);
     }
+
+    public String generateOneTimeToken(String role, String id) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("tokenType", "one-time");
+        claims.put("id", id);
+        claims.put("role", role);
+    
+        return Jwts.builder()
+                .claims(claims)
+                .subject(role)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + 1 * 60 * 1000)) // 1 phút
+                .signWith(getKey())
+                .compact();
+    }
 }
