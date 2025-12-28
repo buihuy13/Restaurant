@@ -19,7 +19,7 @@ public class webSocketConfig implements WebSocketMessageBrokerConfigurer  {
     }
 
     @Bean
-    public TaskScheduler messageBrokerTaskScheduler() {
+    public TaskScheduler customMessageBrokerTaskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
         scheduler.setPoolSize(1); //app nhỏ không cần nhiều thread (non blocking I/O)
         scheduler.setThreadNamePrefix("ws-heartbeat-thread");
@@ -34,7 +34,7 @@ public class webSocketConfig implements WebSocketMessageBrokerConfigurer  {
         // server gửi message đến client có tiền tố /topic
         config.enableSimpleBroker("/topic")
               .setHeartbeatValue(new long[] {20000, 30000})
-              .setTaskScheduler(messageBrokerTaskScheduler());
+              .setTaskScheduler(customMessageBrokerTaskScheduler());
         
         // Set prefix for client messages (server nhận message từ client)
         // Bất kì tin nhắn nào gửi đến server có tiền tố /app sẽ được xử lý bởi các @MessageMapping
