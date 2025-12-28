@@ -38,6 +38,7 @@ public class WebsocketHandshakeInterceptor implements HandshakeInterceptor {
             }
 
             redisService.setValue(token, true);
+            System.out.println("redis đã set value: " + redisService.getValue(token));
             return true;
         }
         return false;
