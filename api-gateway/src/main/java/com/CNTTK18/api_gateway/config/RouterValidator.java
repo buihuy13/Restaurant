@@ -20,7 +20,8 @@ public class RouterValidator {
         "/swagger-ui/**",
         "/api-docs/swagger-ui.html",
         "/login/oauth2/code/google",
-        "/oauth2/authorization/google"
+        "/oauth2/authorization/google",
+        "/api/users/refreshtoken"
     );
 
     public Predicate<ServerHttpRequest> isSecured =
