@@ -229,10 +229,10 @@ public class UserController {
     }
 
     @Tag(name = "Get")
-    @Operation(summary = "Get total user count")
+    @Operation(summary = "Get one time token")
     @GetMapping("/one-time-token")
-    public ResponseEntity<String> getOneTimeToken(@AuthenticationPrincipal UserPrinciple user) {
+    public ResponseEntity<TokenResponse> getOneTimeToken(@AuthenticationPrincipal UserPrinciple user) {
         String token = userService.createOneTimeToken(user);
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(new TokenResponse(token));
     }
 }
