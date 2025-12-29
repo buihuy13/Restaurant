@@ -14,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class TaskScheduler {
+public class CustomTaskScheduler {
     private final UserRepository userRepository;
-    public TaskScheduler(UserRepository userRepository) {
+    public CustomTaskScheduler(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
