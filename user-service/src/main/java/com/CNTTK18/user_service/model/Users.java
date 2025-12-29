@@ -1,5 +1,6 @@
 package com.CNTTK18.user_service.model;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +43,11 @@ public class Users {
     @Column(name = "authprovider")
     private String authProvider;
     private String slug;
+
+    @Column(name = "createdat")
+    private Instant createdAt;
+    @Column(name = "activatedat")
+    private Instant activatedAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Address> addressList;

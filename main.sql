@@ -12,7 +12,9 @@ create table users (
     verificationcode varchar(255),
     phone varchar(15),
     slug varchar(255) not null unique,
-    authprovider varchar(20) default 'LOCAL'
+    authprovider varchar(20) default 'LOCAL',
+    createdat DATETIME(6) default current_timestamp,
+    activatedat DATETIME(6)
 );
 
 create index idx_email on users(email);
