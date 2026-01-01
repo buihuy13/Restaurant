@@ -9,7 +9,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class roomReceiver {
+public class RoomReceiver {
     private String roomId;
     private String receiverId;
 }

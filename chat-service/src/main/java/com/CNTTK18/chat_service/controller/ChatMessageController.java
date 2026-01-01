@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.CNTTK18.chat_service.dto.request.roomDTO;
+import com.CNTTK18.chat_service.dto.request.RoomDTO;
 import com.CNTTK18.chat_service.dto.response.Data;
 import com.CNTTK18.chat_service.dto.response.ResponseMessage;
-import com.CNTTK18.chat_service.dto.response.roomIdResponse;
+import com.CNTTK18.chat_service.dto.response.RoomIdResponse;
 import com.CNTTK18.chat_service.model.ChatRoom;
 import com.CNTTK18.chat_service.model.Message;
 import com.CNTTK18.chat_service.service.ChatMessageService;
@@ -30,10 +30,10 @@ public class ChatMessageController {
     private final int LIMIT_MESSAGE = 20;
 
     @GetMapping("/roomId/{userId1}/{userId2}")
-    public ResponseEntity<roomIdResponse> getRoomId(@PathVariable String userId1, @PathVariable String userId2) {
-        roomDTO roomDTO = new roomDTO(userId1, userId2);
+    public ResponseEntity<RoomIdResponse> getRoomId(@PathVariable String userId1, @PathVariable String userId2) {
+        RoomDTO roomDTO = new RoomDTO(userId1, userId2);
         String roomId = chatMessageService.getRoomId(roomDTO);
-        return ResponseEntity.ok(new roomIdResponse(roomId));
+        return ResponseEntity.ok(new RoomIdResponse(roomId));
     }
 
     @GetMapping("/rooms/{userId}")
