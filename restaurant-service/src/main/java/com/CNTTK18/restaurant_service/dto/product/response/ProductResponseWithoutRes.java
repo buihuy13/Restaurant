@@ -1,5 +1,6 @@
 package com.CNTTK18.restaurant_service.dto.product.response;
 
+import java.time.Instant;
 import java.util.List;
 
 import com.CNTTK18.restaurant_service.dto.productSize.response.ProductSizeResponse;
@@ -27,5 +28,7 @@ public class ProductResponseWithoutRes {
     private int totalReview;
     private float rating;
     private String slug;
+    private Instant createdAt;
+    private Instant updatedAt;
     private List<ProductSizeResponse> productSizes;
 }

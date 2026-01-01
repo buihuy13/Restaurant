@@ -13,9 +13,9 @@ create table users (
     phone varchar(15),
     slug varchar(255) not null unique,
     auth_provider varchar(20) default 'LOCAL',
-    created_at DATETIME default current_timestamp,
-    updated_at DATETIME default current_timestamp,
-    activated_at DATETIME
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp,
+    activated_at timestamp
 );
 
 create index idx_email on users(email);
@@ -71,25 +71,27 @@ use `restaurant-service`;
 
 create table categories (
     id varchar(10) primary key,
-    `catename` varchar(100) not null unique
+    `cate_name` varchar(100) not null unique
 );
 
 create table restaurants (
     id varchar(255) primary key,
-    `resname` varchar(255) not null,
+    `res_name` varchar(255) not null,
     `address` varchar(255) not null,
     longitude double not null,
     latitude double not null,
     rating float,
-    openingtime time not null,
-    closingtime time not null,
-    imageurl varchar(255),
-    publicid varchar(255),
+    opening_time time not null,
+    closing_time time not null,
+    image_url varchar(255),
+    public_id varchar(255),
     phone varchar(15),
     total_review int default 0,
     merchant_id varchar(100) not null,
     slug varchar(255) not null unique,
-    `enabled` boolean not null
+    `enabled` boolean not null,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp
 );
 
 create index idx_merchantid on restaurants(merchant_id);
@@ -112,14 +114,16 @@ create table products (
     product_name varchar(255) not null,
     `description` text not null,
     restaurant_id varchar(255) not null references restaurants(id),
-    imageurl varchar(255),
-    publicid varchar(255),
+    image_url varchar(255),
+    public_id varchar(255),
     category_id varchar(10) not null references categories(id),
     volume int not null,
     total_review int,
     rating float,
     slug varchar(255) not null unique,
-    available boolean not null
+    available boolean not null,
+    created_at timestamp default current_timestamp,
+    updated_at timestamp default current_timestamp
 );
 
 create index idx_restaurantid on products(restaurant_id);

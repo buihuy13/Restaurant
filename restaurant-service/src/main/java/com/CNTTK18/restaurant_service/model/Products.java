@@ -1,13 +1,19 @@
 package com.CNTTK18.restaurant_service.model;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -27,15 +33,16 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Products {
     @Id
     private String id;
     @Column(name = "product_name", nullable = false)
     private String productName;
     private String description;
-    @Column(name = "imageurl")
+    @Column(name = "image_url")
     private String imageURL;
-    @Column(name = "publicid")
+    @Column(name = "public_id")
     private String publicID; // Cho việc xóa ảnh trong cloud
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
@@ -55,6 +62,14 @@ public class Products {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ProductSize> productSizes;
+
+    @Column(name = "created_at")
+    @CreatedDate
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    @LastModifiedDate
+    private Instant updatedAt;
 
     // Helper methods
     public void addProductSize(ProductSize productSize) {

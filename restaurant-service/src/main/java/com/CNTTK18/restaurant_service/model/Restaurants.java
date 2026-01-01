@@ -1,11 +1,17 @@
 package com.CNTTK18.restaurant_service.model;
 
+import java.time.Instant;
 import java.time.LocalTime;
 import java.util.Set;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -24,25 +30,26 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Restaurants {
     @Id
     private String id;
-    @Column(name = "resname", nullable = false)
+    @Column(name = "res_name", nullable = false)
     private String resName;
     private String address;
     private double longitude; //kinh độ
     private double latitude; //vĩ độ
     private float rating;
-    @Column(name = "openingtime", nullable = false)
+    @Column(name = "opening_time", nullable = false)
     private LocalTime openingTime;
-    @Column(name = "closingtime", nullable = false)
+    @Column(name = "closing_time", nullable = false)
     private LocalTime closingTime;
     private String phone;
 
-    @Column(name = "imageurl")
+    @Column(name = "image_url")
     private String imageURL;
 
-    @Column(name = "publicid")
+    @Column(name = "public_id")
     private String publicID; // Cho việc xóa ảnh trong cloud
     @Column(name = "merchant_id", nullable = false)
     private String merchantId;
@@ -51,6 +58,14 @@ public class Restaurants {
     @Column(name = "total_review")
     private int totalReview;
     private String slug;
+
+    @Column(name = "created_at")
+    @CreatedDate
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    @LastModifiedDate
+    private Instant updatedAt;
 
     @ManyToMany
     @JoinTable(

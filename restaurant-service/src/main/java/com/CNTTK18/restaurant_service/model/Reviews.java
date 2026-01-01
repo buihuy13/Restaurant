@@ -22,10 +22,13 @@ public class Reviews {
     private String id;
     @Column(name = "user_id", nullable = false)
     private String userId;
+    @Column(name = "review_id")
     private String reviewId; // Id của product hoặc restaurant
+    @Column(name = "review_type")
     private String reviewType; // "PRODUCT" hoặc "RESTAURANT"
     private String title;
     private String content;
     private float rating;
+    @Column(name = "created_at")
     private Timestamp createdAt;
 }

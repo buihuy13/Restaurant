@@ -24,7 +24,7 @@ public class Categories {
     @Id
     private String id;
 
-    @Column(name = "catename", nullable = false, unique = true)
+    @Column(name = "cate_name", nullable = false, unique = true)
     private String cateName;
 
     public Categories(String id, String cateName) {

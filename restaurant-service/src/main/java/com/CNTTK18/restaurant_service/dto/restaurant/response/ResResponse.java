@@ -1,5 +1,6 @@
 package com.CNTTK18.restaurant_service.dto.restaurant.response;
 
+import java.time.Instant;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -33,5 +34,7 @@ public class ResResponse {
     private double distance;
     private double duration;
     private String slug;
+    private Instant createdAt;
+    private Instant updatedAt;
     private List<CateResponse> cate;
 }

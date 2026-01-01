@@ -23,6 +23,8 @@ public class ProductUtil {
                             .rating(product.getRating())
                             .volume(product.getVolume())
                             .slug(product.getSlug())
+                            .createdAt(product.getCreatedAt())
+                            .updatedAt(product.getUpdatedAt())
                             .build();
     }
 
@@ -42,6 +44,8 @@ public class ProductUtil {
                             .volume(product.getVolume())
                             .restaurant(ResUtil.mapResToResResponse(product.getRestaurant()))
                             .slug(product.getSlug())
+                            .createdAt(product.getCreatedAt())
+                            .updatedAt(product.getUpdatedAt())
                             .build();
     }
 
@@ -60,6 +64,8 @@ public class ProductUtil {
                             .rating(product.getRating())
                             .volume(product.getVolume())
                             .slug(product.getSlug())
+                            .createdAt(product.getCreatedAt())
+                            .updatedAt(product.getUpdatedAt())
                             .build();
     }
 }
