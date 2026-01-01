@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
 import com.CNTTK18.api_gateway.config.RouterValidator;
+import com.CNTTK18.api_gateway.data.KeyType;
 import com.CNTTK18.api_gateway.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -82,10 +83,13 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                 }
 
                 String authHeader = null;
+                KeyType keyType = null;
                 if (hasAuthHeader) {
+                    keyType = KeyType.JWT;
                     authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
                 }
                 else if (hasAuthQuery) {
+                    keyType = KeyType.OTT;
                     authHeader = exchange.getRequest().getQueryParams().getFirst("token");
                 }
 
@@ -95,7 +99,7 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
 
                 try {
                     // Xác thực token
-                    boolean result = jwtUtil.validateToken(authHeader);
+                    boolean result = jwtUtil.validateToken(authHeader, keyType);
                     if (!result) {
                         return onError(exchange, 401, "Token lỗi");
                     }
@@ -106,20 +110,18 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
                 String requiredRole = config.getRequiredRole();
                 // Nếu route này có yêu cầu quyền cụ thể
                 if (requiredRole != null && !requiredRole.isEmpty()) {
-                    String userRoles = jwtUtil.extractRole(authHeader);
+                    String userRoles = jwtUtil.extractRole(authHeader, keyType);
                     List<String> roles = Arrays.asList(requiredRole.split(","));
                     
                     // Kiểm tra xem người dùng có quyền yêu cầu không
                     if (userRoles == null || !roles.stream().anyMatch(r -> r.equals(userRoles))) {
                         return onError(exchange, 403, "Không có quyền");
-                    }
+                    } 
                 }
-                String userId = jwtUtil.extractUserId(authHeader);
-                String role = jwtUtil.extractRole(authHeader);
+                String userId = jwtUtil.extractUserId(authHeader, keyType);
 
                 ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                         .header("user-id", userId) // Thêm header mới
-                        .header("user-role", role)
                         .build();
 
                 exchange = exchange.mutate().request(mutatedRequest).build();

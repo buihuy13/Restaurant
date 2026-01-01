@@ -9,6 +9,8 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.CNTTK18.api_gateway.data.KeyType;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -19,49 +21,63 @@ public class JwtUtil {
     @Value("${jwt.secretkey}")
     private String secretkey;
 
+    @Value("${secretKey}")
+    private String ottSecretKey;
+
     //Tạo 1 SecretKey
     private SecretKey getKey() {
         byte[] keyBytes = secretkey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String extractRole(String token) {
-        Claims claims = extractAllClaims(token);
+    //Tạo 1 SecretKey
+    private SecretKey getOttKey() {
+        byte[] keyBytes = ottSecretKey.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String extractRole(String token, KeyType keyType) {
+        Claims claims = extractAllClaims(token, keyType);
         return claims.get("role").toString();
     }
 
-    public String extractUserId(String token) {
-        Claims claims = extractAllClaims(token);
+    public String extractUserId(String token, KeyType keyType) {
+        Claims claims = extractAllClaims(token, keyType);
         return claims.get("id").toString();
     }
 
     //Lấy 1 claim từ token
-    private <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
-        final Claims claims = extractAllClaims(token);
+    private <T> T extractClaim(String token, Function<Claims, T> claimResolver, KeyType keyType) {
+        final Claims claims = extractAllClaims(token, keyType);
         return claimResolver.apply(claims);
     }
 
     //Lấy tất cả claims từ token (Kiểm tra luôn cả chữ ký)
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getKey())
-                .build()
+    private Claims extractAllClaims(String token, KeyType keyType) {
+        var jwt = Jwts.parser();
+        if (keyType == KeyType.OTT) {
+            jwt = jwt.verifyWith(getOttKey());
+        }
+        else if (keyType == KeyType.JWT) {
+            jwt = jwt.verifyWith(getKey());
+        }
+        return jwt.build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
     
     //Kiểm tra token có hợp lệ không (hết hạn hay không)
-    public boolean validateToken(String token) {
-        return !isTokenExpired(token);
+    public boolean validateToken(String token, KeyType keyType) {
+        return !isTokenExpired(token, keyType);
     }
 
     //Kiểm tra token có hết hạn không
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+    private boolean isTokenExpired(String token, KeyType keyType) {
+        return extractExpiration(token, keyType).before(new Date());
     }
 
     //Lấy thời gian hết hạn của token
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+    private Date extractExpiration(String token, KeyType keyType) {
+        return extractClaim(token, Claims::getExpiration, keyType);
     }
 }
