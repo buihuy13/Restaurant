@@ -139,7 +139,7 @@ public class JwtService {
                 .claims(claims)
                 .subject(role)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1 * 60 * 1000)) // 1 phút
+                .expiration(new Date(System.currentTimeMillis() + 30 * 1000)) // 1 phút
                 .signWith(getOTTKey())
                 .compact();
     }
