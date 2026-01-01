@@ -1,4 +1,4 @@
-package com.CNTTK18.chat_service.dto.response;
+package com.CNTTK18.chat_service.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class roomIdResponse {
-    private String roomId;
+public class RoomDTO {
+    public String userId1;
+    public String userId2;
 }

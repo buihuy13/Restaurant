@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.CNTTK18.chat_service.dto.request.roomDTO;
+import com.CNTTK18.chat_service.dto.request.RoomDTO;
 import com.CNTTK18.chat_service.model.ChatRoom;
 import com.CNTTK18.chat_service.model.Message;
 import com.CNTTK18.chat_service.repository.ChatRoomRepository;
@@ -23,7 +23,7 @@ public class ChatMessageService {
     }
 
     // Tạo room nếu chưa có, trả về roomId
-    public String getRoomId(roomDTO roomDTO) {
+    public String getRoomId(RoomDTO roomDTO) {
         String roomId = roomDTO.getUserId1() + "_" + roomDTO.getUserId2();
 
         if (roomDTO.getUserId1().compareTo(roomDTO.getUserId2()) > 0) {
