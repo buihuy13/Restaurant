@@ -3,8 +3,8 @@ package com.CNTTK18.restaurant_service.dto.restaurant.response;
 import java.time.LocalTime;
 import java.util.List;
 
-import com.CNTTK18.restaurant_service.dto.cate.response.cateResponse;
-import com.CNTTK18.restaurant_service.dto.product.response.productResponseWithoutRes;
+import com.CNTTK18.restaurant_service.dto.cate.response.CateResponse;
+import com.CNTTK18.restaurant_service.dto.product.response.ProductResponseWithoutRes;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class resResponseWithProduct {
+public class ResResponseWithProduct {
     private String id;
     private String resName;
     private String address;
@@ -34,6 +34,6 @@ public class resResponseWithProduct {
     private double distance;
     private double duration;
     private String slug;
-    private List<productResponseWithoutRes> products;
-    private List<cateResponse> cate;
+    private List<ProductResponseWithoutRes> products;
+    private List<CateResponse> cate;
 }

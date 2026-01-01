@@ -5,24 +5,24 @@ import org.springframework.stereotype.Service;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.restaurant_service.dto.productSize.request.ProductSizeCreate;
-import com.CNTTK18.restaurant_service.dto.productSize.request.productSizeRequest;
+import com.CNTTK18.restaurant_service.dto.productSize.request.ProductSizeRequest;
 import com.CNTTK18.restaurant_service.dto.productSize.response.ProductSizeResponse;
 import com.CNTTK18.restaurant_service.model.ProductSize;
-import com.CNTTK18.restaurant_service.model.products;
-import com.CNTTK18.restaurant_service.model.size;
+import com.CNTTK18.restaurant_service.model.Products;
+import com.CNTTK18.restaurant_service.model.Size;
 import com.CNTTK18.restaurant_service.repository.ProductSizeRepository;
-import com.CNTTK18.restaurant_service.repository.productRepository;
-import com.CNTTK18.restaurant_service.repository.sizeRepository;
+import com.CNTTK18.restaurant_service.repository.ProductRepository;
+import com.CNTTK18.restaurant_service.repository.SizeRepository;
 import com.CNTTK18.restaurant_service.util.ProductSizeUtil;
 
 @Service
-public class productSizeService {
+public class ProductSizeService {
     private final ProductSizeRepository productSizeRepository;
-    private final productRepository productRepository;
-    private final sizeRepository sizeRepository;
+    private final ProductRepository productRepository;
+    private final SizeRepository sizeRepository;
 
-    public productSizeService(ProductSizeRepository productSizeRepository, productRepository productRepository, 
-                                sizeRepository sizeRepository) {
+    public ProductSizeService(ProductSizeRepository productSizeRepository, ProductRepository productRepository, 
+                                SizeRepository sizeRepository) {
         this.productSizeRepository = productSizeRepository;
         this.productRepository = productRepository;
         this.sizeRepository = sizeRepository;
@@ -34,7 +34,7 @@ public class productSizeService {
         return ProductSizeUtil.mapProductSizeToProductSizeResponse(ps);
     }
 
-    public ProductSizeResponse updateProductSize(String id, productSizeRequest request) {
+    public ProductSizeResponse updateProductSize(String id, ProductSizeRequest request) {
         ProductSize ps = productSizeRepository.findById(id)
                                     .orElseThrow(() -> new ResourceNotFoundException("Cannot find product details"));
 
@@ -44,10 +44,10 @@ public class productSizeService {
     }
 
     public ProductSizeResponse createProductSize(ProductSizeCreate productSize) {
-        size size = sizeRepository.findById(productSize.getSizeId())
+        Size size = sizeRepository.findById(productSize.getSizeId())
                                     .orElseThrow(() -> new ResourceNotFoundException("Cannot find size"));
 
-        products product = productRepository.findById(productSize.getProductId())
+        Products product = productRepository.findById(productSize.getProductId())
                                                 .orElseThrow(() -> new ResourceNotFoundException("Cannot find product"));
 
         ProductSize ps = new ProductSize(RandomIdGenerator.generate(254), product, size, productSize.getPrice());

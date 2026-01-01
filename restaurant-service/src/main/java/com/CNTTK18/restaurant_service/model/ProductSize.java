@@ -31,11 +31,11 @@ public class ProductSize {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     @JsonIgnore
-    private products product;
+    private Products product;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "size_id", nullable = false)
-    private size size;
+    private Size size;
     
     @Column(nullable = false)
     private BigDecimal price;

@@ -10,9 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.CNTTK18.restaurant_service.dto.distance.request.distanceRequest;
+import com.CNTTK18.restaurant_service.dto.distance.request.DistanceRequest;
 import com.CNTTK18.restaurant_service.dto.distance.response.OrsDirectionResponse;
-import com.CNTTK18.restaurant_service.dto.distance.response.distanceResponse;
+import com.CNTTK18.restaurant_service.dto.distance.response.DistanceResponse;
 
 import reactor.core.publisher.Mono;
 
@@ -35,13 +35,13 @@ public class DistanceService {
         this.webClientBuilder = webClientBuilder;
     }
 
-    public Mono<distanceResponse> getDistanceAndDurationInList(List<Double> startingPoints, List<List<Double>> endPoints) {
+    public Mono<DistanceResponse> getDistanceAndDurationInList(List<Double> startingPoints, List<List<Double>> endPoints) {
         List<List<Double>> allPoints = new ArrayList<>();
 
         allPoints.add(startingPoints);
         allPoints.addAll(endPoints);
 
-        distanceRequest distanceRequest = new distanceRequest(allPoints);
+        DistanceRequest distanceRequest = new DistanceRequest(allPoints);
 
         return webClientBuilder
                 .post()
@@ -50,7 +50,7 @@ public class DistanceService {
                 .header("Authorization", apiKey) // ORS yêu cầu API Key trong header
                 .bodyValue(distanceRequest)
                 .retrieve()
-                .bodyToMono(distanceResponse.class);
+                .bodyToMono(DistanceResponse.class);
     }
 
     public Mono<OrsDirectionResponse> getDistanceAndDuration(List<Double> start, List<Double> end) {

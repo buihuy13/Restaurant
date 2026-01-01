@@ -17,7 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "reviews")
-public class reviews {
+public class Reviews {
     @Id
     private String id;
     @Column(name = "user_id", nullable = false)

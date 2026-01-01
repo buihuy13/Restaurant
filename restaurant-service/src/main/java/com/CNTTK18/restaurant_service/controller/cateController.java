@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.CNTTK18.restaurant_service.dto.cate.request.cateRequest;
+import com.CNTTK18.restaurant_service.dto.cate.request.CateRequest;
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
-import com.CNTTK18.restaurant_service.model.categories;
-import com.CNTTK18.restaurant_service.service.cateService;
+import com.CNTTK18.restaurant_service.model.Categories;
+import com.CNTTK18.restaurant_service.service.CateService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,44 +25,44 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/category")
-public class cateController {
-    private cateService cateService;
-    public cateController(cateService cateService) {
+public class CateController {
+    private CateService cateService;
+    public CateController(CateService cateService) {
         this.cateService = cateService;
     }
 
     @Tag(name = "Get")
     @Operation(summary = "Get all categories")
     @GetMapping("")
-    public ResponseEntity<List<categories>> getAllCate() {
+    public ResponseEntity<List<Categories>> getAllCate() {
         return ResponseEntity.ok(cateService.getAllCategories());
     }
 
     @Tag(name = "Get")
     @Operation(summary = "Get category by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<categories> getCateById(@PathVariable String id) {
+    public ResponseEntity<Categories> getCateById(@PathVariable String id) {
         return ResponseEntity.ok(cateService.getCateById(id));
     }
 
     @Tag(name = "Get")
     @Operation(summary = "Get category by cate's name")
     @GetMapping("/search")
-    public ResponseEntity<categories> getCateByName(@RequestParam String name) {
+    public ResponseEntity<Categories> getCateByName(@RequestParam String name) {
         return ResponseEntity.ok(cateService.getCateByName(name));
     }
 
     @Tag(name = "Post")
     @Operation(summary = "Create new category")
     @PostMapping("")
-    public ResponseEntity<categories> createCate(@RequestBody @Valid cateRequest cateRequest) {
+    public ResponseEntity<Categories> createCate(@RequestBody @Valid CateRequest cateRequest) {
         return new ResponseEntity<>(cateService.createCate(cateRequest), HttpStatusCode.valueOf(201));
     }
 
     @Tag(name = "Put") 
     @Operation(summary = "Update a category")
     @PutMapping("/{id}")
-    public ResponseEntity<categories> updateCate(@RequestBody @Valid cateRequest cateRequest, @PathVariable String id) {
+    public ResponseEntity<Categories> updateCate(@RequestBody @Valid CateRequest cateRequest, @PathVariable String id) {
         return ResponseEntity.ok(cateService.updateCate(id, cateRequest));
     }
 

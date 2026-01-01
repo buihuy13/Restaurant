@@ -27,7 +27,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class products {
+public class Products {
     @Id
     private String id;
     @Column(name = "product_name", nullable = false)
@@ -39,7 +39,7 @@ public class products {
     private String publicID; // Cho việc xóa ảnh trong cloud
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
-    private categories category;
+    private Categories category;
     private int volume;
     private boolean available;
     private float rating;
@@ -50,7 +50,7 @@ public class products {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "restaurant_id", nullable = false)
     @JsonIgnore
-    private restaurants restaurant;
+    private Restaurants restaurant;
     private String slug;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)

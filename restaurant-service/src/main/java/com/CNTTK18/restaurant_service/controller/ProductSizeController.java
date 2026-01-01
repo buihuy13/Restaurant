@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.restaurant_service.dto.productSize.request.ProductSizeCreate;
-import com.CNTTK18.restaurant_service.dto.productSize.request.productSizeRequest;
+import com.CNTTK18.restaurant_service.dto.productSize.request.ProductSizeRequest;
 import com.CNTTK18.restaurant_service.dto.productSize.response.ProductSizeResponse;
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
-import com.CNTTK18.restaurant_service.service.productSizeService;
+import com.CNTTK18.restaurant_service.service.ProductSizeService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,9 +24,9 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api/productsize")
 public class ProductSizeController {
-    private productSizeService productSizeService;
+    private ProductSizeService productSizeService;
 
-    public ProductSizeController(productSizeService productSizeService) {
+    public ProductSizeController(ProductSizeService productSizeService) {
         this.productSizeService = productSizeService;
     }
 
@@ -47,7 +47,7 @@ public class ProductSizeController {
     @Tag(name = "Put") 
     @Operation(summary = "Update a product size")
     @PutMapping("/{id}")
-    public ResponseEntity<ProductSizeResponse> updateProductSize(@RequestBody @Valid productSizeRequest productSizeRequest, 
+    public ResponseEntity<ProductSizeResponse> updateProductSize(@RequestBody @Valid ProductSizeRequest productSizeRequest, 
                                                     @PathVariable String id) {
         return ResponseEntity.ok(productSizeService.updateProductSize(id, productSizeRequest));
     }

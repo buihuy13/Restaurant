@@ -1,5 +1,5 @@
 package com.CNTTK18.restaurant_service.data;
 
-public enum reviewType {
+public enum ReviewType {
     PRODUCT, RESTAURANT
 }

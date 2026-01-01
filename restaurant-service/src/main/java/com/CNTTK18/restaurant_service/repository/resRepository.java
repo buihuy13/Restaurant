@@ -7,16 +7,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 
-import com.CNTTK18.restaurant_service.model.restaurants;
+import com.CNTTK18.restaurant_service.model.Restaurants;
 
 import jakarta.persistence.LockModeType;
 
 @Repository
-public interface resRepository extends JpaRepository<restaurants, String> {
+public interface ResRepository extends JpaRepository<Restaurants, String> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<restaurants> findRestaurantById(String id);
+    Optional<Restaurants> findRestaurantById(String id);
 
-    Optional<List<restaurants>>  findRestaurantsByMerchantId(String id);
+    Optional<List<Restaurants>>  findRestaurantsByMerchantId(String id);
 
-    Optional<restaurants> findBySlug(String slug);
+    Optional<Restaurants> findBySlug(String slug);
 }

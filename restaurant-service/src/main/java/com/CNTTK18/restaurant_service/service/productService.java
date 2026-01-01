@@ -19,45 +19,45 @@ import org.springframework.web.multipart.MultipartFile;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.Common.Util.SlugGenerator;
-import com.CNTTK18.restaurant_service.data.reviewType;
-import com.CNTTK18.restaurant_service.dto.product.request.productRequest;
-import com.CNTTK18.restaurant_service.dto.product.request.sizePrice;
+import com.CNTTK18.restaurant_service.data.ReviewType;
+import com.CNTTK18.restaurant_service.dto.product.request.ProductRequest;
+import com.CNTTK18.restaurant_service.dto.product.request.SizePrice;
 import com.CNTTK18.restaurant_service.model.ProductSize;
-import com.CNTTK18.restaurant_service.model.categories;
-import com.CNTTK18.restaurant_service.model.products;
-import com.CNTTK18.restaurant_service.model.restaurants;
-import com.CNTTK18.restaurant_service.model.reviews;
-import com.CNTTK18.restaurant_service.model.size;
-import com.CNTTK18.restaurant_service.repository.cateRepository;
-import com.CNTTK18.restaurant_service.repository.productRepository;
-import com.CNTTK18.restaurant_service.repository.resRepository;
-import com.CNTTK18.restaurant_service.repository.reviewRepository;
-import com.CNTTK18.restaurant_service.repository.sizeRepository;
-import com.CNTTK18.restaurant_service.util.productUtil;
-import com.CNTTK18.restaurant_service.util.resUtil;
+import com.CNTTK18.restaurant_service.model.Categories;
+import com.CNTTK18.restaurant_service.model.Products;
+import com.CNTTK18.restaurant_service.model.Restaurants;
+import com.CNTTK18.restaurant_service.model.Reviews;
+import com.CNTTK18.restaurant_service.model.Size;
+import com.CNTTK18.restaurant_service.repository.CateRepository;
+import com.CNTTK18.restaurant_service.repository.ProductRepository;
+import com.CNTTK18.restaurant_service.repository.ResRepository;
+import com.CNTTK18.restaurant_service.repository.ReviewRepository;
+import com.CNTTK18.restaurant_service.repository.SizeRepository;
+import com.CNTTK18.restaurant_service.util.ProductUtil;
+import com.CNTTK18.restaurant_service.util.ResUtil;
 
 import jakarta.transaction.Transactional;
 import reactor.core.publisher.Mono;
 
-import com.CNTTK18.restaurant_service.dto.product.request.updateProduct;
-import com.CNTTK18.restaurant_service.dto.product.response.productResponse;
+import com.CNTTK18.restaurant_service.dto.product.request.UpdateProduct;
+import com.CNTTK18.restaurant_service.dto.product.response.ProductResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
-import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.ResResponse;
 import com.CNTTK18.restaurant_service.exception.ForbiddenException;
 
 @Service
-public class productService {
-    private productRepository productRepo;
-    private cateRepository cateRepository;
-    private resRepository resRepository;
-    private sizeRepository sizeRepository;
+public class ProductService {
+    private ProductRepository productRepo;
+    private CateRepository cateRepository;
+    private ResRepository resRepository;
+    private SizeRepository sizeRepository;
     private ImageHandleService imageFileService;
-    private reviewRepository reviewRepository;
+    private ReviewRepository reviewRepository;
     private DistanceService distanceService;
 
-    public productService(productRepository productRepo, cateRepository cateRepository, 
-                            resRepository resRepository, sizeRepository sizeRepository, ImageHandleService imageFileService,
-                            reviewRepository reviewRepository, DistanceService distanceService) {
+    public ProductService(ProductRepository productRepo, CateRepository cateRepository, 
+                            ResRepository resRepository, SizeRepository sizeRepository, ImageHandleService imageFileService,
+                            ReviewRepository reviewRepository, DistanceService distanceService) {
         this.productRepo = productRepo;
         this.cateRepository = cateRepository;
         this.resRepository = resRepository;
@@ -67,10 +67,10 @@ public class productService {
         this.distanceService = distanceService;
     }
 
-    public Mono<List<productResponse>> getAllProducts(String rating, String category, BigDecimal minPrice, 
+    public Mono<List<ProductResponse>> getAllProducts(String rating, String category, BigDecimal minPrice, 
                                 BigDecimal maxPrice, String order, String locationsorted, String search, 
                                 Integer nearby, Coordinates location) {
-        List<products> products = productRepo.findAll();
+        List<Products> products = productRepo.findAll();
         if (search != null && !search.isEmpty()) {
             products = products.stream().filter(p -> p.getProductName().toLowerCase().contains(search.toLowerCase())).toList();
         }
@@ -90,27 +90,27 @@ public class productService {
         }
         if (rating != null) {
             if (rating.equals("asc")) {
-                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getRating)).toList();
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.Products::getRating)).toList();
             } 
             else if (rating.equals("desc")) {
-                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getRating).reversed())
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.Products::getRating).reversed())
                                             .toList();
             }
         }
         if (order != null) {
             if (order.equals("asc")) {
-                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getVolume)).toList();
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.Products::getVolume)).toList();
             }
             else if (order.equals("desc")) {
-                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.products::getVolume).reversed())
+                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.Products::getVolume).reversed())
                                             .toList();
             }
         }
         if (location == null) {
-            return Mono.just(products.stream().map(productUtil::mapProductToProductResponseWitoutResParam).toList());
+            return Mono.just(products.stream().map(ProductUtil::mapProductToProductResponseWitoutResParam).toList());
         }
 
-        List<restaurants> res = products.stream().map(r -> r.getRestaurant()).distinct().toList();
+        List<Restaurants> res = products.stream().map(r -> r.getRestaurant()).distinct().toList();
         
         // Lấy các res trong bán kính nearby (theo đường chim bay)
         res = res.stream().filter(
@@ -127,28 +127,28 @@ public class productService {
         if (res.isEmpty()) {
             return Mono.just(Collections.emptyList());
         }
-        final List<restaurants> filteredRes = res;
+        final List<Restaurants> filteredRes = res;
 
         List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
         List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
-        final List<products> filteredProducts = products;
+        final List<Products> filteredProducts = products;
 
         return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
                     .map(response -> {
                         List<Double> durations = response.getDurations().get(0);
                         List<Double> distances = response.getDistances().get(0);
 
-                        Map<String,resResponse> listResResponse =  IntStream.range(0, filteredRes.size()).mapToObj(i -> {
-                            restaurants resIndex = filteredRes.get(i);
+                        Map<String,ResResponse> listResResponse =  IntStream.range(0, filteredRes.size()).mapToObj(i -> {
+                            Restaurants resIndex = filteredRes.get(i);
 
-                            resResponse resResponseIndex = resUtil.mapResToResResponse(resIndex);
+                            ResResponse resResponseIndex = ResUtil.mapResToResResponse(resIndex);
                             resResponseIndex.setDuration(durations.get(i));
                             resResponseIndex.setDistance(distances.get(i));
                             return resResponseIndex;
-                        }).collect(Collectors.toMap(resResponse::getId, Function.identity()));
+                        }).collect(Collectors.toMap(ResResponse::getId, Function.identity()));
 
-                        List<productResponse> productResponses = filteredProducts.stream()
-                                                                .map(p -> productUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId()))) 
+                        List<ProductResponse> productResponses = filteredProducts.stream()
+                                                                .map(p -> ProductUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId()))) 
                                                                 .toList();
                         if (locationsorted != null) {
                             if (locationsorted.equals("asc")) {
@@ -166,25 +166,25 @@ public class productService {
                     });
     }
 
-    public productResponse getProductById(String id) {
-        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        return productUtil.mapProductToProductResponseWitoutResParam(product);
+    public ProductResponse getProductById(String id) {
+        Products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        return ProductUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
-    public productResponse getProductBySlug(String slug) {
-        products product = productRepo.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        return productUtil.mapProductToProductResponseWitoutResParam(product);
+    public ProductResponse getProductBySlug(String slug) {
+        Products product = productRepo.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        return ProductUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
     @Transactional
-    public productResponse createProduct(productRequest productRequest, MultipartFile imageFile) {
-        categories cate = cateRepository.findById(productRequest.getCategoryId())
+    public ProductResponse createProduct(ProductRequest productRequest, MultipartFile imageFile) {
+        Categories cate = cateRepository.findById(productRequest.getCategoryId())
                                     .orElseThrow(() -> new ResourceNotFoundException("category not found"));
 
-        restaurants res = resRepository.findById(productRequest.getRestaurantId())
+        Restaurants res = resRepository.findById(productRequest.getRestaurantId())
                                     .orElseThrow(() -> new ResourceNotFoundException("restaurant not found"));
 
-        products product = products.builder()
+        Products product = Products.builder()
                                 .id(RandomIdGenerator.generate(254))
                                 .productName(productRequest.getProductName())
                                 .description(productRequest.getDescription())
@@ -203,9 +203,9 @@ public class productService {
         }
             
         if (productRequest.getSizeIds() != null) {
-            for (sizePrice psDto : productRequest.getSizeIds()) {
+            for (SizePrice psDto : productRequest.getSizeIds()) {
 
-                size size = sizeRepository.findById(psDto.getSizeId())
+                Size size = sizeRepository.findById(psDto.getSizeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Size not found: " + psDto.getSizeId()));
                 
                 ProductSize productSize = ProductSize.builder()
@@ -225,23 +225,23 @@ public class productService {
         }
 
         productRepo.save(product);
-        return productUtil.mapProductToProductResponseWitoutResParam(product);
+        return ProductUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
     @Transactional
-    public productResponse updateProduct(updateProduct updateProduct, String id, MultipartFile imageFile, String userId) {
-        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+    public ProductResponse updateProduct(UpdateProduct updateProduct, String id, MultipartFile imageFile, String userId) {
+        Products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        categories cate = cateRepository.findById(updateProduct.getCategoryId())
+        Categories cate = cateRepository.findById(updateProduct.getCategoryId())
                                     .orElseThrow(() -> new ResourceNotFoundException("category not found"));
 
-        restaurants res = resRepository.findById(product.getRestaurant().getId())
+        Restaurants res = resRepository.findById(product.getRestaurant().getId())
                                     .orElseThrow(() -> new ResourceNotFoundException("restaurant not found"));
         
         if (userId == null || !userId.equals(res.getMerchantId())) {
             throw new ForbiddenException("You do not have permission to update this product.");
         }
-        categories oldCategory = product.getCategory();
+        Categories oldCategory = product.getCategory();
         boolean categoryChanged = !oldCategory.getId().equals(cate.getId());
 
         if (categoryChanged) {
@@ -268,9 +268,9 @@ public class productService {
         if (updateProduct.getSizeIds() != null) {
 
             product.clearAllProductSizes();            
-            for (sizePrice psDto : updateProduct.getSizeIds()) {
+            for (SizePrice psDto : updateProduct.getSizeIds()) {
 
-                size size = sizeRepository.findById(psDto.getSizeId())
+                Size size = sizeRepository.findById(psDto.getSizeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Size not found: " + psDto.getSizeId()));
                 
                 // Tạo ProductSize entity
@@ -295,25 +295,25 @@ public class productService {
             }
         }
         productRepo.save(product);
-        return productUtil.mapProductToProductResponseWitoutResParam(product);
+        return ProductUtil.mapProductToProductResponseWitoutResParam(product);
     }
 
     @Transactional
     public void deleteProduct(String id, String userId) {
-        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         if (userId == null || !userId.equals(product.getRestaurant().getMerchantId())) {
             throw new ForbiddenException("You do not have permission to update this product.");
         }
-        List<reviews> rv = reviewRepository.findByReviewId(id).stream()
-                                .filter(r -> r.getReviewType().equals(reviewType.PRODUCT.toString())).toList();
+        List<Reviews> rv = reviewRepository.findByReviewId(id).stream()
+                                .filter(r -> r.getReviewType().equals(ReviewType.PRODUCT.toString())).toList();
         if (product.getPublicID() != null && !product.getPublicID().isEmpty()) {
             imageFileService.deleteImage(product.getPublicID());
         }
         Long count = productRepo.countProductWithCateIdWithInRes(product.getCategory().getId(), product.getRestaurant().getId());
         if (count == 1) {
-            restaurants res = product.getRestaurant();
-            categories cate = product.getCategory();
+            Restaurants res = product.getRestaurant();
+            Categories cate = product.getCategory();
             res.removeCate(cate);
             resRepository.save(res);
         }
@@ -323,7 +323,7 @@ public class productService {
 
     @Transactional
     public void changeProductAvailability(String id, String userId) {
-        products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Products product = productRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         if (userId == null || !userId.equals(product.getRestaurant().getMerchantId())) {
             throw new ForbiddenException("You do not have permission to update this product.");
         }
@@ -333,7 +333,7 @@ public class productService {
 
     @Transactional
     public int increaseProductVolume(String id) {
-        products product = productRepo.findProductById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Products product = productRepo.findProductById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         int newVolume = product.getVolume() + 1;
         product.setVolume(newVolume);
         productRepo.save(product);
@@ -341,7 +341,7 @@ public class productService {
     }
 
     public void deleteImage(String productId, String userId) {
-        products product = productRepo.findById(productId)
+        Products product = productRepo.findById(productId)
                             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         if (userId == null || !userId.equals(product.getRestaurant().getMerchantId())) {
             throw new ForbiddenException("You do not have permission to update this product.");
@@ -352,25 +352,25 @@ public class productService {
     }
 
     public Set<ProductSize> getAllProductSizeOfProduct(String id) {
-        products product = productRepo.findById(id)
+        Products product = productRepo.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         return product.getProductSizes();
     }
 
-    public List<productResponse> getAllProductsByRestaurantId(String id) {
-        restaurants res = resRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cannot find restaurant"));
+    public List<ProductResponse> getAllProductsByRestaurantId(String id) {
+        Restaurants res = resRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Cannot find restaurant"));
 
-        Optional<List<products>> products = productRepo.findProductsByRestaurant(res);
+        Optional<List<Products>> products = productRepo.findProductsByRestaurant(res);
 
         if (!products.isPresent()) {
             return new ArrayList<>();
         }
-        return products.get().stream().map(productUtil::mapProductToProductResponseWitoutResParam).toList();
+        return products.get().stream().map(ProductUtil::mapProductToProductResponseWitoutResParam).toList();
     }
 
-    public restaurants getRestaurantByProductId(String id) {
-        products product = productRepo.findById(id)
+    public Restaurants getRestaurantByProductId(String id) {
+        Products product = productRepo.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
                         
         return product.getRestaurant();

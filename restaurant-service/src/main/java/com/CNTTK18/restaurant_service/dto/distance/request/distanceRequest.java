@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class distanceRequest {
+public class DistanceRequest {
     @JsonProperty("locations")
     private List<List<Double>> coordinates;
     @JsonProperty("metrics")
@@ -23,7 +23,7 @@ public class distanceRequest {
     @JsonProperty("destinations")
     private List<Integer> destinations;
 
-    public distanceRequest(List<List<Double>> coordinates) {
+    public DistanceRequest(List<List<Double>> coordinates) {
         this.coordinates = coordinates;
         this.metrics = List.of("distance", "duration");
         this.sources = List.of(0);

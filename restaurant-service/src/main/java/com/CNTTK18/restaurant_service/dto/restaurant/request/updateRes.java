@@ -14,7 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class updateRes {
+public class UpdateRes {
     @NotBlank(message = "Restaurant name is required")
     @Size(max = 100)
     private String resName;

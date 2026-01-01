@@ -9,21 +9,21 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.CNTTK18.restaurant_service.model.products;
-import com.CNTTK18.restaurant_service.model.restaurants;
+import com.CNTTK18.restaurant_service.model.Products;
+import com.CNTTK18.restaurant_service.model.Restaurants;
 
 import jakarta.persistence.LockModeType;
 
 @Repository
-public interface productRepository extends JpaRepository<products, String> {
+public interface ProductRepository extends JpaRepository<Products, String> {
 
-    @Query("SELECT COUNT(p) FROM products p JOIN p.category c JOIN p.restaurant r WHERE c.id = :cateId AND r.id = :resId")
+    @Query("SELECT COUNT(p) FROM Products p JOIN p.category c JOIN p.restaurant r WHERE c.id = :cateId AND r.id = :resId")
     Long countProductWithCateIdWithInRes(@Param("cateId") String cateId, @Param("resId") String resId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<products> findProductById(String id);
+    Optional<Products> findProductById(String id);
 
-    Optional<List<products>> findProductsByRestaurant(restaurants res);
+    Optional<List<Products>> findProductsByRestaurant(Restaurants res);
 
-    Optional<products> findBySlug(String slug);
+    Optional<Products> findBySlug(String slug);
 }

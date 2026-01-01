@@ -19,11 +19,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
-import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
-import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
-import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponseWithProduct;
-import com.CNTTK18.restaurant_service.model.restaurants;
-import com.CNTTK18.restaurant_service.service.resService;
+import com.CNTTK18.restaurant_service.dto.restaurant.request.ResRequest;
+import com.CNTTK18.restaurant_service.dto.restaurant.request.UpdateRes;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.ResResponseWithProduct;
+import com.CNTTK18.restaurant_service.model.Restaurants;
+import com.CNTTK18.restaurant_service.service.ResService;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -35,18 +35,18 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/restaurant")
-public class resController {
-    private resService resService;
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(resController.class);
+public class ResController {
+    private ResService resService;
+    private static final Logger log = org.slf4j.LoggerFactory.getLogger(ResController.class);
 
-    public resController(resService resService) {
+    public ResController(ResService resService) {
         this.resService = resService;
     }
 
     @Tag(name = "Get")
     @Operation(summary = "Get all restaurants")
     @GetMapping()
-    public Mono<ResponseEntity<List<resResponseWithProduct>>> getAllRestaurants(@RequestParam(required = false) Double lat,
+    public Mono<ResponseEntity<List<ResResponseWithProduct>>> getAllRestaurants(@RequestParam(required = false) Double lat,
                                                                @RequestParam(required = false) Double lon,
                                                                @RequestParam(required = false) String search, 
                                                                @RequestParam(required = false) Integer nearby,
@@ -65,7 +65,7 @@ public class resController {
     @Tag(name = "Get")
     @Operation(summary = "Get restaurant by ID")
     @GetMapping("/admin/{id}")
-    public Mono<ResponseEntity<resResponseWithProduct>> getRestaurantById(@PathVariable String id,
+    public Mono<ResponseEntity<ResResponseWithProduct>> getRestaurantById(@PathVariable String id,
                                                         @RequestParam(required = false) Double lat,
                                                         @RequestParam(required = false) Double lon) {
         Coordinates location = null;
@@ -80,22 +80,22 @@ public class resController {
     @Tag(name = "Get")
     @Operation(summary = "Get restaurant by Slug")
     @GetMapping("/{slug}")
-    public ResponseEntity<resResponseWithProduct> getRestaurantBySlug(@PathVariable String slug) {
+    public ResponseEntity<ResResponseWithProduct> getRestaurantBySlug(@PathVariable String slug) {
         return ResponseEntity.ok(resService.getRestaurantBySlug(slug));
     }
 
     @Tag(name = "Get")
     @Operation(summary = "Get restaurants by merchant id")
     @GetMapping("/merchant/{id}")
-    public ResponseEntity<List<resResponseWithProduct>> getRestaurantByMerchantId(@PathVariable String id) {
+    public ResponseEntity<List<ResResponseWithProduct>> getRestaurantByMerchantId(@PathVariable String id) {
         return ResponseEntity.ok(resService.getRestaurantsByMerchantId(id));
     }
 
     @Tag(name = "Put")
     @Operation(summary = "Update restaurant")
     @PutMapping("/{id}")
-    public ResponseEntity<resResponseWithProduct> updateRestaurant(@PathVariable String id, 
-                    @RequestPart(value = "restaurant", required = true) @Valid updateRes updateRes,
+    public ResponseEntity<ResResponseWithProduct> updateRestaurant(@PathVariable String id, 
+                    @RequestPart(value = "restaurant", required = true) @Valid UpdateRes updateRes,
                     @RequestPart(value = "image", required = false) MultipartFile imageFile,
                     @AuthenticationPrincipal String userId) {
         return ResponseEntity.ok(resService.updateRestaurant(id, updateRes, imageFile, userId));
@@ -107,13 +107,13 @@ public class resController {
     @CircuitBreaker(name = "create", fallbackMethod = "fallbackMethod")
     @TimeLimiter(name = "create")
     @Retry(name = "create")
-    public CompletableFuture<ResponseEntity<restaurants>> createRestaurant(@RequestPart(value = "restaurant", required = true) @Valid resRequest resRequest,
+    public CompletableFuture<ResponseEntity<Restaurants>> createRestaurant(@RequestPart(value = "restaurant", required = true) @Valid ResRequest resRequest,
                     @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         return resService.createRestaurant(resRequest, imageFile)
                         .map(savedRestaurant -> ResponseEntity.ok(savedRestaurant)).toFuture();
     }
 
-    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(resRequest resRequest, 
+    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(ResRequest resRequest, 
         MultipartFile imageFile, Throwable ex)
     {
         log.error("Lỗi khi gọi createRestaurant, kích hoạt fallback. Lỗi: " + ex.getMessage());

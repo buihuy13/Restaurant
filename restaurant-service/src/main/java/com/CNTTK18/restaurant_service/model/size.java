@@ -19,7 +19,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class size {
+public class Size {
     @Id
     private String id;
     private String name;

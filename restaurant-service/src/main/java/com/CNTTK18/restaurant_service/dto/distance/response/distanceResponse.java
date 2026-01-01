@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class distanceResponse {
+public class DistanceResponse {
     @JsonProperty("distances")
     private List<List<Double>> distances;
     @JsonProperty("durations")

@@ -20,19 +20,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class categories {
+public class Categories {
     @Id
     private String id;
 
     @Column(name = "catename", nullable = false, unique = true)
     private String cateName;
 
-    public categories(String id, String cateName) {
+    public Categories(String id, String cateName) {
         this.id = id;
         this.cateName = cateName;
     }
 
     @ManyToMany(mappedBy = "categories")
     @JsonIgnore
-    private Set<restaurants> restaurants;
+    private Set<Restaurants> restaurants;
 }

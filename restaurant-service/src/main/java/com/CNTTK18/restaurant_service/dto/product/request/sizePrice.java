@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class sizePrice {
+public class SizePrice {
     private BigDecimal price;
     private String sizeId;
 }

@@ -7,36 +7,36 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
-import com.CNTTK18.restaurant_service.data.reviewType;
+import com.CNTTK18.restaurant_service.data.ReviewType;
 import com.CNTTK18.restaurant_service.dto.api.UserResponse;
-import com.CNTTK18.restaurant_service.dto.review.request.reviewRequest;
+import com.CNTTK18.restaurant_service.dto.review.request.ReviewRequest;
 import com.CNTTK18.restaurant_service.exception.InvalidRequestException;
-import com.CNTTK18.restaurant_service.model.products;
-import com.CNTTK18.restaurant_service.model.restaurants;
-import com.CNTTK18.restaurant_service.model.reviews;
-import com.CNTTK18.restaurant_service.repository.productRepository;
-import com.CNTTK18.restaurant_service.repository.resRepository;
-import com.CNTTK18.restaurant_service.repository.reviewRepository;
+import com.CNTTK18.restaurant_service.model.Products;
+import com.CNTTK18.restaurant_service.model.Restaurants;
+import com.CNTTK18.restaurant_service.model.Reviews;
+import com.CNTTK18.restaurant_service.repository.ProductRepository;
+import com.CNTTK18.restaurant_service.repository.ResRepository;
+import com.CNTTK18.restaurant_service.repository.ReviewRepository;
 
 import jakarta.transaction.Transactional;
 
 @Service
-public class reviewService {
-    private reviewRepository reviewRepo;
+public class ReviewService {
+    private ReviewRepository reviewRepo;
     private WebClient.Builder webClientBuilder;
-    private productRepository productRepository;
-    private resRepository resRepository;
+    private ProductRepository productRepository;
+    private ResRepository resRepository;
 
-    public reviewService(reviewRepository reviewRepo, WebClient.Builder webClientBuilder, 
-                    productRepository productRepository, resRepository resRepository) {
+    public ReviewService(ReviewRepository reviewRepo, WebClient.Builder webClientBuilder, 
+                    ProductRepository productRepository, ResRepository resRepository) {
         this.reviewRepo = reviewRepo;
         this.webClientBuilder = webClientBuilder;
         this.productRepository = productRepository;
         this.resRepository = resRepository;
     }
 
-    public List<reviews> getAllReviews(String resId, String productId) {
-        List<reviews> rv = reviewRepo.findAll();
+    public List<Reviews> getAllReviews(String resId, String productId) {
+        List<Reviews> rv = reviewRepo.findAll();
         if (resId != null && !resId.isEmpty()) {
             rv = rv.stream().filter(r -> r.getReviewId().equals(resId)).toList();
         }
@@ -46,13 +46,13 @@ public class reviewService {
         return rv;
     }
 
-    public reviews getReviewById(String id) {
-        reviews rv = reviewRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Review not found"));
+    public Reviews getReviewById(String id) {
+        Reviews rv = reviewRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Review not found"));
         return rv;
     }
 
     @Transactional
-    public reviews createReview(reviewRequest reviewRequest) {
+    public Reviews createReview(ReviewRequest reviewRequest) {
         UserResponse user = webClientBuilder.build()
                                 .get()
                                 .uri("lb://user-service/api/users/admin/{id}", reviewRequest.getUserId())
@@ -66,8 +66,8 @@ public class reviewService {
         String rvType = reviewRequest.getReviewType();
         String rvId = reviewRequest.getReviewId();
         //handle check xem product or restaurant đó có tồn tại hay không
-        if (rvType.equals(reviewType.PRODUCT.toString())) {
-            products product = productRepository.findProductById(rvId)
+        if (rvType.equals(ReviewType.PRODUCT.toString())) {
+            Products product = productRepository.findProductById(rvId)
                                     .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
             
             float newRating = (product.getTotalReview() * product.getRating() + reviewRequest.getRating()) / (product.getTotalReview() + 1);
@@ -75,8 +75,8 @@ public class reviewService {
             product.setRating(newRating);
             productRepository.save(product);
         }
-        else if (rvType.equals(reviewType.RESTAURANT.toString())) {
-            restaurants res = resRepository.findRestaurantById(rvId)
+        else if (rvType.equals(ReviewType.RESTAURANT.toString())) {
+            Restaurants res = resRepository.findRestaurantById(rvId)
                                     .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
             float newRating = (res.getTotalReview() * res.getRating() + reviewRequest.getRating()) / (res.getTotalReview() + 1);
@@ -87,7 +87,7 @@ public class reviewService {
         else {
             throw new InvalidRequestException("Review Type phải là PRODUCT hoặc RESTAURANT");
         }
-        reviews rv = new reviews(RandomIdGenerator.generate(200), reviewRequest.getUserId(),
+        Reviews rv = new Reviews(RandomIdGenerator.generate(200), reviewRequest.getUserId(),
                          rvId, rvType, reviewRequest.getTitle(), reviewRequest.getContent(), reviewRequest.getRating(), null);
 
         return reviewRepo.save(rv);
@@ -95,10 +95,10 @@ public class reviewService {
 
     @Transactional
     public void deleteReview(String id) {
-        reviews rv = reviewRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Review not found"));
+        Reviews rv = reviewRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Review not found"));
         String rvType = rv.getReviewType();
-        if (rvType.equals(reviewType.PRODUCT.toString())) {
-            products product = productRepository.findProductById(rv.getReviewId())
+        if (rvType.equals(ReviewType.PRODUCT.toString())) {
+            Products product = productRepository.findProductById(rv.getReviewId())
                                     .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
             int totalReview = product.getTotalReview();
             if (totalReview == 1) {
@@ -112,8 +112,8 @@ public class reviewService {
             }
             productRepository.save(product);
         }
-        else if (rvType.equals(reviewType.RESTAURANT.toString())) {
-            restaurants res = resRepository.findRestaurantById(rv.getReviewId())
+        else if (rvType.equals(ReviewType.RESTAURANT.toString())) {
+            Restaurants res = resRepository.findRestaurantById(rv.getReviewId())
                                     .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
             int total_review = res.getTotalReview();
