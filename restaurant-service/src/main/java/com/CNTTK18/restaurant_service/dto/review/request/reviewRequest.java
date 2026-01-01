@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class reviewRequest {
+public class ReviewRequest {
     @NotBlank(message = "userId is required")
     private String userId;
     @NotBlank(message = "Id of restaurant or product is required")

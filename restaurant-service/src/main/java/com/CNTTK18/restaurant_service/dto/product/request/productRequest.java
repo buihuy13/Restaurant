@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class productRequest {
+public class ProductRequest {
     @NotBlank(message = "Product name is required")
     @Size(max = 100)
     private String productName;
@@ -27,5 +27,5 @@ public class productRequest {
     @NotBlank(message = "Restaurant is required")
     private String restaurantId;
     @NotNull(message = "List of sizes is required")
-    private List<sizePrice> sizeIds;
+    private List<SizePrice> sizeIds;
 }

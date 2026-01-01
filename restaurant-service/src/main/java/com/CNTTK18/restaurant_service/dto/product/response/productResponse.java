@@ -3,7 +3,7 @@ package com.CNTTK18.restaurant_service.dto.product.response;
 import java.util.List;
 
 import com.CNTTK18.restaurant_service.dto.productSize.response.ProductSizeResponse;
-import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponse;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.ResResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class productResponse {
+public class ProductResponse {
     private String id;
     private String productName;
     private String description;
@@ -25,7 +25,7 @@ public class productResponse {
     private String categoryId;
     private int volume;
     private boolean available;
-    private resResponse restaurant;
+    private ResResponse restaurant;
     private int totalReview;
     private float rating;
     private String slug;

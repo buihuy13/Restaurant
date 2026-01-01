@@ -18,34 +18,34 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.Common.Util.SlugGenerator;
-import com.CNTTK18.restaurant_service.data.reviewType;
+import com.CNTTK18.restaurant_service.data.ReviewType;
 import com.CNTTK18.restaurant_service.dto.api.UserResponse;
 import com.CNTTK18.restaurant_service.dto.distance.response.Summary;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
-import com.CNTTK18.restaurant_service.dto.restaurant.request.resRequest;
-import com.CNTTK18.restaurant_service.dto.restaurant.request.updateRes;
-import com.CNTTK18.restaurant_service.dto.restaurant.response.resResponseWithProduct;
+import com.CNTTK18.restaurant_service.dto.restaurant.request.ResRequest;
+import com.CNTTK18.restaurant_service.dto.restaurant.request.UpdateRes;
+import com.CNTTK18.restaurant_service.dto.restaurant.response.ResResponseWithProduct;
 import com.CNTTK18.restaurant_service.exception.DistanceDurationException;
 import com.CNTTK18.restaurant_service.exception.ForbiddenException;
 import com.CNTTK18.restaurant_service.exception.InvalidRequestException;
-import com.CNTTK18.restaurant_service.model.restaurants;
-import com.CNTTK18.restaurant_service.model.reviews;
-import com.CNTTK18.restaurant_service.repository.resRepository;
-import com.CNTTK18.restaurant_service.repository.reviewRepository;
-import com.CNTTK18.restaurant_service.util.resUtil;
+import com.CNTTK18.restaurant_service.model.Restaurants;
+import com.CNTTK18.restaurant_service.model.Reviews;
+import com.CNTTK18.restaurant_service.repository.ResRepository;
+import com.CNTTK18.restaurant_service.repository.ReviewRepository;
+import com.CNTTK18.restaurant_service.util.ResUtil;
 
 import reactor.core.publisher.Mono;
 
 @Service
-public class resService {
-    private resRepository resRepository;
+public class ResService {
+    private ResRepository resRepository;
     private WebClient.Builder webClientBuilder;
     private ImageHandleService imageService;
-    private reviewRepository reviewRepository;
+    private ReviewRepository reviewRepository;
     private DistanceService distanceService;
 
-    public resService(resRepository resRepository, WebClient.Builder webClientBuilder, 
-                ImageHandleService imageHandleService, reviewRepository reviewRepository, DistanceService distanceService) {
+    public ResService(ResRepository resRepository, WebClient.Builder webClientBuilder, 
+                ImageHandleService imageHandleService, ReviewRepository reviewRepository, DistanceService distanceService) {
         this.resRepository = resRepository;
         this.webClientBuilder = webClientBuilder;
         this.imageService = imageHandleService;
@@ -53,9 +53,9 @@ public class resService {
         this.distanceService = distanceService;
     }
 
-    public Mono<List<resResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
+    public Mono<List<ResResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
                                                                 String rating, String category) {
-        List<restaurants> res = resRepository.findAll();
+        List<Restaurants> res = resRepository.findAll();
         if (search != null && !search.isEmpty()) {
             res = res.stream().filter(r -> r.getResName().toLowerCase().contains(search.toLowerCase())).toList();
         }
@@ -68,10 +68,10 @@ public class resService {
 
         if (rating != null && !rating.isEmpty()) {
             if (rating.equals("asc")) {
-                res = res.stream().sorted(Comparator.comparing(restaurants::getRating)).toList();
+                res = res.stream().sorted(Comparator.comparing(Restaurants::getRating)).toList();
             } 
             else if (rating.equals("desc")) {
-                res = res.stream().sorted(Comparator.comparing(restaurants::getRating).reversed()).toList();
+                res = res.stream().sorted(Comparator.comparing(Restaurants::getRating).reversed()).toList();
             }
         }
         
@@ -93,7 +93,7 @@ public class resService {
                 return Mono.just(Collections.emptyList());
             }
 
-            final List<restaurants> filteredRes = res;
+            final List<Restaurants> filteredRes = res;
             
             List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
             List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
@@ -104,20 +104,20 @@ public class resService {
                             List<Double> distances = response.getDistances().get(0);
 
                             return IntStream.range(0, filteredRes.size()).mapToObj(i -> {
-                                restaurants resIndex = filteredRes.get(i);
+                                Restaurants resIndex = filteredRes.get(i);
 
-                                resResponseWithProduct resResponseIndex = resUtil.mapResToResResponseWithProduct(resIndex);
+                                ResResponseWithProduct resResponseIndex = ResUtil.mapResToResResponseWithProduct(resIndex);
                                 resResponseIndex.setDuration(durations.get(i));
                                 resResponseIndex.setDistance(distances.get(i));
                                 return resResponseIndex;
                             }).toList();
                         });
         }
-        return Mono.just(res.stream().map(resUtil::mapResToResResponseWithProduct).toList());
+        return Mono.just(res.stream().map(ResUtil::mapResToResResponseWithProduct).toList());
     }
 
-    public Mono<resResponseWithProduct> getRestaurantById(String id, Coordinates location) {
-        restaurants res = resRepository.findById(id)
+    public Mono<ResResponseWithProduct> getRestaurantById(String id, Coordinates location) {
+        Restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
         if (location != null) {
@@ -132,19 +132,19 @@ public class resService {
                                 double distance = summary.getDistance();
                                 double duration = summary.getDuration();
                                     
-                                return resUtil.mapResToResResponseWithProductandDistanceAndDuration(res, distance, duration);
+                                return ResUtil.mapResToResResponseWithProductandDistanceAndDuration(res, distance, duration);
                             });
         }
-        return Mono.just(resUtil.mapResToResResponseWithProduct(res));
+        return Mono.just(ResUtil.mapResToResResponseWithProduct(res));
     }
 
-    public resResponseWithProduct getRestaurantBySlug(String slug) {
-        restaurants res = resRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
-        return resUtil.mapResToResResponseWithProduct(res);
+    public ResResponseWithProduct getRestaurantBySlug(String slug) {
+        Restaurants res = resRepository.findBySlug(slug).orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        return ResUtil.mapResToResResponseWithProduct(res);
     }
 
     @Transactional
-    public Mono<restaurants> createRestaurant(resRequest resRequest, MultipartFile imageFile) {
+    public Mono<Restaurants> createRestaurant(ResRequest resRequest, MultipartFile imageFile) {
         return webClientBuilder.build()
                             .get()
                             .uri("lb://user-service/api/users/admin/{id}", resRequest.getMerchantId())
@@ -157,7 +157,7 @@ public class resService {
                                 if (!user.getRole().equals("MERCHANT")) {
                                     throw new InvalidRequestException("User không phải là merchant");
                                 }
-                                restaurants res = restaurants.builder()
+                                Restaurants res = Restaurants.builder()
                                                             .address(resRequest.getAddress())
                                                             .categories(new HashSet<>())
                                                             .closingTime(resRequest.getClosingTime())
@@ -185,8 +185,8 @@ public class resService {
     }
 
     @Transactional
-    public resResponseWithProduct updateRestaurant(String id, updateRes updateRes, MultipartFile imageFile, String userId) {
-        restaurants res = resRepository.findById(id)
+    public ResResponseWithProduct updateRestaurant(String id, UpdateRes updateRes, MultipartFile imageFile, String userId) {
+        Restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
         if (userId == null || !userId.equals(res.getMerchantId())) {
@@ -212,20 +212,20 @@ public class resService {
             }
         }
         resRepository.save(res);
-        return resUtil.mapResToResResponseWithProduct(res);
+        return ResUtil.mapResToResResponseWithProduct(res);
     }
 
     @Transactional
     public void deleteRestaurant(String id, String userId) {
-        restaurants res = resRepository.findById(id)
+        Restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
         if (userId == null || !userId.equals(res.getMerchantId())) {
             throw new ForbiddenException("You do not have permission to delete this restaurant.");
         }
 
-        List<reviews> rv = reviewRepository.findByReviewId(id).stream()
-                                .filter(r -> r.getReviewType().equals(reviewType.RESTAURANT.toString())).toList();
+        List<Reviews> rv = reviewRepository.findByReviewId(id).stream()
+                                .filter(r -> r.getReviewType().equals(ReviewType.RESTAURANT.toString())).toList();
                             
         if (res.getPublicID() != null && !res.getPublicID().isEmpty()) {
             imageService.deleteImage(res.getPublicID());
@@ -236,14 +236,14 @@ public class resService {
 
     @Transactional
     public void changeResStatus(String id) {
-        restaurants res = resRepository.findById(id)
+        Restaurants res = resRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
         res.setEnabled(!res.isEnabled());
         resRepository.save(res);
     }
 
     public void deleteImage(String resId, String userId) {
-        restaurants res = resRepository.findById(resId)
+        Restaurants res = resRepository.findById(resId)
                             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
         if (userId == null || !userId.equals(res.getMerchantId())) {
@@ -254,7 +254,7 @@ public class resService {
         res.setPublicID(null);
     }
 
-    public List<resResponseWithProduct> getRestaurantsByMerchantId(String id) {
+    public List<ResResponseWithProduct> getRestaurantsByMerchantId(String id) {
         UserResponse user = webClientBuilder.build()
                                 .get()
                                 .uri("lb://user-service/api/users/admin/{id}", id)
@@ -268,10 +268,10 @@ public class resService {
         if (!user.getRole().equals("MERCHANT")) {
             throw new InvalidRequestException("User không phải là merchant");
         }
-        Optional<List<restaurants>> resList = resRepository.findRestaurantsByMerchantId(id);
+        Optional<List<Restaurants>> resList = resRepository.findRestaurantsByMerchantId(id);
         if (!resList.isPresent()) {
             return new ArrayList<>();
         }
-        return resList.get().stream().map(resUtil::mapResToResResponseWithProduct).toList();
+        return resList.get().stream().map(ResUtil::mapResToResResponseWithProduct).toList();
     }
 }

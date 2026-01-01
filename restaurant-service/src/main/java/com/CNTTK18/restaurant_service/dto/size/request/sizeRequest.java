@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class sizeRequest {
+public class SizeRequest {
     @NotBlank(message = "Size name is required")
     @Size(max = 100)
     private String name;

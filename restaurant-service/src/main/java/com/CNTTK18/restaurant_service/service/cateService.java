@@ -7,47 +7,47 @@ import org.springframework.stereotype.Service;
 
 import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
-import com.CNTTK18.restaurant_service.dto.cate.request.cateRequest;
-import com.CNTTK18.restaurant_service.model.categories;
-import com.CNTTK18.restaurant_service.repository.cateRepository;
+import com.CNTTK18.restaurant_service.dto.cate.request.CateRequest;
+import com.CNTTK18.restaurant_service.model.Categories;
+import com.CNTTK18.restaurant_service.repository.CateRepository;
 
 import jakarta.transaction.Transactional;
 
 @Service
-public class cateService {
-    private cateRepository cateRepository;
+public class CateService {
+    private CateRepository cateRepository;
 
-    public cateService(cateRepository cateRepository) {
+    public CateService(CateRepository cateRepository) {
         this.cateRepository = cateRepository;
     }
 
-    public List<categories> getAllCategories() {
+    public List<Categories> getAllCategories() {
         return cateRepository.findAll();
     }
 
-    public categories getCateById(String id) {
-        categories cate = cateRepository.findById(id)
+    public Categories getCateById(String id) {
+        Categories cate = cateRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         return cate;
     }
 
-    public categories getCateByName(String name) {
-        categories cate = cateRepository.findByCateName(name)
+    public Categories getCateByName(String name) {
+        Categories cate = cateRepository.findByCateName(name)
                             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         return cate;
     }
 
     @Transactional
-    public categories createCate(cateRequest cateRequest) {
-        categories cate = new categories(RandomIdGenerator.generate(10), cateRequest.getCateName(), new HashSet<>());
+    public Categories createCate(CateRequest cateRequest) {
+        Categories cate = new Categories(RandomIdGenerator.generate(10), cateRequest.getCateName(), new HashSet<>());
         return cateRepository.save(cate);
     }
 
     @Transactional
-    public categories updateCate(String id, cateRequest cateRequest) {
-        categories cate = cateRepository.findById(id)
+    public Categories updateCate(String id, CateRequest cateRequest) {
+        Categories cate = cateRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
         cate.setCateName(cateRequest.getCateName());
@@ -56,7 +56,7 @@ public class cateService {
 
     @Transactional
     public void deleteCate(String id) {
-        categories cate = cateRepository.findById(id)
+        Categories cate = cateRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         
         cateRepository.delete(cate);

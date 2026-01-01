@@ -3,9 +3,9 @@ package com.CNTTK18.restaurant_service.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.CNTTK18.restaurant_service.model.size;
+import com.CNTTK18.restaurant_service.model.Size;
 
 @Repository
-public interface sizeRepository extends JpaRepository<size, String> {
+public interface SizeRepository extends JpaRepository<Size, String> {
 
 }

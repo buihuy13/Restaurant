@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class cateResponse {
+public class CateResponse {
     private String cateId;
     private String cateName;
 }

@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.restaurant_service.dto.response.MessageResponse;
-import com.CNTTK18.restaurant_service.dto.review.request.reviewRequest;
-import com.CNTTK18.restaurant_service.model.reviews;
-import com.CNTTK18.restaurant_service.service.reviewService;
+import com.CNTTK18.restaurant_service.dto.review.request.ReviewRequest;
+import com.CNTTK18.restaurant_service.model.Reviews;
+import com.CNTTK18.restaurant_service.service.ReviewService;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -28,16 +28,16 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/review")
-public class reviewController {
-    private reviewService reviewService;
-    public reviewController(reviewService reviewService) {
+public class ReviewController {
+    private ReviewService reviewService;
+    public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
     }
 
     @Tag(name = "Get")
     @Operation(summary = "Get all reviews")
     @GetMapping("")
-    public ResponseEntity<List<reviews>> getAllReviews(@RequestParam(required = false) String resId,
+    public ResponseEntity<List<Reviews>> getAllReviews(@RequestParam(required = false) String resId,
                                                         @RequestParam(required = false) String productId) {
         return ResponseEntity.ok(reviewService.getAllReviews(resId, productId));
     }
@@ -45,7 +45,7 @@ public class reviewController {
     @Tag(name = "Get")
     @Operation(summary = "Get review by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<reviews> getReviewById(@PathVariable String id) {
+    public ResponseEntity<Reviews> getReviewById(@PathVariable String id) {
         return ResponseEntity.ok(reviewService.getReviewById(id));
     }
 
@@ -55,12 +55,12 @@ public class reviewController {
     @CircuitBreaker(name = "create", fallbackMethod = "fallbackMethod")
     @TimeLimiter(name = "create")
     @Retry(name = "create")
-    public CompletableFuture<ResponseEntity<reviews>> createReview(@RequestBody @Valid reviewRequest reviewRequest) {
+    public CompletableFuture<ResponseEntity<Reviews>> createReview(@RequestBody @Valid ReviewRequest reviewRequest) {
         return CompletableFuture.supplyAsync(() -> 
                     new ResponseEntity<>(reviewService.createReview(reviewRequest), HttpStatusCode.valueOf(201)));
     }
 
-    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(reviewRequest reviewRequest, Throwable ex)
+    public CompletableFuture<ResponseEntity<MessageResponse>> fallbackMethod(ReviewRequest reviewRequest, Throwable ex)
     {
         System.out.println("Lỗi khi gọi createReview, kích hoạt fallback. Lỗi: " + ex.getMessage());
         return CompletableFuture.completedFuture(

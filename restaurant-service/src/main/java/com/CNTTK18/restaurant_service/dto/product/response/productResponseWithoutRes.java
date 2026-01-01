@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class productResponseWithoutRes {
+public class ProductResponseWithoutRes {
     private String id;
     private String productName;
     private String description;

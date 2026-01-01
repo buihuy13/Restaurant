@@ -24,7 +24,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class restaurants {
+public class Restaurants {
     @Id
     private String id;
     @Column(name = "resname", nullable = false)
@@ -58,12 +58,12 @@ public class restaurants {
         joinColumns = @jakarta.persistence.JoinColumn(name = "restaurant_id"),
         inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "category_id")
     )
-    private Set<categories> categories;
+    private Set<Categories> categories;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<products> products;
+    private Set<Products> products;
 
-    public void addCate(categories cate) {
+    public void addCate(Categories cate) {
         if (this.categories == null) {
             this.categories = new java.util.HashSet<>();
         }
@@ -71,7 +71,7 @@ public class restaurants {
         cate.getRestaurants().add(this);
     }
 
-    public void removeCate(categories cate) {
+    public void removeCate(Categories cate) {
         this.categories.remove(cate);
         cate.getRestaurants().remove(this);
     }
@@ -80,7 +80,7 @@ public class restaurants {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        restaurants that = (restaurants) o;
+        Restaurants that = (Restaurants) o;
         return id != null && id.equals(that.id);
     }
 
