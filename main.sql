@@ -9,20 +9,52 @@ create table users (
     `password` varchar(255),
     `role` varchar(10) not null,
     `enabled` boolean not null,
-    verificationcode varchar(255),
+    verification_code varchar(255),
     phone varchar(15),
     slug varchar(255) not null unique,
-    authprovider varchar(20) default 'LOCAL',
-    createdat DATETIME default current_timestamp,
-    activatedat DATETIME
+    auth_provider varchar(20) default 'LOCAL',
+    created_at DATETIME default current_timestamp,
+    updated_at DATETIME default current_timestamp,
+    activated_at DATETIME
 );
 
 create index idx_email on users(email);
 
-insert into users(id, `password`, username, email, phone, `role`, `enabled`, `verificationcode`, `slug`) values 
+insert into users(id, `password`, username, email, phone, `role`, `enabled`, `verification_code`, `slug`) values 
 ("testadminid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testadmin", "testadmin@gmail.com", "0762612698", "ADMIN", true, "abcxyz123", "abcxyz"),
 ("testuserid", "$2a$12$CydeMvJj1Hvu/824Lh2NuOEIrZnlhRMIUM736cYXa7bSD3LUmGW7K", "testuser", "testuser@gmail.com", "0762612699", "USER", true, "abcxyz456", "abc"),
-("testmerchantid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testmerchant", "testmerchant@gmail.com", "0762612697", "MERCHANT", true, "abcxyz789", "xyz");
+("testmerchantid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testmerchant", "testmerchant@gmail.com", "0762612697", "MERCHANT", true, "abcxyz789", "xyz"),
+('user_gen_01', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_01', 'user01@gmail.com', '0901000001', 'USER', true, 'token_01', 'local'),
+('user_gen_02', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_02', 'user02@gmail.com', '0901000002', 'USER', true, 'token_02', 'local'),
+('user_gen_03', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_03', 'user03@gmail.com', '0901000003', 'USER', true, 'token_03', 'local'),
+('user_gen_04', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_04', 'user04@gmail.com', '0901000004', 'USER', true, 'token_04', 'local'),
+('user_gen_05', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_05', 'user05@gmail.com', '0901000005', 'USER', true, 'token_05', 'local'),
+('user_gen_06', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_06', 'user06@gmail.com', '0901000006', 'USER', true, 'token_06', 'local'),
+('user_gen_07', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_07', 'user07@gmail.com', '0901000007', 'USER', true, 'token_07', 'local'),
+('user_gen_08', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_08', 'user08@gmail.com', '0901000008', 'USER', true, 'token_08', 'local'),
+('user_gen_09', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_09', 'user09@gmail.com', '0901000009', 'USER', true, 'token_09', 'local'),
+('user_gen_10', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_10', 'user10@gmail.com', '0901000010', 'USER', true, 'token_10', 'local'),
+('user_gen_11', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_11', 'user11@gmail.com', '0901000011', 'USER', true, 'token_11', 'local'),
+('user_gen_12', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_12', 'user12@gmail.com', '0901000012', 'USER', true, 'token_12', 'local'),
+('user_gen_13', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_13', 'user13@gmail.com', '0901000013', 'USER', true, 'token_13', 'local'),
+('user_gen_14', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_14', 'user14@gmail.com', '0901000014', 'USER', true, 'token_14', 'local'),
+('user_gen_15', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_15', 'user15@gmail.com', '0901000015', 'USER', true, 'token_15', 'local'),
+('user_gen_16', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_16', 'user16@gmail.com', '0901000016', 'USER', true, 'token_16', 'local'),
+('user_gen_17', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_17', 'user17@gmail.com', '0901000017', 'USER', true, 'token_17', 'local'),
+('user_gen_18', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_18', 'user18@gmail.com', '0901000018', 'USER', true, 'token_18', 'local'),
+('user_gen_19', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_19', 'user19@gmail.com', '0901000019', 'USER', true, 'token_19', 'local'),
+('user_gen_20', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_20', 'user20@gmail.com', '0901000020', 'USER', true, 'token_20', 'local'),
+('user_gen_21', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_21', 'user21@gmail.com', '0901000021', 'USER', true, 'token_21', 'local'),
+('user_gen_22', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_22', 'user22@gmail.com', '0901000022', 'USER', true, 'token_22', 'local'),
+('user_gen_23', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_23', 'user23@gmail.com', '0901000023', 'USER', true, 'token_23', 'local'),
+('user_gen_24', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_24', 'user24@gmail.com', '0901000024', 'USER', true, 'token_24', 'local'),
+('user_gen_25', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_25', 'user25@gmail.com', '0901000025', 'USER', true, 'token_25', 'local'),
+('user_gen_26', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_26', 'user26@gmail.com', '0901000026', 'USER', true, 'token_26', 'local'),
+('user_gen_27', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_27', 'user27@gmail.com', '0901000027', 'USER', true, 'token_27', 'local'),
+('user_gen_28', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_28', 'user28@gmail.com', '0901000028', 'USER', true, 'token_28', 'local'),
+('user_gen_29', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_29', 'user29@gmail.com', '0901000029', 'USER', true, 'token_29', 'local'),
+('user_gen_30', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_30', 'user30@gmail.com', '0901000030', 'USER', true, 'token_30', 'local');
+
 create table address (
     id varchar(255) primary key,
     `location` varchar(255) not null,

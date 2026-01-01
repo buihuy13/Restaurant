@@ -4,9 +4,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -26,6 +31,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Users {
     @Id
     private String id;
@@ -36,18 +42,24 @@ public class Users {
     private String email;
     private String password;
     private boolean enabled;
-    @Column(name = "verificationcode")
+    @Column(name = "verification_code")
     private String verficationCode;
     private String role;
     private String phone;
-    @Column(name = "authprovider")
+    @Column(name = "auth_provider")
     private String authProvider;
     private String slug;
 
-    @Column(name = "createdat")
+    @Column(name = "created_at")
+    @CreatedDate
     private Instant createdAt;
-    @Column(name = "activatedat")
+
+    @Column(name = "activated_at")
     private Instant activatedAt;
+
+    @Column(name = "updated_at")
+    @LastModifiedDate
+    private Instant updatedAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Address> addressList;
