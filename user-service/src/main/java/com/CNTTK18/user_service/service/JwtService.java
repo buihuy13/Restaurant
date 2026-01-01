@@ -23,6 +23,8 @@ public class JwtService {
 
     @Value("${jwt.secretkey}")
     private String secretkey;
+    @Value("${secretkey}")
+    private String ottSecretkey;
 
     //Generate token
     public String generateToken(String username, String role, String id) {
@@ -120,6 +122,13 @@ public class JwtService {
          return generateToken(username, role, id);
     }
 
+    //Tạo 1 OTT SecretKey
+    private SecretKey getOTTKey() {
+        byte[] keyBytes = ottSecretkey.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+
     public String generateOneTimeToken(String role, String id) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("tokenType", "one-time");
@@ -131,7 +140,7 @@ public class JwtService {
                 .subject(role)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + 1 * 60 * 1000)) // 1 phút
-                .signWith(getKey())
+                .signWith(getOTTKey())
                 .compact();
     }
 }
