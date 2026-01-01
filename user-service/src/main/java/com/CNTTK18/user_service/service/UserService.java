@@ -78,7 +78,8 @@ public class UserService {
         existingUser.setPhone(user.getPhone());
         userRepository.save(existingUser);
         return new UserResponse(existingUser.getId(),user.getUsername(),existingUser.getEmail(), 
-                                existingUser.isEnabled(), existingUser.getRole(), user.getPhone(), existingUser.getSlug());
+                                existingUser.isEnabled(), existingUser.getRole(), user.getPhone(), existingUser.getSlug(),
+                                existingUser.getCreatedAt(), existingUser.getUpdatedAt());
     }
 
     public UserResponse getUserBySlug(String slug) {
