@@ -40,7 +40,7 @@ services:
             - '3307:3306'
         volumes:
             - mysql_data:/var/lib/mysql
-            - ./main.sql:/docker-entrypoint-initdb.d/main.sql
+            - ./backend/main.sql:/docker-entrypoint-initdb.d/main.sql
         healthcheck:
             test: ['CMD', 'mysqladmin', 'ping', '-h', 'db', '-u', 'root', '-p${DB_PASSWORD}']
             interval: 10s
@@ -64,8 +64,8 @@ services:
 
     service-discovery:
         build:
-            context: .
-            dockerfile: ./service-discovery/Dockerfile
+            context: ./backend
+            dockerfile: ./backend/service-discovery/Dockerfile
             args:
                 MODULE_PATH: service-discovery
         ports:
@@ -86,8 +86,8 @@ services:
             - '9411:9411'
     api-gateway:
         build:
-            context: .
-            dockerfile: ./api-gateway/Dockerfile
+            context: ./backend
+            dockerfile: ./backend/api-gateway/Dockerfile
             args:
                 MODULE_PATH: api-gateway
         ports:
@@ -108,8 +108,8 @@ services:
                 condition: service_started
     user-service:
         build:
-            context: .
-            dockerfile: ./user-service/Dockerfile
+            context: ./backend
+            dockerfile: ./backend/user-service/Dockerfile
             args:
                 MODULE_PATH: user-service
         ports:
@@ -136,8 +136,8 @@ services:
                 condition: service_started
     notification-service:
         build:
-            context: .
-            dockerfile: ./notification-service/Dockerfile
+            context: ./backend
+            dockerfile: ./backend/notification-service/Dockerfile
             args:
                 MODULE_PATH: notification-service
         ports:
@@ -157,8 +157,8 @@ services:
                 condition: service_started
     chat-service:
         build:
-            context: .
-            dockerfile: ./chat-service/Dockerfile
+            context: ./backend
+            dockerfile: ./backend/chat-service/Dockerfile
             args:
                 - MODULE_PATH=chat-service
         ports:
@@ -183,8 +183,8 @@ services:
                 condition: service_healthy
     restaurant-service:
         build:
-            context: .
-            dockerfile: ./restaurant-service/Dockerfile
+            context: ./backend
+            dockerfile: ./backend/restaurant-service/Dockerfile
             args:
                 - MODULE_PATH=restaurant-service
         ports:
@@ -211,14 +211,14 @@ services:
 
     order-service:
         build:
-            context: ./order-service # build context là folder chứa package.json
+            context: ./backend/order-service # build context là folder chứa package.json
             dockerfile: Dockerfile
             args:
                 - MODULE_PATH=order-service
         ports:
             - '8082:8082'
         env_file:
-            - ./order-service/.env
+            - ./backend/order-service/.env
         environment:
             - ORDER_SERVICE_DB_URL=${ORDER_SERVICE_DB_URL}
             - TZ=${ENV_TZ}
@@ -234,14 +234,14 @@ services:
 
     payment-service:
         build:
-            context: ./payment-service
+            context: ./backend/payment-service
             dockerfile: Dockerfile
             args:
                 - MODULE_PATH=payment-service
         ports:
             - '8083:8083'
         env_file:
-            - ./payment-service/.env
+            - ./backend/payment-service/.env
         environment:
             - TZ=${ENV_TZ}
         depends_on:
@@ -254,14 +254,14 @@ services:
 
     blog-service:
         build:
-            context: ./blog-service
+            context: ./backend/blog-service
             dockerfile: Dockerfile
             args:
                 - MODULE_PATH=blog-service
         ports:
             - '8087:8087'
         env_file:
-            - ./blog-service/.env
+            - ./backend/blog-service/.env
         environment:
             - TZ=${ENV_TZ}
         depends_on:
