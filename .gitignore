@@ -1,44 +1,51 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
-
-
 .env
+*.env.local
+
+# Node modules (both root and subfolders)
 node_modules/
 */node_modules/
+**/node_modules/
+
+# VS Code settings (nếu muốn ignore, hoặc xóa dòng này để share settings)
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backend build output
+backend/build/
+backend/out/
+backend/bin/
+backend/target/
+
+# Gradle
+backend/.gradle/
+backend/gradle/
+!backend/gradle/wrapper/gradle-wrapper.jar
+
+# Spring Boot
+backend/HELP.md
+backend/.springBeans
+backend/.sts4-cache
+
+# IDE - IntelliJ IDEA
+backend/.idea/
+backend/*.iws
+backend/*.iml
+backend/*.ipr
+
+# IDE - Eclipse
+backend/.apt_generated
+backend/.classpath
+backend/.factorypath
+backend/.project
+backend/.settings/
+
+# IDE - NetBeans
+backend/nbproject/private/
+backend/nbbuild/
+backend/nbdist/
+backend/.nb-gradle/
 
 frontend/
