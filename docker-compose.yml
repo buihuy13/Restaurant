@@ -5,6 +5,8 @@ services:
             dockerfile: Dockerfile
         container_name: frontend
         restart: unless-stopped
+        env_file:
+            - ./frontend/.env
         ports:
         - "3000:3000"
     caddy:
@@ -13,8 +15,6 @@ services:
         restart: unless-stopped
         ports:
         - "8443:8443"
-        env_file:
-            - ./frontend/.env
         volumes:
         - ./caddy/Caddyfile:/etc/caddy/Caddyfile
         - caddy_data:/data
