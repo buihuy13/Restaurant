@@ -1,0 +1,47 @@
+services:
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: frontend
+        restart: unless-stopped
+        env_file:
+            - ./frontend/.env
+    caddy:
+        image: caddy:2-alpine
+        container_name: caddy
+        restart: unless-stopped
+        ports:
+        - "80:80"
+        - "443:443"
+        volumes:
+        - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+        - caddy_data:/data
+        - caddy_config:/config
+        depends_on:
+        - api-gateway
+        - frontend
+    service-discovery:
+      restart: always
+    zipkin:
+      restart: unless-stopped
+    api-gateway:
+      restart: unless-stopped
+    user-service:
+      restart: unless-stopped
+    notification-service:
+      restart: unless-stopped
+    chat-service:
+      restart: unless-stopped
+    restaurant-service:
+      restart: unless-stopped
+
+    order-service:
+      restart: unless-stopped
+
+    payment-service:
+      restart: unless-stopped
+
+volumes:
+    caddy_data:
+    caddy_config:

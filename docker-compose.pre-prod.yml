@@ -1,0 +1,28 @@
+services:
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: frontend
+        restart: unless-stopped
+        env_file:
+            - ./frontend/.env
+        ports:
+        - "3000:3000"
+    caddy:
+        image: caddy:2-alpine
+        container_name: caddy
+        restart: unless-stopped
+        ports:
+        - "8443:8443"
+        volumes:
+        - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+        - caddy_data:/data
+        - caddy_config:/config
+        depends_on:
+        - api-gateway
+        - frontend
+
+volumes:
+    caddy_data:
+    caddy_config:

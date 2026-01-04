@@ -1,1 +1,42 @@
-4.194.34.185
+{
+    email buiquochuytd@gmail.com
+    debug
+}
+
+4.194.34.185 {
+
+    log {
+        output stdout
+        format console
+        level INFO
+    }
+
+    @websocket {
+        path /ws/*
+        path /socket.io/*
+    }
+
+    handle @websocket {
+        reverse_proxy api-gateway:8080 {
+            header_up Connection {http.request.header.Connection}
+            header_up Upgrade {http.request.header.Upgrade}
+        }
+    }
+
+    @api_routes {
+        path /api/*
+        path /v3/api-docs/*
+        path /api-docs/*
+        path /oauth2/*
+        path /login/*
+        path /eureka/*
+    }
+
+    handle @api_routes {
+        reverse_proxy api-gateway:8080
+    }
+
+    handle {
+        reverse_proxy frontend:3000
+    }
+}
