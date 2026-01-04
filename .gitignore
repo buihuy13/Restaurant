@@ -52,3 +52,6 @@ backend/**/.nb-gradle/
 
 # Frontend
 frontend/
+
+#deploy key
+*.pem
