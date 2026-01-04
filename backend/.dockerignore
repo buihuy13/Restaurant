@@ -7,7 +7,11 @@
 **/build
 **/target
 .git
-.gitignore
-Dockerfile
-docker-compose.yml
-README.md
+**/.git
+**/.gitignore
+
+# --- Bỏ qua các file tài liệu và cấu hình trong TẤT CẢ module ---
+**/Dockerfile
+**/docker-compose.yml
+**/README.md
+**/LICENSE

@@ -1,15 +1,24 @@
+{
+    email buiquochuytd@gmail.com
+    debug
+}
+
 localhost:8443 {
 
     tls internal
 
-    handle /ws/* {
-        reverse_proxy api-gateway:8080 {
-            header_up Connection {http.request.header.Connection}
-            header_up Upgrade {http.request.header.Upgrade}
-        }
+    log {
+        output stdout
+        format console
+        level INFO
     }
 
-    handle /socket.io/* {
+    @websocket {
+        path /ws/*
+        path /socket.io/*
+    }
+
+    handle @websocket {
         reverse_proxy api-gateway:8080 {
             header_up Connection {http.request.header.Connection}
             header_up Upgrade {http.request.header.Upgrade}
@@ -23,8 +32,6 @@ localhost:8443 {
         path /oauth2/*
         path /login/*
         path /eureka/*
-        path /ws/*
-        path /socket.io/*
     }
 
     handle @api_routes {
