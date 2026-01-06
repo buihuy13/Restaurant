@@ -193,10 +193,13 @@ services:
             dockerfile: Dockerfile
             args:
                 - MODULE_PATH=order-service
-        env_file:
-            - ./backend/order-service/.env
         environment:
             - ORDER_SERVICE_DB_URL=${ORDER_SERVICE_DB_URL}
+            - USER_SERVICE_URL=${USER_SERVICE_URL}
+            - RESTAURANT_SERVICE_URL=${RESTAURANT_SERVICE_URL}
+            - PAYMENT_SERVICE_URL=${PAYMENT_SERVICE_URL}
+            - ORDER_SERVICE_URL=${ORDER_SERVICE_URL}
+            - FRONTEND_URL=${FRONTEND_URL}
             - TZ=${ENV_TZ}
         depends_on:
             mongodb:
@@ -214,9 +217,12 @@ services:
             dockerfile: Dockerfile
             args:
                 - MODULE_PATH=payment-service
-        env_file:
-            - ./backend/payment-service/.env
         environment:
+            - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+            - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+            - WALLET_INTERNAL_KEY=${WALLET_INTERNAL_KEY}
+            - ORDER_SERVICE_URL=${ORDER_SERVICE_URL}
+            - PAYMENT_SERVICE_URL=${PAYMENT_SERVICE_URL}
             - TZ=${ENV_TZ}
         depends_on:
             db:
@@ -232,9 +238,10 @@ services:
             dockerfile: Dockerfile
             args:
                 - MODULE_PATH=blog-service
-        env_file:
-            - ./backend/blog-service/.env
         environment:
+            - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+            - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+            - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
             - TZ=${ENV_TZ}
         depends_on:
             mongodb:
