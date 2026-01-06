@@ -463,6 +463,93 @@ spring:
                         args:
                             requiredRole: USER
 
+                # ====================== GROUP ORDER SERVICE ======================
+                - id: group-order-create
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
+
+                - id: group-order-get-my-orders
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/my-orders
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+
+                - id: group-order-get-by-token
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/{shareToken}
+                      - Method=GET
+
+                - id: group-order-join
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/{shareToken}/join
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+
+                - id: group-order-remove-participant
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/{shareToken}/participants/{userId}
+                      - Method=DELETE
+                  filters:
+                      - name: JwtAuthentication
+
+                - id: group-order-lock
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/{shareToken}/lock
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+
+                - id: group-order-confirm
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/{shareToken}/confirm
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+
+                - id: group-order-cancel
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/{shareToken}/cancel
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+
+                - id: group-order-pay-individual
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/{shareToken}/pay
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+
+                - id: group-order-pay-all
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/{shareToken}/pay-all
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+
+                - id: group-order-payment-status
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/group-orders/{shareToken}/payment-status
+                      - Method=GET
+
                 # ====================== ADMIN ROUTES ======================
                 - id: admin-get-all-orders
                   uri: lb://order-service

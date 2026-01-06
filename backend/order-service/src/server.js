@@ -9,6 +9,7 @@ import logger from './utils/logger.js';
 import rateLimit from 'express-rate-limit';
 import orderRouter from './routes/orderRoutes.js';
 import cartRouter from './routes/cartRoutes.js';
+import groupOrderRouter from './routes/groupOrderRoutes.js';
 import redisClient from './config/redis.js';
 import startPaymentConsumer from './consumers/paymentConsumer.js';
 import eurekaClient from './config/eureka.js';
@@ -54,6 +55,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/orders', orderRouter);
 app.use('/api/cart', cartRouter);
+app.use('/api/group-orders', groupOrderRouter);
 app.use('/api/merchant/orders', orderMerchantRoutes);
 
 // Setup swagger
