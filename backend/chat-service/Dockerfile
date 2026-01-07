@@ -5,10 +5,11 @@ WORKDIR /app
 #Cache
 COPY build.gradle.kts settings.gradle.kts gradlew ./
 COPY gradle ./gradle
-RUN chmod +x ./gradlew
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew
 RUN ./gradlew dependencies --no-daemon
 
 COPY . .
+RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew
 
 # Giống build nhưng bootJar hiệu quả hơn
 RUN ./gradlew bootJar --no-daemon -x test
