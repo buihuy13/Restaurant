@@ -9,7 +9,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew dependencies --no-daemon
 
 COPY . .
-
+RUN chmod +x ./gradlew
 # Giống build nhưng bootJar hiệu quả hơn
 RUN ./gradlew bootJar --no-daemon -x test
 

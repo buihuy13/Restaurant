@@ -38,6 +38,7 @@ public class MessageService {
     
     @Transactional
     public void processMessage(MessageDTO message) {
+        System.out.println("Processing message: =====================================" + message);
         // Sử dụng async để không block luồng chính
         saveMessageSync(message);
         
@@ -64,13 +65,16 @@ public class MessageService {
         chatroom.setLastMessage(message.getContent());
         chatRoomRepository.save(chatroom);
         messageRepository.save(msg);
+
+        System.out.println("Message saved: ==========================================" + msg);
     }
     
     // Publish to Redis
     private void publishToRedis(MessageDTO message) {
         try {
             String messageJson = objectMapper.writeValueAsString(message);
-            redisTemplate.convertAndSend(REDIS_CHANNEL, messageJson);          
+            redisTemplate.convertAndSend(REDIS_CHANNEL, messageJson);   
+            System.out.println("Published message to Redis: ==========================================" + messageJson);       
         } catch (Exception e) {
             throw new RuntimeException("Error publishing message to Redis", e);
         }

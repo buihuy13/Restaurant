@@ -39,6 +39,7 @@ public class RedisMessageSubscriber {
             messagingTemplate.convertAndSend(destination, chatMessage);
             
             logger.debug("Forwarded to WebSocket topic: {}", destination);
+            System.out.println("Forwarded message to WebSocket clients on topic =============================" + destination + ": " + chatMessage);
             
         } catch (Exception e) {
             logger.error("Error processing Redis message", e);

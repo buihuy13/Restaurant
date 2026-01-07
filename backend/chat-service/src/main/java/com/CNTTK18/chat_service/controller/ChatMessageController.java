@@ -1,13 +1,12 @@
 package com.CNTTK18.chat_service.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.chat_service.dto.request.RoomDTO;
@@ -27,8 +26,6 @@ public class ChatMessageController {
         this.chatMessageService = chatMessageService;
     }
 
-    private final int LIMIT_MESSAGE = 20;
-
     @GetMapping("/roomId/{userId1}/{userId2}")
     public ResponseEntity<RoomIdResponse> getRoomId(@PathVariable String userId1, @PathVariable String userId2) {
         RoomDTO roomDTO = new RoomDTO(userId1, userId2);
@@ -37,8 +34,8 @@ public class ChatMessageController {
     }
 
     @GetMapping("/rooms/{userId}")
-    public ResponseEntity<List<ChatRoom>> findAllRoomByUserId(@PathVariable String userId) {
-        List<ChatRoom> chatRooms = chatMessageService.findAllRoomByUserId(userId);
+    public ResponseEntity<Page<ChatRoom>> findAllRoomByUserId(@PathVariable String userId, Pageable pageable){
+        Page<ChatRoom> chatRooms = chatMessageService.findAllRoomByUserId(userId, pageable);
         return ResponseEntity.ok(chatRooms);
     }
 
@@ -61,9 +58,9 @@ public class ChatMessageController {
     }
 
     @GetMapping("/rooms/{roomId}/messages")
-    public ResponseEntity<List<Message>> getAllMessageDescInRoom(@PathVariable String roomId,
-                                                                @RequestParam(defaultValue = "0") int page) {
-        List<Message> messages = chatMessageService.getRecentMessageByPagination(roomId, page, LIMIT_MESSAGE);
+    public ResponseEntity<Page<Message>> getAllMessageDescInRoom(@PathVariable String roomId,
+                                                                Pageable pageable) {
+        Page<Message> messages = chatMessageService.getRecentMessageByPagination(roomId, pageable);
         return ResponseEntity.ok(messages);
     }
 }
