@@ -31,7 +31,8 @@ services:
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
         volumes:
             - mysql_data:/var/lib/mysql
-            - ./backend/main.sql:/docker-entrypoint-initdb.d/main.sql
+            - ./backend/main.sql:/docker-entrypoint-initdb.d/01-main.sql
+            - ./backend/seed-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
         healthcheck:
             test: ['CMD', 'mysqladmin', 'ping', '-h', 'db', '-u', 'root', '-p${DB_PASSWORD}']
             interval: 10s
@@ -44,6 +45,7 @@ services:
         container_name: mongodb
         volumes:
             - mongodb_data:/data/db
+            - ./backend/seed-mongodb.js:/docker-entrypoint-initdb.d/seed-mongodb.js
         healthcheck:
             test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
             interval: 10s
@@ -69,12 +71,16 @@ services:
             start_period: 60s
     zipkin:
         image: openzipkin/zipkin
+        ports:
+            - "9411:9411"
     api-gateway:
         build:
             context: ./backend
             dockerfile: ./api-gateway/Dockerfile
             args:
                 MODULE_PATH: api-gateway
+        ports:
+            - "8080:8080"
         environment:
             - JWT_SECRETKEY=${JWT_SECRETKEY}
             - ZIPKIN_ENDPOINT=${ZIPKIN_ENDPOINT}
@@ -221,6 +227,7 @@ services:
                 condition: service_healthy
             service-discovery:
                 condition: service_healthy
+        restart: unless-stopped
 
     payment-service:
         build:
@@ -251,6 +258,7 @@ services:
                 condition: service_healthy
             service-discovery:
                 condition: service_healthy
+        restart: unless-stopped
 
     blog-service:
         build:

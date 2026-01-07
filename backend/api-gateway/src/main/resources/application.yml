@@ -481,6 +481,8 @@ spring:
                       - Method=GET
                   filters:
                       - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
 
                 - id: group-order-get-by-token
                   uri: lb://order-service
