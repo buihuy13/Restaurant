@@ -22,7 +22,6 @@ public class MessageController {
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Valid @Payload MessageDTO message) {
         message.setTimestamp(LocalDateTime.now());
-        System.out.println("Received message: ==========================================" + message);
         messageService.processMessage(message);
     }
 }

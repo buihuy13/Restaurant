@@ -177,7 +177,7 @@ create table messages (
     content text not null,
     room_id varchar(255) not null references chat_rooms(id),
     `timestamp` timestamp default current_timestamp,
-    `read` boolean default false
+    `is_read` boolean default false
 );
 
 create index idx_roomid on messages(room_id);

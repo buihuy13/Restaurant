@@ -2,6 +2,8 @@ package com.CNTTK18.chat_service.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,6 +29,7 @@ public class Message {
     private String id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
+    @JsonIgnore
     private ChatRoom room;
     @Column(name = "sender_id")
     private String senderId;
@@ -34,5 +37,6 @@ public class Message {
     private String receiverId;
     private String content;
     private LocalDateTime timestamp;
+    @Column(name = "is_read")
     private boolean read;
 }

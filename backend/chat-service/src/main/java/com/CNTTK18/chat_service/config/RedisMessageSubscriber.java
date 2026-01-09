@@ -38,9 +38,7 @@ public class RedisMessageSubscriber {
             String destination = "/topic/room/" + chatMessage.getRoomId();
             messagingTemplate.convertAndSend(destination, chatMessage);
             
-            logger.debug("Forwarded to WebSocket topic: {}", destination);
-            System.out.println("Forwarded message to WebSocket clients on topic =============================" + destination + ": " + chatMessage);
-            
+            logger.debug("Forwarded to WebSocket topic: {}", destination);            
         } catch (Exception e) {
             logger.error("Error processing Redis message", e);
         }
