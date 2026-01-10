@@ -2,6 +2,8 @@ package com.CNTTK18.chat_service.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.CNTTK18.chat_service.dto.request.RoomDTO;
@@ -54,15 +56,13 @@ public class ChatMessageService {
         return messageRepository.findByRoomIdOrderByTimestampDesc(roomId);
     }
 
-    // Lấy 20 tin nhắn gần nhất của 1 room
-    public List<Message> getRecentMessageByPagination(String roomId, int page, int limit) {
-        int offset = page * limit;
-        return messageRepository.findByRoomIdWithPagination(roomId, offset, limit);
+    public Page<Message> getRecentMessageByPagination(String roomId, Pageable pageable) {
+        return messageRepository.findByRoomIdWithPagination(roomId, pageable);
     }
 
     // Lấy tất cả room có userId tham gia
-    public List<ChatRoom> findAllRoomByUserId(String userId) {
-        return chatRoomRepository.findAllByUserId(userId);
+    public Page<ChatRoom> findAllRoomByUserId(String userId, Pageable pageable) {
+        return chatRoomRepository.findAllByUserId(userId, pageable);
     }
 
     // Đếm số tin nhắn chưa đọc trong box chat của userId

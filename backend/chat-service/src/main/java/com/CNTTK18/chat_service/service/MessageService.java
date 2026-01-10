@@ -70,7 +70,7 @@ public class MessageService {
     private void publishToRedis(MessageDTO message) {
         try {
             String messageJson = objectMapper.writeValueAsString(message);
-            redisTemplate.convertAndSend(REDIS_CHANNEL, messageJson);          
+            redisTemplate.convertAndSend(REDIS_CHANNEL, messageJson);   
         } catch (Exception e) {
             throw new RuntimeException("Error publishing message to Redis", e);
         }

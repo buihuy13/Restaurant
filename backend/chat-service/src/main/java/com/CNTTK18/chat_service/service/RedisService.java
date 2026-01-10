@@ -2,23 +2,25 @@ package com.CNTTK18.chat_service.service;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RedisService {
-    private final RedisTemplate<String, Object> redisTemplate;
+    @Qualifier("objectRedisTemplate")
+    private final RedisTemplate<String, String> redisTemplate;
 
-    public RedisService(RedisTemplate<String, Object> redisTemplate) {
+    public RedisService(RedisTemplate<String, String> redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 
-    public void setValue(String key, Boolean value) {
+    public void setValue(String key, String value) {
         redisTemplate.opsForValue().set(key, value, 30, TimeUnit.SECONDS); // Time to live: 30 giây
     }
 
-    public Boolean getValue(String key) {
-        return (Boolean) redisTemplate.opsForValue().get(key);
+    public String getValue(String key) {
+        return (String) redisTemplate.opsForValue().get(key);
     }
 
     public void deleteValue(String key) {

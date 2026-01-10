@@ -177,7 +177,7 @@ create table messages (
     content text not null,
     room_id varchar(255) not null references chat_rooms(id),
     `timestamp` timestamp default current_timestamp,
-    `read` boolean default false
+    `is_read` boolean default false
 );
 
 create index idx_roomid on messages(room_id);
@@ -187,8 +187,9 @@ create index idx_receiverid on messages(receiver_id);
 -- Hiệu quả khi truy vấn tin nhắn trong một phòng theo thời gian gần nhất
 CREATE INDEX idx_messages_room_timestamp ON messages(room_id, `timestamp` DESC);
 
-
+drop database if exists `payment-service`;
 CREATE DATABASE IF NOT EXISTS `payment-service`;
+use `payment-service`;
 
 CREATE TABLE payments (
   id CHAR(36) NOT NULL PRIMARY KEY, -- UUID dạng string
