@@ -1,6 +1,6 @@
 package com.CNTTK18.user_service.dto.response;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +19,6 @@ public class UserResponse {
     private String role;
     private String phone;
     private String slug;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private ZonedDateTime createdAt;
+    private ZonedDateTime updatedAt;
 }
