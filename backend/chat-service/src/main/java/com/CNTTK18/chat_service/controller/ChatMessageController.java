@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.CNTTK18.chat_service.dto.request.RoomDTO;
 import com.CNTTK18.chat_service.dto.response.Data;
+import com.CNTTK18.chat_service.dto.response.MessageResponseDTO;
 import com.CNTTK18.chat_service.dto.response.ResponseMessage;
 import com.CNTTK18.chat_service.dto.response.RoomIdResponse;
 import com.CNTTK18.chat_service.model.ChatRoom;
-import com.CNTTK18.chat_service.model.Message;
 import com.CNTTK18.chat_service.service.ChatMessageService;
 
 @RestController
@@ -58,9 +58,9 @@ public class ChatMessageController {
     }
 
     @GetMapping("/rooms/{roomId}/messages")
-    public ResponseEntity<Page<Message>> getAllMessageDescInRoom(@PathVariable String roomId,
+    public ResponseEntity<Page<MessageResponseDTO>> getAllMessageDescInRoom(@PathVariable String roomId,
                                                                 Pageable pageable) {
-        Page<Message> messages = chatMessageService.getRecentMessageByPagination(roomId, pageable);
+        Page<MessageResponseDTO> messages = chatMessageService.getRecentMessageByPagination(roomId, pageable);
         return ResponseEntity.ok(messages);
     }
 }

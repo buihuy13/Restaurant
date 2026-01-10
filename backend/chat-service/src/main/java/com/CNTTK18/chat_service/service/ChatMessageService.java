@@ -5,8 +5,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.CNTTK18.chat_service.dto.request.RoomDTO;
+import com.CNTTK18.chat_service.dto.response.MessageResponseDTO;
+import com.CNTTK18.chat_service.mapper.MessageMapper;
 import com.CNTTK18.chat_service.model.ChatRoom;
-import com.CNTTK18.chat_service.model.Message;
 import com.CNTTK18.chat_service.repository.ChatRoomRepository;
 import com.CNTTK18.chat_service.repository.MessageRepository;
 
@@ -49,8 +50,8 @@ public class ChatMessageService {
         return roomId;
     }
 
-    public Page<Message> getRecentMessageByPagination(String roomId, Pageable pageable) {
-        return messageRepository.findByRoomIdWithPagination(roomId, pageable);
+    public Page<MessageResponseDTO> getRecentMessageByPagination(String roomId, Pageable pageable) {
+        return messageRepository.findByRoomIdWithPagination(roomId, pageable).map(MessageMapper::toMessageResponseDTO);
     }
 
     // Lấy tất cả room có userId tham gia
