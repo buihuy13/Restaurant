@@ -2,6 +2,7 @@ import Payment from '../models/Payment.js';
 import logger from '../utils/logger.js';
 import stripeService from '../services/stripeService.js';
 import rabbitmqConnection from '../config/rabbitmq.js';
+import walletService from './walletService.js';
 // import { Error } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -31,13 +32,6 @@ class PaymentService {
             switch (paymentData.paymentMethod) {
                 case 'card':
                     return await this.processCardPayment(payment);
-                case 'wallet':
-                    return await this.processWalletPayment(payment);
-                case 'cash':
-                    payment.status = 'pending';
-                    await payment.save();
-                    await this.publishPaymentPending(payment);
-                    return payment;
                 default:
                     throw new Error(`Unsupported payment method: ${payment.paymentMethod}`);
             }
@@ -103,36 +97,6 @@ class PaymentService {
             await this.publishPaymentFailed(payment);
 
             throw new Error(`Payment processing failed: ${error.message}`);
-        }
-    }
-
-    // Thanh toán qua ví
-    async processWalletPayment(payment) {
-        try {
-            payment.status = 'processing';
-            await payment.save();
-
-            // Giả lập thanh toán thành công sau 2 giây
-            const transactionId = `WALLET_${uuidv4()}`;
-            payment.transactionId = transactionId;
-            payment.status = 'completed';
-            payment.processedAt = new Date();
-            await payment.save();
-
-            // Gửi thông báo thành công qua RabbitMQ
-            await this.publishPaymentCompleted(payment);
-
-            logger.info(`Wallet payment completed: ${payment.paymentId}`);
-            return payment;
-        } catch (error) {
-            // Cập nhật thất bại
-            payment.status = 'failed';
-            payment.failureReason = error.message;
-            await payment.save();
-            await this.publishPaymentFailed(payment);
-
-            logger.error(`processWalletPayment failed: ${error.message}`);
-            throw error;
         }
     }
 
@@ -291,6 +255,30 @@ class PaymentService {
             url: `/api/orders/user/${payment.userId}`,
             timestamp: new Date().toISOString(),
         });
+
+        // Try to credit merchant wallet immediately if we have restaurant info in metadata
+        try {
+            const metadata = payment.metadata || {};
+            const restaurantId = metadata.restaurantId || metadata.restaurant_id;
+            const amountForRestaurant = metadata.amountForRestaurant || metadata.amount_for_restaurant;
+
+            // idempotency: only credit once
+            if (restaurantId && amountForRestaurant && !metadata.merchantCredited) {
+                await walletService.credit(
+                    restaurantId,
+                    payment.orderId,
+                    amountForRestaurant,
+                    `Auto credit from payment ${payment.paymentId}`,
+                );
+
+                // mark as credited
+                payment.metadata = { ...metadata, merchantCredited: true };
+                await payment.save();
+                logger.info(`Auto-credited wallet for restaurant ${restaurantId} amount ${amountForRestaurant}`);
+            }
+        } catch (creditError) {
+            logger.error(`Auto credit to merchant wallet failed: ${creditError.message}`);
+        }
     }
 
     async publishPaymentFailed(payment) {
@@ -342,7 +330,12 @@ class PaymentService {
                 userId: orderData.userId,
                 amount: orderData.totalAmount,
                 paymentMethod: orderData.paymentMethod,
-                currency: orderData.currency.toLowerCase() || 'usd',
+                currency: (orderData.currency || 'USD').toLowerCase(),
+                // pass restaurant info into metadata so later when payment completes we can credit merchant
+                metadata: {
+                    restaurantId: orderData.restaurantId,
+                    amountForRestaurant: Math.round((orderData.totalAmount || 0) * 0.9), // default 10% platform fee
+                },
             };
 
             await this.createPayment(paymentData);

@@ -4,7 +4,7 @@ export const createPaymentSchema = Joi.object({
   orderId: Joi.string().required(),
   userId: Joi.string().required(),
   amount: Joi.number().min(0).required(),
-  paymentMethod: Joi.string().valid("cash", "card", "wallet").required(),
+  paymentMethod: Joi.string().valid("card").required(),
   currency: Joi.string().length(3).default("USD"),
   metadata: Joi.object().optional(),
 });

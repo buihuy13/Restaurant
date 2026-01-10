@@ -37,7 +37,7 @@ const Payment = sequelize.define(
             defaultValue: 'USD',
         },
         paymentMethod: {
-            type: DataTypes.ENUM('cash', 'card', 'wallet'),
+            type: DataTypes.ENUM('card'),
             allowNull: false,
             field: 'payment_method',
         },
@@ -94,12 +94,7 @@ const Payment = sequelize.define(
     {
         tableName: 'payments',
         timestamps: false,
-        indexes: [
-            { fields: ['order_id'] },
-            { fields: ['user_id'] },
-            { fields: ['status'] },
-            { fields: ['created_at'] },
-        ],
+        indexes: [{ fields: ['orderId'] }, { fields: ['userId'] }, { fields: ['status'] }, { fields: ['createdAt'] }],
     },
 );
 

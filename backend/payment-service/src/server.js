@@ -87,7 +87,7 @@ const startServer = async () => {
         await rabbitmqConnection.connect();
         await startOrderConsumer();
         await startOrderCompletedConsumer();
-        await sequelize.sync({ alter: true }); // Sync models to DB
+        // Syncing models is handled in connectDB(); avoid duplicate sync here to prevent ALTER conflicts
 
         app.listen(PORT, () => {
             logger.info(`Payment Service running on port ${PORT}`);

@@ -34,7 +34,7 @@ const options = {
                     userId: { type: 'string' },
                     amount: { type: 'number' },
                     currency: { type: 'string' },
-                    paymentMethod: { type: 'string', enum: ['cash', 'card', 'wallet'] },
+                    paymentMethod: { type: 'string', enum: ['card'] },
                     status: { type: 'string', enum: ['pending', 'processing', 'completed', 'failed', 'refunded'] },
                     transactionId: { type: 'string' },
                     createdAt: { type: 'string', format: 'date-time' },
