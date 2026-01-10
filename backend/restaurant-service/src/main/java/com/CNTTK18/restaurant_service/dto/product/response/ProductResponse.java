@@ -24,7 +24,6 @@ public class ProductResponse {
     private String imageURL;
     private String categoryName;
     private String categoryId;
-    private int volume;
     private boolean available;
     private ResResponse restaurant;
     private int totalReview;

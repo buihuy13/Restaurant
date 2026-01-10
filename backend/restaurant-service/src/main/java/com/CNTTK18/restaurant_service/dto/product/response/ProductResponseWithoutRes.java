@@ -23,7 +23,6 @@ public class ProductResponseWithoutRes {
     private String imageURL;
     private String categoryName;
     private String categoryId;
-    private int volume;
     private boolean available;
     private int totalReview;
     private float rating;
