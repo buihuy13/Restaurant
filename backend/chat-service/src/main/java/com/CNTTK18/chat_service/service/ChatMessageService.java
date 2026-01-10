@@ -1,7 +1,5 @@
 package com.CNTTK18.chat_service.service;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -49,11 +47,6 @@ public class ChatMessageService {
             null ));
         }
         return roomId;
-    }
-
-    // Lấy tất cả tin nhắn trong room theo thời gian giảm dần
-    public List<Message> getAllMessageDescInRoom(String roomId) {
-        return messageRepository.findByRoomIdOrderByTimestampDesc(roomId);
     }
 
     public Page<Message> getRecentMessageByPagination(String roomId, Pageable pageable) {
