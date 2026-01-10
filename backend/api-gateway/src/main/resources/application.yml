@@ -636,16 +636,16 @@ spring:
                       requiredRole: ADMIN
 
                 - id: wallet-service-jwt
-                  uri: lb://wallet-service
+                  uri: lb://payment-service
                   predicates:
-                      - Path=/api/wallet,/api/wallet/**,/api/wallet/transactions,/api/wallet/withdraw
+                      - Path=/api/wallets,/api/wallets/**,/api/wallets/transactions,/api/wallets/withdraw
                   filters:
                       - name: JwtAuthentication
                   args:
                       requiredRole: MERCHANT
 
                 - id: admin-wallet-service
-                  uri: lb://wallet-service
+                  uri: lb://payment-service
                   predicates:
                       - Path=/api/admin/wallets/payout-requests,/api/admin/wallets/payout-requests/**
                   filters:
@@ -659,7 +659,6 @@ spring:
                       - Path=/v3/api-docs/payment-service/**
                   filters:
                       - RewritePath=/v3/api-docs/payment-service/(?<segment>.*), /v3/api-docs/payment-service/${segment}
-
 
                 # Chat-service
                 - id: chat-service-api

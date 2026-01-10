@@ -1,0 +1,50 @@
+services:
+    # Zookeeper: trình quản lý cho Kafka
+    rabbitmq:
+        ports:
+            - '5672:5672' #Cho các service kết nối đến
+            - '15672:15672' #Dành cho UI
+    redis:
+        ports:
+            - '6379:6379'
+    db:
+        ports:
+            - '3307:3306'
+
+    mongodb:
+        ports:
+            - '27017:27017'
+
+    service-discovery:
+        ports:
+            - '8761:8761'
+    zipkin:
+        ports:
+            - '9411:9411'
+    api-gateway:
+        ports:
+            - '8080:8080'
+    user-service:
+        ports:
+            - '8081:8081'
+    notification-service:
+        ports:
+            - '8084:8084'
+    chat-service:
+        ports:
+            - '8086:8086'
+    restaurant-service:
+        ports:
+            - '8085:8085'
+
+    order-service:
+        ports:
+            - '8082:8082'
+
+    payment-service:
+        ports:
+            - '8083:8083'
+
+    blog-service:
+        ports:
+            - '8087:8087'

@@ -785,10 +785,6 @@ class OrderService {
             throw new Error('You are not authorized to manage this restaurant');
         }
 
-        if (order.status !== 'pending') {
-            throw new Error(`Cannot reject order. Current status: ${order.status}`);
-        }
-
         order.status = 'cancelled';
         order.cancellationReason = `Restaurant rejected: ${reason}`;
         await order.save();
@@ -797,15 +793,15 @@ class OrderService {
         await cacheService.invalidateUserOrders(order.userId);
 
         // Publish event: merchant rejected
-        // await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.rejected', {
-        //     orderId: order.orderId,
-        //     userId: order.userId,
-        //     restaurantId: order.restaurantId,
-        //     restaurantName: order.restaurantName,
-        //     merchantId,
-        //     reason,
-        //     timestamp: new Date().toISOString(),
-        // });
+        await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.rejected', {
+            orderId: order.orderId,
+            userId: order.userId,
+            restaurantId: order.restaurantId,
+            restaurantName: order.restaurantName,
+            merchantId,
+            reason,
+            timestamp: new Date().toISOString(),
+        });
 
         logger.info(`Merchant ${merchantId} rejected order ${orderId}: ${reason}`);
         return order;

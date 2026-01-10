@@ -5,7 +5,7 @@ WORKDIR /app
 #Cache
 COPY build.gradle.kts settings.gradle.kts gradlew ./
 COPY gradle ./gradle
-RUN sed -i 's/\r$//' ./gradlew && chmod +x ./gradlew
+RUN chmod +x ./gradlew
 RUN ./gradlew dependencies --no-daemon
 
 COPY . .
