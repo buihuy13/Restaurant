@@ -3,13 +3,13 @@ package com.CNTTK18.restaurant_service.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +32,7 @@ import com.CNTTK18.restaurant_service.model.Restaurants;
 import com.CNTTK18.restaurant_service.model.Reviews;
 import com.CNTTK18.restaurant_service.repository.ResRepository;
 import com.CNTTK18.restaurant_service.repository.ReviewRepository;
+import com.CNTTK18.restaurant_service.spec.RestaurantSpec;
 import com.CNTTK18.restaurant_service.util.ResUtil;
 
 import reactor.core.publisher.Mono;
@@ -55,25 +56,22 @@ public class ResService {
 
     public Mono<List<ResResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
                                                                 String rating, String category) {
-        List<Restaurants> res = resRepository.findAll();
-        if (search != null && !search.isEmpty()) {
-            res = res.stream().filter(r -> r.getResName().toLowerCase().contains(search.toLowerCase())).toList();
-        }
+        List<String> categoryNames = null;
 
         if (category != null && !category.isEmpty()) {
-            List<String> categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
-            res = res.stream().filter(r -> r.getCategories().stream().map(c -> c.getCateName().toLowerCase()).toList()
-                                                    .containsAll(categoryNames)).toList();
+            categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
         }
 
-        if (rating != null && !rating.isEmpty()) {
-            if (rating.equals("asc")) {
-                res = res.stream().sorted(Comparator.comparing(Restaurants::getRating)).toList();
-            } 
-            else if (rating.equals("desc")) {
-                res = res.stream().sorted(Comparator.comparing(Restaurants::getRating).reversed()).toList();
-            }
+        Sort sort = Sort.unsorted();
+        if ("asc".equals(rating)) {
+            sort = Sort.by("rating").ascending();
+        } else if ("desc".equals(rating)) {
+            sort = Sort.by("rating").descending();
         }
+
+        var resSpec = RestaurantSpec.allSpecification(search, true, categoryNames);
+
+        List<Restaurants> res = resRepository.findAll(resSpec, sort);
         
         // Lấy các res trong bán kính nearby (theo đường chim bay)
         if (location != null) {
