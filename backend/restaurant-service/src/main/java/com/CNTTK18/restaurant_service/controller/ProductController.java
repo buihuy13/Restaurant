@@ -48,7 +48,6 @@ public class ProductController {
                                                                @RequestParam(required = false) String category,
                                                                @RequestParam(required = false) BigDecimal minPrice,
                                                                @RequestParam(required = false) BigDecimal maxPrice,
-                                                               @RequestParam(required = false) String order,
                                                                @RequestParam(required = false) String locationsorted,
                                                                @RequestParam(required = false) String search,
                                                                @RequestParam(required = false) Integer nearby,
@@ -59,8 +58,7 @@ public class ProductController {
         if (lon != null && lat != null) {
             location = new Coordinates(lon, lat);
         }
-        return productService.getAllProducts(rating, category, minPrice, maxPrice, order, 
-                                                                locationsorted, search, nearby, location)
+        return productService.getAllProducts(rating, category, minPrice, maxPrice, locationsorted, search, nearby, location)
                             .map(productList -> ResponseEntity.ok(productList));
     }
 
@@ -101,13 +99,6 @@ public class ProductController {
     public ResponseEntity<MessageResponse> deleteProduct(@PathVariable String id, @AuthenticationPrincipal String userId) {
         productService.deleteProduct(id, userId);
         return ResponseEntity.ok(new MessageResponse("Delete Successfully"));
-    }
-
-    @Tag(name = "Put") 
-    @Operation(summary = "Update a product volume")
-    @PutMapping("/volume/{id}")
-    public ResponseEntity<Integer> updateVolumeproduct(@PathVariable String id) {
-        return ResponseEntity.ok(productService.increaseProductVolume(id));
     }
 
     @Tag(name = "Put") 
