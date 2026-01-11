@@ -2,6 +2,10 @@ package com.CNTTK18.notification_service.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -21,10 +25,20 @@ public class RabbitMQConfig {
     private static final String PAYMENT_EXCHANGE = "payment_exchange";
     private static final String PAYMENT_COMPLETED_QUEUE = "payment.completed";
 
+    // Order exchange and queues
+    private static final String ORDER_EXCHANGE = "order_exchange";
+    private static final String ORDER_REJECTED_QUEUE = "order.rejected";
+    private static final String ORDER_ACCEPTED_QUEUE = "order.accepted";
+    private static final String ORDER_CANCELLED_BY_MERCHANT_QUEUE = "order.cancelled.by.merchant";
+
     @Bean
     public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        ObjectMapper objectMapper = new ObjectMapper();
+        // Cấu hình bỏ qua lỗi khi gặp field lạ
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return new Jackson2JsonMessageConverter(objectMapper);
     }
+
     @Bean
     Queue confirmationQueue() {
         return QueueBuilder.durable("Confirmation_queue")
@@ -49,6 +63,31 @@ public class RabbitMQConfig {
                 .build();
     }
 
+    // Order queues
+    @Bean
+    Queue orderRejectedQueue() {
+        return QueueBuilder.durable(ORDER_REJECTED_QUEUE)
+                .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", DLX_KEY)
+                .build();
+    }
+
+    @Bean
+    Queue orderAcceptedQueue() {
+        return QueueBuilder.durable(ORDER_ACCEPTED_QUEUE)
+                .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", DLX_KEY)
+                .build();
+    }
+
+    @Bean
+    Queue orderCancelledByMerchantQueue() {
+        return QueueBuilder.durable(ORDER_CANCELLED_BY_MERCHANT_QUEUE)
+                .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", DLX_KEY)
+                .build();
+    }
+
     @Bean
     TopicExchange confirmationExchange() {
         return new TopicExchange("Confirmation_exchange");
@@ -62,6 +101,11 @@ public class RabbitMQConfig {
     @Bean
     TopicExchange paymentExchange() {
         return new TopicExchange(PAYMENT_EXCHANGE);
+    }
+
+    @Bean
+    TopicExchange orderExchange() {
+        return new TopicExchange(ORDER_EXCHANGE);
     }
 
     @Bean
@@ -86,6 +130,31 @@ public class RabbitMQConfig {
                 .bind(merchantQueue())
                 .to(merchantExchange())
                 .with("Merchant");
+    }
+
+    // Order bindings
+    @Bean
+    Binding orderRejectedBinding() {
+        return BindingBuilder
+                .bind(orderRejectedQueue())
+                .to(orderExchange())
+                .with("order.rejected");
+    }
+
+    @Bean
+    Binding orderAcceptedBinding() {
+        return BindingBuilder
+                .bind(orderAcceptedQueue())
+                .to(orderExchange())
+                .with("order.accepted");
+    }
+
+    @Bean
+    Binding orderCancelledByMerchantBinding() {
+        return BindingBuilder
+                .bind(orderCancelledByMerchantQueue())
+                .to(orderExchange())
+                .with("order.cancelled.by.merchant");
     }
 
     @Bean
