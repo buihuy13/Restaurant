@@ -546,6 +546,8 @@ spring:
                       - Method=POST
                   filters:
                       - name: JwtAuthentication
+                        args:
+                            requiredRole: USER
 
                 - id: group-order-payment-status
                   uri: lb://order-service

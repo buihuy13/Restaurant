@@ -9,7 +9,7 @@ class GroupOrderService {
     async createGroupOrder(data, userId, userName) {
         try {
             const groupOrderId = `GRP${Date.now()}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-            
+
             // Validate restaurant
             await orderService.validateRestaurant(data.restaurantId);
 
@@ -33,7 +33,7 @@ class GroupOrderService {
             await groupOrder.save();
 
             logger.info(`Group order created: ${groupOrderId} by ${userName}`);
-            
+
             return groupOrder;
         } catch (error) {
             logger.error('Create group order error:', error);
@@ -74,13 +74,11 @@ class GroupOrderService {
             }
 
             // Kiểm tra user đã tham gia chưa
-            const existingParticipant = groupOrder.participants.find(
-                p => p.userId === userId
-            );
+            const existingParticipant = groupOrder.participants.find((p) => p.userId === userId);
 
             // Tính tổng tiền của user này
             const totalAmount = items.reduce((sum, item) => {
-                return sum + (item.price * item.quantity);
+                return sum + item.price * item.quantity;
             }, 0);
 
             if (existingParticipant) {
@@ -103,7 +101,7 @@ class GroupOrderService {
             await groupOrder.save();
 
             logger.info(`User ${userName} joined group order ${groupOrder.groupOrderId}`);
-            
+
             return groupOrder;
         } catch (error) {
             logger.error('Join group order error:', error);
@@ -125,9 +123,7 @@ class GroupOrderService {
                 throw new Error('Unauthorized to remove this participant');
             }
 
-            groupOrder.participants = groupOrder.participants.filter(
-                p => p.userId !== userId
-            );
+            groupOrder.participants = groupOrder.participants.filter((p) => p.userId !== userId);
 
             // Tính lại tổng tiền
             this.recalculateTotal(groupOrder);
@@ -135,7 +131,7 @@ class GroupOrderService {
             await groupOrder.save();
 
             logger.info(`Participant ${userId} removed from group order ${groupOrder.groupOrderId}`);
-            
+
             return groupOrder;
         } catch (error) {
             logger.error('Remove participant error:', error);
@@ -164,7 +160,7 @@ class GroupOrderService {
             await groupOrder.save();
 
             logger.info(`Group order ${groupOrder.groupOrderId} locked`);
-            
+
             return groupOrder;
         } catch (error) {
             logger.error('Lock group order error:', error);
@@ -191,10 +187,8 @@ class GroupOrderService {
 
             // Kiểm tra thanh toán nếu yêu cầu
             if (groupOrder.allowIndividualPayment) {
-                const unpaidParticipants = groupOrder.participants.filter(
-                    p => p.paymentStatus !== 'completed'
-                );
-                
+                const unpaidParticipants = groupOrder.participants.filter((p) => p.paymentStatus !== 'completed');
+
                 if (unpaidParticipants.length > 0) {
                     logger.warn(`Confirming with ${unpaidParticipants.length} unpaid participants`);
                     // Không block, chỉ log warning
@@ -203,13 +197,13 @@ class GroupOrderService {
 
             // Tổng hợp tất cả items từ participants
             const allItems = [];
-            groupOrder.participants.forEach(participant => {
-                participant.items.forEach(item => {
+            groupOrder.participants.forEach((participant) => {
+                participant.items.forEach((item) => {
                     // Tìm xem món này đã có trong allItems chưa
                     const existingItem = allItems.find(
-                        i => i.productId === item.productId && i.customizations === item.customizations
+                        (i) => i.productId === item.productId && i.customizations === item.customizations,
                     );
-                    
+
                     if (existingItem) {
                         // Tăng số lượng
                         existingItem.quantity += item.quantity;
@@ -229,9 +223,12 @@ class GroupOrderService {
             // Tạo order chính thức
             const orderData = {
                 restaurantId: groupOrder.restaurantId,
+                userId: userId,
                 items: allItems,
                 deliveryAddress: groupOrder.deliveryAddress,
-                orderNote: `Group Order: ${groupOrder.groupNote}\nParticipants: ${groupOrder.participants.map(p => p.userName).join(', ')}`,
+                orderNote: `Group Order: ${groupOrder.groupNote}\nParticipants: ${groupOrder.participants
+                    .map((p) => p.userName)
+                    .join(', ')}`,
                 paymentMethod: groupOrder.paymentMethod === 'split' ? 'cash' : groupOrder.paymentMethod,
             };
 
@@ -243,7 +240,7 @@ class GroupOrderService {
             await groupOrder.save();
 
             logger.info(`Group order ${groupOrder.groupOrderId} confirmed, created order ${finalOrder.orderId}`);
-            
+
             return {
                 groupOrder,
                 order: finalOrder,
@@ -271,7 +268,7 @@ class GroupOrderService {
             await groupOrder.save();
 
             logger.info(`Group order ${groupOrder.groupOrderId} cancelled`);
-            
+
             return groupOrder;
         } catch (error) {
             logger.error('Cancel group order error:', error);
@@ -283,10 +280,7 @@ class GroupOrderService {
     async getUserGroupOrders(userId, filters = {}) {
         try {
             const query = {
-                $or: [
-                    { creatorId: userId },
-                    { 'participants.userId': userId },
-                ],
+                $or: [{ creatorId: userId }, { 'participants.userId': userId }],
             };
 
             if (filters.status) {
@@ -297,10 +291,7 @@ class GroupOrderService {
             const limit = parseInt(filters.limit) || 20;
             const skip = (page - 1) * limit;
 
-            const groupOrders = await GroupOrder.find(query)
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit);
+            const groupOrders = await GroupOrder.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit);
 
             const total = await GroupOrder.countDocuments(query);
 
@@ -341,6 +332,11 @@ class GroupOrderService {
         try {
             const groupOrder = await this.getGroupOrderByToken(shareToken);
 
+            // Only the creator can pay for the whole group
+            if (groupOrder.creatorId !== userId) {
+                throw new Error('Only creator can pay for the whole group');
+            }
+
             // Kiểm tra đã thanh toán toàn bộ chưa
             if (groupOrder.totalPaidAmount >= groupOrder.finalAmount) {
                 throw new Error('This group order has been fully paid');
@@ -368,7 +364,7 @@ class GroupOrderService {
 
                 if (paymentResult.success) {
                     // Đánh dấu tất cả participants đã được thanh toán
-                    groupOrder.participants.forEach(participant => {
+                    groupOrder.participants.forEach((participant) => {
                         participant.paymentStatus = 'completed';
                         participant.paymentMethod = paymentData.paymentMethod;
                         participant.paymentTransactionId = paymentResult.transactionId;
@@ -409,7 +405,7 @@ class GroupOrderService {
             const groupOrder = await this.getGroupOrderByToken(shareToken);
 
             // Tìm participant
-            const participant = groupOrder.participants.find(p => p.userId === userId);
+            const participant = groupOrder.participants.find((p) => p.userId === userId);
             if (!participant) {
                 throw new Error('You are not a participant in this group order');
             }
@@ -471,7 +467,7 @@ class GroupOrderService {
                 // Nếu thanh toán thất bại
                 participant.paymentStatus = 'failed';
                 await groupOrder.save();
-                
+
                 logger.error(`Payment failed for user ${userId}:`, paymentError);
                 throw new Error(`Payment processing failed: ${paymentError.message}`);
             }
@@ -497,13 +493,13 @@ class GroupOrderService {
                 },
                 {
                     timeout: 10000,
-                }
+                },
             );
 
             return response.data;
         } catch (error) {
             logger.error('Payment service error:', error);
-            
+
             // Nếu payment service không available, cho phép thanh toán cash
             if (paymentData.paymentMethod === 'cash') {
                 return {
@@ -512,7 +508,7 @@ class GroupOrderService {
                     message: 'Cash payment accepted',
                 };
             }
-            
+
             throw new Error('Payment service unavailable');
         }
     }
@@ -527,9 +523,7 @@ class GroupOrderService {
             }
 
             const totalParticipants = groupOrder.participants.length;
-            const paidParticipants = groupOrder.participants.filter(
-                p => p.paymentStatus === 'completed'
-            ).length;
+            const paidParticipants = groupOrder.participants.filter((p) => p.paymentStatus === 'completed').length;
 
             const allPaid = totalParticipants === paidParticipants && totalParticipants > 0;
 
@@ -538,7 +532,7 @@ class GroupOrderService {
                 totalParticipants,
                 paidParticipants,
                 pendingParticipants: totalParticipants - paidParticipants,
-                participants: groupOrder.participants.map(p => ({
+                participants: groupOrder.participants.map((p) => ({
                     userId: p.userId,
                     userName: p.userName,
                     paymentStatus: p.paymentStatus,

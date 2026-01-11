@@ -357,6 +357,6 @@ router.post('/:shareToken/pay-all', authenticate, groupOrderController.payForWho
  *                           paidAmount: { type: number }
  *                           totalAmount: { type: number }
  */
-router.get('/:shareToken/payment-status', groupOrderController.checkPaymentStatus);
+router.get('/:shareToken/payment-status', authenticate, groupOrderController.checkPaymentStatus);
 
 export default router;

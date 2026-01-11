@@ -15,11 +15,7 @@ class GroupOrderController {
                 });
             }
 
-            const groupOrder = await groupOrderService.createGroupOrder(
-                req.body,
-                userId,
-                userName
-            );
+            const groupOrder = await groupOrderService.createGroupOrder(req.body, userId, userName);
 
             const shareLink = groupOrderService.getShareLink(groupOrder);
 
@@ -54,14 +50,14 @@ class GroupOrderController {
             });
         } catch (error) {
             logger.error('Get group order controller error:', error);
-            
+
             if (error.message.includes('not found') || error.message.includes('expired')) {
                 return res.status(404).json({
                     success: false,
                     message: error.message,
                 });
             }
-            
+
             next(error);
         }
     }
@@ -88,12 +84,7 @@ class GroupOrderController {
                 });
             }
 
-            const groupOrder = await groupOrderService.joinGroupOrder(
-                shareToken,
-                userId,
-                userName,
-                items
-            );
+            const groupOrder = await groupOrderService.joinGroupOrder(shareToken, userId, userName, items);
 
             res.status(200).json({
                 success: true,
@@ -102,14 +93,14 @@ class GroupOrderController {
             });
         } catch (error) {
             logger.error('Join group order controller error:', error);
-            
+
             if (error.message.includes('not accepting') || error.message.includes('not found')) {
                 return res.status(400).json({
                     success: false,
                     message: error.message,
                 });
             }
-            
+
             next(error);
         }
     }
@@ -127,11 +118,7 @@ class GroupOrderController {
                 });
             }
 
-            const groupOrder = await groupOrderService.removeParticipant(
-                shareToken,
-                userId,
-                requesterId
-            );
+            const groupOrder = await groupOrderService.removeParticipant(shareToken, userId, requesterId);
 
             res.status(200).json({
                 success: true,
@@ -140,14 +127,14 @@ class GroupOrderController {
             });
         } catch (error) {
             logger.error('Remove participant controller error:', error);
-            
+
             if (error.message.includes('Unauthorized')) {
                 return res.status(403).json({
                     success: false,
                     message: error.message,
                 });
             }
-            
+
             next(error);
         }
     }
@@ -174,14 +161,14 @@ class GroupOrderController {
             });
         } catch (error) {
             logger.error('Lock group order controller error:', error);
-            
+
             if (error.message.includes('Only creator')) {
                 return res.status(403).json({
                     success: false,
                     message: error.message,
                 });
             }
-            
+
             next(error);
         }
     }
@@ -200,11 +187,7 @@ class GroupOrderController {
                 });
             }
 
-            const result = await groupOrderService.confirmGroupOrder(
-                shareToken,
-                userId,
-                token
-            );
+            const result = await groupOrderService.confirmGroupOrder(shareToken, userId, token);
 
             res.status(200).json({
                 success: true,
@@ -213,14 +196,14 @@ class GroupOrderController {
             });
         } catch (error) {
             logger.error('Confirm group order controller error:', error);
-            
+
             if (error.message.includes('Only creator')) {
                 return res.status(403).json({
                     success: false,
                     message: error.message,
                 });
             }
-            
+
             next(error);
         }
     }
@@ -247,14 +230,14 @@ class GroupOrderController {
             });
         } catch (error) {
             logger.error('Cancel group order controller error:', error);
-            
+
             if (error.message.includes('Only creator')) {
                 return res.status(403).json({
                     success: false,
                     message: error.message,
                 });
             }
-            
+
             next(error);
         }
     }
@@ -306,11 +289,16 @@ class GroupOrderController {
                 });
             }
 
-            const result = await groupOrderService.payForWholeGroup(
-                shareToken,
-                userId,
-                { paymentMethod }
-            );
+            // Only the creator can pay for the whole group (extra guard at controller level)
+            const groupOrder = await groupOrderService.getGroupOrderByToken(shareToken);
+            if (!groupOrder) {
+                return res.status(404).json({ success: false, message: 'Group order not found' });
+            }
+            if (groupOrder.creatorId !== userId) {
+                return res.status(403).json({ success: false, message: 'Only the group creator can pay for the whole group' });
+            }
+
+            const result = await groupOrderService.payForWholeGroup(shareToken, userId, { paymentMethod });
 
             res.status(200).json({
                 success: true,
@@ -319,15 +307,14 @@ class GroupOrderController {
             });
         } catch (error) {
             logger.error('Pay for whole group controller error:', error);
-            
-            if (error.message.includes('fully paid') || 
-                error.message.includes('empty')) {
+
+            if (error.message.includes('fully paid') || error.message.includes('empty')) {
                 return res.status(400).json({
                     success: false,
                     message: error.message,
                 });
             }
-            
+
             next(error);
         }
     }
@@ -353,11 +340,7 @@ class GroupOrderController {
                 });
             }
 
-            const result = await groupOrderService.payForParticipant(
-                shareToken,
-                userId,
-                { paymentMethod }
-            );
+            const result = await groupOrderService.payForParticipant(shareToken, userId, { paymentMethod });
 
             res.status(200).json({
                 success: true,
@@ -366,16 +349,18 @@ class GroupOrderController {
             });
         } catch (error) {
             logger.error('Pay for participant controller error:', error);
-            
-            if (error.message.includes('not a participant') || 
+
+            if (
+                error.message.includes('not a participant') ||
                 error.message.includes('already paid') ||
-                error.message.includes('not allowed')) {
+                error.message.includes('not allowed')
+            ) {
                 return res.status(400).json({
                     success: false,
                     message: error.message,
                 });
             }
-            
+
             next(error);
         }
     }
@@ -384,13 +369,26 @@ class GroupOrderController {
     async checkPaymentStatus(req, res, next) {
         try {
             const { shareToken } = req.params;
-            
+            const userId = req.user?.userId || req.user?.id;
+
+            if (!userId) {
+                return res.status(401).json({ success: false, message: 'User authentication required' });
+            }
+
+            // Only the creator can check payment status
+            const groupOrder = await groupOrderService.getGroupOrderByToken(shareToken);
+            if (!groupOrder) {
+                return res.status(404).json({ success: false, message: 'Group order not found' });
+            }
+            if (groupOrder.creatorId !== userId) {
+                return res
+                    .status(403)
+                    .json({ success: false, message: 'Only the group creator can view payment status' });
+            }
+
             const result = await groupOrderService.checkAllPaid(shareToken);
 
-            res.status(200).json({
-                success: true,
-                data: result,
-            });
+            res.status(200).json({ success: true, data: result });
         } catch (error) {
             logger.error('Check payment status controller error:', error);
             next(error);

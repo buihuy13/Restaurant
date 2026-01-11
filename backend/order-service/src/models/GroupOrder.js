@@ -11,30 +11,32 @@ const participantSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    items: [{
-        productId: {
-            type: String,
-            required: true,
+    items: [
+        {
+            productId: {
+                type: String,
+                required: true,
+            },
+            productName: {
+                type: String,
+                required: true,
+            },
+            quantity: {
+                type: Number,
+                required: true,
+                min: 1,
+            },
+            price: {
+                type: Number,
+                required: true,
+                min: 0,
+            },
+            customizations: {
+                type: String,
+                default: '',
+            },
         },
-        productName: {
-            type: String,
-            required: true,
-        },
-        quantity: {
-            type: Number,
-            required: true,
-            min: 1,
-        },
-        price: {
-            type: Number,
-            required: true,
-            min: 0,
-        },
-        customizations: {
-            type: String,
-            default: '',
-        },
-    }],
+    ],
     totalAmount: {
         type: Number,
         default: 0,
@@ -80,9 +82,9 @@ const groupOrderSchema = new mongoose.Schema(
         // Link token để chia sẻ (UUID)
         shareToken: {
             type: String,
-            required: true,
             unique: true,
             index: true,
+            default: uuidv4,
         },
         // Người tạo group order
         creatorId: {
@@ -134,10 +136,10 @@ const groupOrderSchema = new mongoose.Schema(
         status: {
             type: String,
             enum: [
-                'open',        // Đang mở, mọi người có thể tham gia
-                'locked',      // Đã khóa, không nhận thêm người
-                'ordered',     // Đã đặt hàng chính thức
-                'cancelled',   // Đã hủy
+                'open', // Đang mở, mọi người có thể tham gia
+                'locked', // Đã khóa, không nhận thêm người
+                'ordered', // Đã đặt hàng chính thức
+                'cancelled', // Đã hủy
             ],
             default: 'open',
             index: true,
@@ -179,13 +181,7 @@ const groupOrderSchema = new mongoose.Schema(
     },
 );
 
-// Tạo shareToken tự động trước khi save
-groupOrderSchema.pre('save', function (next) {
-    if (!this.shareToken) {
-        this.shareToken = uuidv4();
-    }
-    next();
-});
+// shareToken default is provided by schema default (uuidv4)
 
 // Index cho tìm kiếm nhanh
 groupOrderSchema.index({ createdAt: -1 });
