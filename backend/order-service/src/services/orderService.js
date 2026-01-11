@@ -797,15 +797,14 @@ class OrderService {
         await cacheService.setOrder(order.orderId, order.toObject());
         await cacheService.invalidateUserOrders(order.userId);
 
-        // Publish event: merchant rejected — route into the generic cancelled queue so cancellations and rejections share the same queue
-        await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.cancelled', {
+        // Publish event: merchant rejected
+        await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.rejected', {
             orderId: order.orderId,
             userId: order.userId,
             restaurantId: order.restaurantId,
             restaurantName: order.restaurantName,
             merchantId,
             reason,
-            cancelType: 'rejected',
             timestamp: new Date().toISOString(),
         });
 

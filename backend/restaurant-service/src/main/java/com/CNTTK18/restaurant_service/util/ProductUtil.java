@@ -21,7 +21,6 @@ public class ProductUtil {
                                                                                 ps.getPrice(),ps.getSize().getId())).toList())
                             .restaurant(resResponse)
                             .rating(product.getRating())
-                            .volume(product.getVolume())
                             .slug(product.getSlug())
                             .createdAt(product.getCreatedAt())
                             .updatedAt(product.getUpdatedAt())
@@ -41,7 +40,6 @@ public class ProductUtil {
                                             .map(ps -> new ProductSizeResponse(ps.getId(),ps.getSize().getName(),
                                                                                 ps.getPrice(),ps.getSize().getId())).toList())
                             .rating(product.getRating())
-                            .volume(product.getVolume())
                             .restaurant(ResUtil.mapResToResResponse(product.getRestaurant()))
                             .slug(product.getSlug())
                             .createdAt(product.getCreatedAt())
@@ -62,7 +60,6 @@ public class ProductUtil {
                                             .map(ps -> new ProductSizeResponse(ps.getId(),ps.getSize().getName(),
                                                                                 ps.getPrice(),ps.getSize().getId())).toList())
                             .rating(product.getRating())
-                            .volume(product.getVolume())
                             .slug(product.getSlug())
                             .createdAt(product.getCreatedAt())
                             .updatedAt(product.getUpdatedAt())

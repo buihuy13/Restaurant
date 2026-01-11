@@ -117,7 +117,6 @@ create table products (
     image_url varchar(255),
     public_id varchar(255),
     category_id varchar(10) not null references categories(id),
-    volume int not null,
     total_review int,
     rating float,
     slug varchar(255) not null unique,

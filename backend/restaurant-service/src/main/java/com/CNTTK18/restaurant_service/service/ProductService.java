@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -13,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,6 +33,7 @@ import com.CNTTK18.restaurant_service.repository.ProductRepository;
 import com.CNTTK18.restaurant_service.repository.ResRepository;
 import com.CNTTK18.restaurant_service.repository.ReviewRepository;
 import com.CNTTK18.restaurant_service.repository.SizeRepository;
+import com.CNTTK18.restaurant_service.spec.ProductSpec;
 import com.CNTTK18.restaurant_service.util.ProductUtil;
 import com.CNTTK18.restaurant_service.util.ResUtil;
 
@@ -68,44 +69,22 @@ public class ProductService {
     }
 
     public Mono<List<ProductResponse>> getAllProducts(String rating, String category, BigDecimal minPrice, 
-                                BigDecimal maxPrice, String order, String locationsorted, String search, 
+                                BigDecimal maxPrice, String locationsorted, String search, 
                                 Integer nearby, Coordinates location) {
-        List<Products> products = productRepo.findAll();
-        if (search != null && !search.isEmpty()) {
-            products = products.stream().filter(p -> p.getProductName().toLowerCase().contains(search.toLowerCase())).toList();
-        }
+        List<String> categoryNames = new ArrayList<>();
         if (category != null && !category.isEmpty()) {
-            List<String> categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
-            products = products.stream().filter(p -> categoryNames.contains(p.getCategory().getCateName().toLowerCase())).toList();
+            categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
         }
+        Sort sort = Sort.unsorted();
+        if ("asc".equals(rating)) {
+            sort = Sort.by("rating").ascending();
+        } else if ("desc".equals(rating)) {
+            sort = Sort.by("rating").descending();
+        }
+        var productSpec = ProductSpec.allSpecification(search, true, categoryNames, minPrice, maxPrice);
 
-        if (minPrice != null) {
-            products = products.stream().filter(p -> p.getProductSizes().stream()
-                                            .anyMatch(ps -> ps.getPrice().compareTo(minPrice) >= 0)).toList();
-        }
+        List<Products> products = productRepo.findAll(productSpec, sort);
 
-        if (maxPrice != null) {
-            products = products.stream().filter(p -> p.getProductSizes().stream()
-                                            .anyMatch(ps -> ps.getPrice().compareTo(maxPrice) <= 0)).toList();
-        }
-        if (rating != null) {
-            if (rating.equals("asc")) {
-                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.Products::getRating)).toList();
-            } 
-            else if (rating.equals("desc")) {
-                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.Products::getRating).reversed())
-                                            .toList();
-            }
-        }
-        if (order != null) {
-            if (order.equals("asc")) {
-                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.Products::getVolume)).toList();
-            }
-            else if (order.equals("desc")) {
-                products = products.stream().sorted(Comparator.comparing(com.CNTTK18.restaurant_service.model.Products::getVolume).reversed())
-                                            .toList();
-            }
-        }
         if (location == null) {
             return Mono.just(products.stream().map(ProductUtil::mapProductToProductResponseWitoutResParam).toList());
         }
@@ -191,7 +170,6 @@ public class ProductService {
                                 .category(cate)
                                 .restaurant(res)
                                 .available(productRequest.isAvailable())
-                                .volume(0)
                                 .totalReview(0)
                                 .rating(0)
                                 .slug(SlugGenerator.generate(productRequest.getProductName()))
@@ -329,15 +307,6 @@ public class ProductService {
         }
         product.setAvailable(!product.isAvailable());
         productRepo.save(product);
-    }
-
-    @Transactional
-    public int increaseProductVolume(String id) {
-        Products product = productRepo.findProductById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        int newVolume = product.getVolume() + 1;
-        product.setVolume(newVolume);
-        productRepo.save(product);
-        return newVolume;
     }
 
     public void deleteImage(String productId, String userId) {

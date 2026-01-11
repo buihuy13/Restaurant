@@ -79,7 +79,8 @@ public class UserService {
         userRepository.save(existingUser);
         return new UserResponse(existingUser.getId(),user.getUsername(),existingUser.getEmail(), 
                                 existingUser.isEnabled(), existingUser.getRole(), user.getPhone(), existingUser.getSlug(),
-                                existingUser.getCreatedAt(), existingUser.getUpdatedAt());
+                                UserUtil.convertToVNZone(existingUser.getCreatedAt()),
+                                UserUtil.convertToVNZone(existingUser.getUpdatedAt()));
     }
 
     public UserResponse getUserBySlug(String slug) {

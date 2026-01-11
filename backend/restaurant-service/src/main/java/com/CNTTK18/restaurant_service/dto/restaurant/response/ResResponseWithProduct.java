@@ -22,9 +22,9 @@ public class ResResponseWithProduct {
     private String id;
     private String resName;
     private String address;
-    private double longitude; //kinh độ
-    private double latitude; //vĩ độ
-    private float rating;
+    private Double longitude; //kinh độ
+    private Double latitude; //vĩ độ
+    private Float rating;
     private LocalTime openingTime;
     private LocalTime closingTime;
     private String phone;
@@ -32,8 +32,8 @@ public class ResResponseWithProduct {
     private String merchantId;
     private boolean enabled;
     private int totalReview;
-    private double distance;
-    private double duration;
+    private Double distance;
+    private Double duration;
     private String slug;
     private Instant createdAt;
     private Instant updatedAt;

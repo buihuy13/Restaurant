@@ -15,7 +15,8 @@ public class RestaurantSpec {
             if (name == null || name.isEmpty()) {
                 return criteriaBuilder.conjunction();
             }
-            return criteriaBuilder.like(root.get("resName"), "%" + name + "%");
+            return criteriaBuilder.like(criteriaBuilder.lower(root.get("resName")), 
+                                        "%" + name + "%");
         };
     }
 
@@ -34,7 +35,7 @@ public class RestaurantSpec {
                 return criteriaBuilder.conjunction();
             }
             Join<Restaurants, Categories> categoryJoin = root.join("categories");
-            return criteriaBuilder.lower(categoryJoin.get("cateName")).in(categories.stream().map(String::toLowerCase).toList());
+            return criteriaBuilder.lower(categoryJoin.get("cateName")).in(categories);
         };
     }
 

@@ -47,7 +47,6 @@ public class Products {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Categories category;
-    private int volume;
     private boolean available;
     private float rating;
 

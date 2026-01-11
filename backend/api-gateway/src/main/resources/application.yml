@@ -861,6 +861,13 @@ spring:
                   filters:
                       - RewritePath=/v3/api-docs/blog-service/(?<segment>.*), /v3/api-docs/blog-service/${segment}
 
+                # SSE connection (notification-service)
+                - id: sse-connection
+                  uri: lb://notification-service
+                  predicates:
+                      - Path=/api/sse/subcribe/**
+                      - Method=GET
+
 eureka:
     instance:
         #hostname: ${spring.application.name}

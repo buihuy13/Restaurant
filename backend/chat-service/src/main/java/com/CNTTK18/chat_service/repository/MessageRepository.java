@@ -1,7 +1,5 @@
 package com.CNTTK18.chat_service.repository;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,17 +12,12 @@ import com.CNTTK18.chat_service.model.Message;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, String> {
-    // Lấy 20 tin nhắn gần nhất của 1 room
-    List<Message> findTop20ByRoomIdOrderByTimestampDesc(String roomId);
     
-    // Lấy tất cả tin nhắn trong room theo thời gian giảm dần
-    List<Message> findByRoomIdOrderByTimestampDesc(String roomId);
-    
-    // Lấy tin nhắn với pagination (offset = limit * page)
     @Query("SELECT m FROM Message m WHERE m.room.id = :roomId ORDER BY m.timestamp DESC")
     Page<Message> findByRoomIdWithPagination(@Param("roomId") String roomId, Pageable pageable);
     
     // Đếm total messages trong room
+    @Query("SELECT COUNT(m) FROM Message m WHERE m.room.id = :roomId")
     long countByRoomId(String roomId);
 
     // Đếm tin nhắn chưa đọc trong room cho receiverId
