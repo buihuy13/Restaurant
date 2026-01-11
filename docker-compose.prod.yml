@@ -170,12 +170,29 @@ services:
                 condition: service_started
 
     order-service:
-        image: ghcr.io/buihuy13/order-service:${VERSION}
-        restart: unless-stopped
-        env_file:
-            - ./backend/order-service/.env
+        build:
+            context: ./backend/order-service # build context là folder chứa package.json
+            dockerfile: Dockerfile
+            args:
+                - MODULE_PATH=order-service
         environment:
+            - ORDER_PORT=${ORDER_PORT}
             - ORDER_SERVICE_DB_URL=${ORDER_SERVICE_DB_URL}
+            - USER_SERVICE_URL=${USER_SERVICE_URL}
+            - RESTAURANT_SERVICE_URL=${RESTAURANT_SERVICE_URL}
+            - PAYMENT_SERVICE_URL=${PAYMENT_SERVICE_URL}
+            - ORDER_SERVICE_URL=${ORDER_SERVICE_URL}
+            - FRONTEND_URL=${FRONTEND_URL}
+            - EUREKA_HOST=${EUREKA_HOST_NAME}
+            - EUREKA_PORT=${SERVICE_DISCOVERY_PORT}
+            - EUREKA_INSTANCE_HOSTNAME=order-service
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
+            - RABBITMQ_PORT=${RABBITMQ_PORT}
+            - RABBITMQ_USER=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
             - TZ=${ENV_TZ}
         depends_on:
             mongodb:
@@ -186,13 +203,30 @@ services:
                 condition: service_healthy
             service-discovery:
                 condition: service_healthy
+        restart: unless-stopped
 
     payment-service:
-        image: ghcr.io/buihuy13/payment-service:${VERSION}
-        restart: unless-stopped
-        env_file:
-            - ./backend/payment-service/.env
+        build:
+            context: ./backend/payment-service
+            dockerfile: Dockerfile
+            args:
+                - MODULE_PATH=payment-service
         environment:
+            - PAYMENT_PORT=${PAYMENT_PORT}
+            - PAYMENT_SERVICE_DB_URL=${PAYMENT_SERVICE_DB_URL}
+            - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+            - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+            - WALLET_INTERNAL_KEY=${WALLET_INTERNAL_KEY}
+            - JWT_SECRET=${JWT_SECRETKEY}
+            - ORDER_SERVICE_URL=${ORDER_SERVICE_URL}
+            - PAYMENT_SERVICE_URL=${PAYMENT_SERVICE_URL}
+            - EUREKA_HOST=${EUREKA_HOST_NAME}
+            - EUREKA_PORT=${SERVICE_DISCOVERY_PORT}
+            - EUREKA_INSTANCE_HOSTNAME=payment-service
+            - RABBITMQ_HOST=${RABBITMQ_HOST}
+            - RABBITMQ_PORT=${RABBITMQ_PORT}
+            - RABBITMQ_USER=${RABBITMQ_DEFAULT_USER}
+            - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS}
             - TZ=${ENV_TZ}
         depends_on:
             db:
@@ -201,12 +235,23 @@ services:
                 condition: service_healthy
             service-discovery:
                 condition: service_healthy
+        restart: unless-stopped
 
     blog-service:
-        image: ghcr.io/buihuy13/blog-service:${VERSION}
-        env_file:
-            - ./backend/blog-service/.env
+        build:
+            context: ./backend/blog-service
+            dockerfile: Dockerfile
+            args:
+                - MODULE_PATH=blog-service
         environment:
+            - BLOG_PORT=${BLOG_PORT}
+            - BLOG_SERVICE_DB_URL=${BLOG_SERVICE_DB_URL}
+            - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+            - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+            - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+            - EUREKA_HOST=${EUREKA_HOST_NAME}
+            - EUREKA_PORT=${SERVICE_DISCOVERY_PORT}
+            - EUREKA_INSTANCE_HOSTNAME=blog-service
             - TZ=${ENV_TZ}
         depends_on:
             mongodb:
