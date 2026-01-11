@@ -21,7 +21,7 @@ export const createOrderSchema = Joi.object({
     }).required(),
     discount: Joi.number().min(0).default(0),
     deliveryFee: Joi.number().min(0).default(0),
-    paymentMethod: Joi.string().valid('cash', 'card', 'wallet').required(),
+    paymentMethod: Joi.string().valid('card').required(),
     orderNote: Joi.string().allow('').optional(),
     userLat: Joi.number().required().description('Latitude của user'),
     userLon: Joi.number().required().description('Longitude của user'),

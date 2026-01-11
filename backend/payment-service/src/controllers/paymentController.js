@@ -146,6 +146,21 @@ class PaymentController {
             next(error);
         }
     }
+
+    // Dev / admin helper: mark a payment completed (useful for testing without Stripe)
+    async completePayment(req, res, next) {
+        try {
+            const { paymentId } = req.params;
+            const { transactionId } = req.body || {};
+
+            const payment = await paymentService.completePayment(paymentId, transactionId || null);
+
+            res.status(200).json({ success: true, message: 'Payment marked completed', data: payment });
+        } catch (error) {
+            logger.error('Complete payment controller error:', error);
+            next(error);
+        }
+    }
 }
 
 export default new PaymentController();

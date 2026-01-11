@@ -108,6 +108,26 @@ class PaymentService {
                 throw new Error('Payment not found');
             }
 
+            // Idempotent: if already completed, avoid re-processing credit but attempt publish if not credited
+            if (payment.status === 'completed') {
+                const metadata = payment.metadata || {};
+                if (!metadata.merchantCredited) {
+                    logger.info(
+                        'completePayment called but payment already completed; attempting publishPaymentCompleted if not credited',
+                        {
+                            paymentId,
+                        },
+                    );
+                    await this.publishPaymentCompleted(payment);
+                } else {
+                    logger.info(
+                        'completePayment called but payment already completed and merchantCredited=true; skipping',
+                        { paymentId },
+                    );
+                }
+                return payment;
+            }
+
             payment.status = 'completed';
             payment.transactionId = transactionId;
             payment.processedAt = new Date();
@@ -259,25 +279,50 @@ class PaymentService {
         // Try to credit merchant wallet immediately if we have restaurant info in metadata
         try {
             const metadata = payment.metadata || {};
+            logger.info('publishPaymentCompleted - payment metadata:', { paymentId: payment.paymentId, metadata });
             const restaurantId = metadata.restaurantId || metadata.restaurant_id;
-            const amountForRestaurant = metadata.amountForRestaurant || metadata.amount_for_restaurant;
+            const rawAmount = metadata.amountForRestaurant || metadata.amount_for_restaurant;
+            const amountForRestaurant = Number(rawAmount);
 
             // idempotency: only credit once
-            if (restaurantId && amountForRestaurant && !metadata.merchantCredited) {
-                await walletService.credit(
-                    restaurantId,
-                    payment.orderId,
-                    amountForRestaurant,
-                    `Auto credit from payment ${payment.paymentId}`,
-                );
+            if (
+                restaurantId &&
+                Number.isFinite(amountForRestaurant) &&
+                amountForRestaurant > 0 &&
+                !metadata.merchantCredited
+            ) {
+                try {
+                    await walletService.credit(
+                        restaurantId,
+                        payment.orderId,
+                        amountForRestaurant,
+                        `Auto credit from payment ${payment.paymentId}`,
+                    );
 
-                // mark as credited
-                payment.metadata = { ...metadata, merchantCredited: true };
-                await payment.save();
-                logger.info(`Auto-credited wallet for restaurant ${restaurantId} amount ${amountForRestaurant}`);
+                    // mark as credited
+                    payment.metadata = { ...metadata, merchantCredited: true };
+                    await payment.save();
+                    logger.info(`Auto-credited wallet for restaurant ${restaurantId} amount ${amountForRestaurant}`);
+                } catch (creditError) {
+                    logger.error('Auto credit to merchant wallet failed (walletService.credit) ', {
+                        paymentId: payment.paymentId,
+                        restaurantId,
+                        amountForRestaurant,
+                        error: creditError.stack || creditError,
+                        metadata,
+                    });
+                }
+            } else if (!restaurantId || !Number.isFinite(amountForRestaurant) || amountForRestaurant <= 0) {
+                logger.warn('publishPaymentCompleted - missing or invalid merchant metadata, skipping auto-credit', {
+                    paymentId: payment.paymentId,
+                    restaurantId,
+                    amountForRestaurant: rawAmount,
+                });
             }
         } catch (creditError) {
-            logger.error(`Auto credit to merchant wallet failed: ${creditError.message}`);
+            logger.error(`Auto credit to merchant wallet failed: ${creditError.message}`, {
+                stack: creditError.stack || creditError,
+            });
         }
     }
 

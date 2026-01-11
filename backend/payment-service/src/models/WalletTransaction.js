@@ -46,8 +46,8 @@ const WalletTransaction = sequelize.define(
             { fields: ['wallet_id'] },
             { fields: ['order_id'] },
             { fields: ['payout_request_id'] },
-            { fields: ['created_at'] },
-            { fields: ['updated_at'] },
+            { fields: ['createdAt'] },
+            { fields: ['updatedAt'] },
         ],
     },
 );

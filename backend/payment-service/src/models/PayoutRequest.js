@@ -40,7 +40,7 @@ const PayoutRequest = sequelize.define(
     {
         tableName: 'payout_requests',
         timestamps: true,
-        indexes: [{ fields: ['wallet_id'] }, { fields: ['status'] }, { fields: ['created_at'] }],
+        indexes: [{ fields: ['wallet_id'] }, { fields: ['status'] }, { fields: ['createdAt'] }],
     },
 );
 

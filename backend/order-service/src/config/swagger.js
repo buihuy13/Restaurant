@@ -101,7 +101,7 @@ export const orderServiceOpenAPI = {
                         enum: ['pending', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'],
                         example: 'pending',
                     },
-                    paymentMethod: { type: 'string', enum: ['cash', 'card', 'wallet'], example: 'wallet' },
+                    paymentMethod: { type: 'string', enum: ['card'], example: 'card' },
                     orderNote: { type: 'string', example: 'Giao nhanh giúp mình nhé!' },
                     estimatedDeliveryTime: { type: 'string', format: 'date-time', example: '2025-04-06T12:30:00Z' },
                     createdAt: { type: 'string', format: 'date-time' },

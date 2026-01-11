@@ -12,6 +12,25 @@ class WalletService {
             throw new Error('Thiếu hoặc sai thông tin: restaurantId, orderId, amount');
         }
 
+        // Idempotency: if we already recorded a COMPLETED EARN transaction for this order, skip
+        try {
+            const existingTx = await WalletTransaction.findOne({
+                where: { orderId, type: 'EARN', status: 'COMPLETED' },
+            });
+            if (existingTx) {
+                logger.info('walletService.credit - skipping duplicate credit for order', {
+                    restaurantId,
+                    orderId,
+                    amount,
+                });
+                return; // already credited
+            }
+        } catch (err) {
+            logger.warn('walletService.credit - failed to check existing transactions, continuing', {
+                error: err.stack || err,
+            });
+        }
+
         const t = await Wallet.sequelize.transaction(); // BẮT ĐẦU TRANSACTION – QUAN TRỌNG NHẤT!
 
         try {
@@ -61,7 +80,7 @@ class WalletService {
                 restaurantId,
                 orderId,
                 amount,
-                error: error.message,
+                error: error.stack || error,
             });
             throw error; // ném ra để Order Service biết và retry sau
         }

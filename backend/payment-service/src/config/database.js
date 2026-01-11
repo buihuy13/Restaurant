@@ -14,7 +14,7 @@ const sequelize = new Sequelize(process.env.PAYMENT_SERVICE_DB_URL, {
     },
     define: {
         timestamps: true,
-        underscored: true,
+        underscored: false,
     },
 });
 

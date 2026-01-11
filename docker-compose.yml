@@ -37,7 +37,7 @@ services:
             test: ['CMD', 'mysqladmin', 'ping', '-h', 'db', '-u', 'root', '-p${DB_PASSWORD}']
             interval: 10s
             timeout: 5s
-            retries: 3
+            retries: 10
             start_period: 60s
 
     mongodb:

@@ -13,17 +13,14 @@ const Payment = sequelize.define(
             type: DataTypes.STRING(100),
             allowNull: false,
             unique: true,
-            field: 'payment_id',
         },
         orderId: {
             type: DataTypes.STRING(100),
             allowNull: false,
-            field: 'order_id',
         },
         userId: {
             type: DataTypes.STRING(100),
             allowNull: false,
-            field: 'user_id',
         },
         amount: {
             type: DataTypes.DECIMAL(10, 2),
@@ -37,18 +34,15 @@ const Payment = sequelize.define(
             defaultValue: 'USD',
         },
         paymentMethod: {
-            type: DataTypes.ENUM('card'),
+            type: DataTypes.ENUM('cash', 'card', 'wallet'),
             allowNull: false,
-            field: 'payment_method',
         },
         paymentGateway: {
             type: DataTypes.STRING(50),
             defaultValue: 'stripe',
-            field: 'payment_gateway',
         },
         transactionId: {
             type: DataTypes.STRING(200),
-            field: 'transaction_id',
         },
         status: {
             type: DataTypes.ENUM('pending', 'processing', 'completed', 'failed', 'refunded'),
@@ -56,44 +50,30 @@ const Payment = sequelize.define(
         },
         failureReason: {
             type: DataTypes.TEXT,
-            field: 'failure_reason',
         },
         refundAmount: {
             type: DataTypes.DECIMAL(10, 2),
             defaultValue: 0,
-            field: 'refund_amount',
         },
         refundReason: {
             type: DataTypes.TEXT,
-            field: 'refund_reason',
         },
         refundTransactionId: {
             type: DataTypes.STRING(200),
-            field: 'refund_transaction_id',
         },
         metadata: {
             type: DataTypes.JSON,
         },
         processedAt: {
             type: DataTypes.DATE,
-            field: 'processed_at',
         },
         refundedAt: {
             type: DataTypes.DATE,
-            field: 'refunded_at',
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            field: 'created_at',
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            field: 'updated_at',
         },
     },
     {
         tableName: 'payments',
-        timestamps: false,
+        timestamps: true,
         indexes: [{ fields: ['orderId'] }, { fields: ['userId'] }, { fields: ['status'] }, { fields: ['createdAt'] }],
     },
 );

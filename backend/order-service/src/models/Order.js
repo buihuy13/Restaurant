@@ -96,7 +96,7 @@ const orderSchema = new mongoose.Schema(
         },
         paymentMethod: {
             type: String,
-            enum: ['cash', 'card', 'wallet'],
+            enum: ['card'],
             required: true,
         },
         estimatedDeliveryTime: Date,

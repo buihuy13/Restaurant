@@ -28,6 +28,9 @@ const router = express.Router();
  */
 router.post('/', paymentController.createPayment);
 
+// Dev/admin endpoint to force-complete a payment (for testing)
+router.post('/:paymentId/complete', paymentController.completePayment);
+
 /**
  * @swagger
  * /api/payments/order/{orderId}:

@@ -1,5 +1,6 @@
 import rabbitmqConnection from '../config/rabbitmq.js';
 import Wallet from '../models/Wallet.js';
+import WalletTransaction from '../models/WalletTransaction.js';
 import logger from '../utils/logger.js';
 
 export const startOrderCompletedConsumer = async () => {
@@ -20,7 +21,7 @@ export const startOrderCompletedConsumer = async () => {
                 const amountForRestaurant = orderData.totalAmount - platformFee;
 
                 // Cập nhật ví của nhà hàng
-                let wallet = await Wallet.findOne({ restaurantId: orderData.restaurantId });
+                let wallet = await Wallet.findOne({ where: { restaurantId: orderData.restaurantId } });
                 if (!wallet) {
                     wallet = await Wallet.create({
                         restaurantId: orderData.restaurantId,
@@ -30,19 +31,28 @@ export const startOrderCompletedConsumer = async () => {
                     });
                     logger.info(`Created new wallet for restaurant ${orderData.restaurantId}`);
                 }
-
-                wallet.balance += amountForRestaurant;
-                wallet.totalEarned += amountForRestaurant;
-                await wallet.save();
-
-                // Ghi nhận giao dịch vào lịch sử
-                await WalletTransaction.create({
-                    walletId: wallet._id,
-                    orderId: orderData.orderId,
-                    type: 'EARNED',
-                    amount: amountForRestaurant,
-                    description: `Đơn hàng ${orderData.orderId} hoàn thành`,
+                // Idempotency: avoid duplicate credit for same order
+                const existing = await WalletTransaction.findOne({
+                    where: { orderId: orderData.orderId, type: 'EARN', status: 'COMPLETED' },
                 });
+                if (existing) {
+                    logger.info('OrderCompletedConsumer - duplicate wallet credit detected, skipping', {
+                        orderId: orderData.orderId,
+                    });
+                } else {
+                    // Update wallet amounts atomically using increment
+                    await wallet.increment({ balance: amountForRestaurant, totalEarned: amountForRestaurant });
+
+                    // Record transaction history
+                    await WalletTransaction.create({
+                        walletId: wallet.id,
+                        orderId: orderData.orderId,
+                        type: 'EARN',
+                        amount: amountForRestaurant,
+                        status: 'COMPLETED',
+                        description: `Đơn hàng ${orderData.orderId} hoàn thành`,
+                    });
+                }
 
                 logger.info(`Đã cập nhật ví cho nhà hàng ${orderData.restaurantId} với số tiền ${amountForRestaurant}`);
             } catch (error) {
