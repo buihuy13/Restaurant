@@ -45,12 +45,17 @@ class PaymentService {
         }
     }
 
-    // Ensure metadata includes restaurantId and amountForRestaurant by fetching order if needed
+    // Ensure metadata includes merchantId and amountForMerchant by fetching order if needed
     async _ensureMetadata(paymentData) {
         try {
             const inputMeta = paymentData.metadata || {};
-            let restaurantId = inputMeta.restaurantId || inputMeta.restaurant_id;
-            let amountForRestaurant = inputMeta.amountForRestaurant || inputMeta.amount_for_restaurant;
+            let merchantId =
+                inputMeta.merchantId || inputMeta.merchant_id || inputMeta.restaurantId || inputMeta.restaurant_id;
+            let amountForMerchant =
+                inputMeta.amountForMerchant ||
+                inputMeta.amount_for_merchant ||
+                inputMeta.amountForRestaurant ||
+                inputMeta.amount_for_restaurant;
 
             if (!restaurantId || !amountForRestaurant) {
                 const orderServiceUrl =
@@ -68,11 +73,18 @@ class PaymentService {
                     const resp = await axios.get(url, { timeout: 5000 });
                     const order = resp.data?.data || resp.data;
                     if (order) {
-                        restaurantId = restaurantId || order.restaurantId || order.restaurant_id || order.restaurant;
+                        merchantId =
+                            merchantId ||
+                            order.merchantId ||
+                            order.merchant_id ||
+                            order.merchant ||
+                            order.restaurantId ||
+                            order.restaurant_id ||
+                            order.restaurant;
                         const total = Number(
                             order.totalAmount || order.total_amount || order.total || paymentData.amount || 0,
                         );
-                        amountForRestaurant = amountForRestaurant || Math.round(total * 0.9);
+                        amountForMerchant = amountForMerchant || Math.round(total * 0.9);
                     }
                 } catch (err) {
                     logger.warn('Failed to fetch order for metadata enrichment', {
@@ -83,8 +95,8 @@ class PaymentService {
             }
 
             const out = { ...inputMeta };
-            if (restaurantId) out.restaurantId = restaurantId;
-            if (amountForRestaurant) out.amountForRestaurant = amountForRestaurant;
+            if (merchantId) out.merchantId = merchantId;
+            if (amountForMerchant) out.amountForMerchant = amountForMerchant;
             return out;
         } catch (err) {
             logger.error('Error in _ensureMetadata:', err);
@@ -112,6 +124,12 @@ class PaymentService {
                     paymentId: payment.paymentId,
                     orderId: payment.orderId,
                     userId: payment.userId,
+                    merchantId:
+                        payment.metadata?.merchantId || payment.metadata?.merchant_id || payment.metadata?.restaurantId,
+                    amountForMerchant:
+                        payment.metadata?.amountForMerchant ||
+                        payment.metadata?.amount_for_merchant ||
+                        payment.metadata?.amountForRestaurant,
                 },
             );
 
@@ -121,8 +139,10 @@ class PaymentService {
 
             // Lưu lại thông tin giao dịch Stripe
             payment.transactionId = paymentIntent.id;
+            // Persist paymentId into metadata so webhook can lookup reliably
             payment.metadata = {
                 ...payment.metadata,
+                paymentId: payment.paymentId,
                 clientSecret: paymentIntent.client_secret,
             };
             await payment.save();
@@ -249,16 +269,37 @@ class PaymentService {
         const { type, data } = event;
 
         try {
+            // Prefer paymentId from metadata (more reliable), fall back to transactionId
             if (type === 'payment_intent.succeeded') {
                 const paymentIntent = data.object;
-                const payment = await Payment.findOne({ where: { transactionId: paymentIntent.id } });
+                const metaPaymentId = paymentIntent.metadata?.paymentId || paymentIntent.metadata?.payment_id;
 
-                if (!payment) return logger.warn(`No payment found for transaction ${paymentIntent.id}`);
+                let payment = null;
+                if (metaPaymentId) {
+                    payment = await Payment.findOne({ where: { paymentId: metaPaymentId } });
+                }
 
-                // Đánh dấu hoàn tất
-                payment.status = 'completed';
-                payment.processedAt = new Date();
-                await payment.save();
+                if (!payment) {
+                    payment = await Payment.findOne({ where: { transactionId: paymentIntent.id } });
+                }
+
+                if (!payment)
+                    return logger.warn(
+                        `No payment found for intent ${paymentIntent.id} (metaPaymentId=${metaPaymentId})`,
+                    );
+
+                // Ensure transactionId is set and mark completed (transition from processing -> completed)
+                const prevStatus = payment.status;
+                payment.transactionId = payment.transactionId || paymentIntent.id;
+                if (payment.status !== 'completed') {
+                    payment.status = 'completed';
+                    payment.processedAt = new Date();
+                    await payment.save();
+                    logger.info(`Payment status transition: ${prevStatus} -> completed for ${payment.paymentId}`);
+                } else {
+                    // still ensure transactionId persisted
+                    await payment.save();
+                }
 
                 // Gửi event sang RabbitMQ
                 await this.publishPaymentCompleted(payment);
@@ -267,10 +308,23 @@ class PaymentService {
 
             if (type === 'payment_intent.payment_failed') {
                 const paymentIntent = data.object;
-                const payment = await Payment.findOne({ where: { transactionId: paymentIntent.id } });
+                const metaPaymentId = paymentIntent.metadata?.paymentId || paymentIntent.metadata?.payment_id;
 
-                if (!payment) return logger.warn(`No payment found for transaction ${paymentIntent.id}`);
+                let payment = null;
+                if (metaPaymentId) {
+                    payment = await Payment.findOne({ where: { paymentId: metaPaymentId } });
+                }
 
+                if (!payment) {
+                    payment = await Payment.findOne({ where: { transactionId: paymentIntent.id } });
+                }
+
+                if (!payment)
+                    return logger.warn(
+                        `No payment found for failed intent ${paymentIntent.id} (metaPaymentId=${metaPaymentId})`,
+                    );
+
+                payment.transactionId = payment.transactionId || paymentIntent.id;
                 payment.status = 'failed';
                 payment.failureReason = paymentIntent.last_payment_error?.message || 'Unknown error';
                 await payment.save();
@@ -331,43 +385,98 @@ class PaymentService {
         try {
             const metadata = payment.metadata || {};
             logger.info('publishPaymentCompleted - payment metadata:', { paymentId: payment.paymentId, metadata });
-            const restaurantId = metadata.restaurantId || metadata.restaurant_id;
-            const rawAmount = metadata.amountForRestaurant || metadata.amount_for_restaurant;
-            const amountForRestaurant = Number(rawAmount);
+            let merchantId =
+                metadata.merchantId || metadata.merchant_id || metadata.restaurantId || metadata.restaurant_id;
+            let rawAmount =
+                metadata.amountForMerchant ||
+                metadata.amount_for_merchant ||
+                metadata.amountForRestaurant ||
+                metadata.amount_for_restaurant;
+            let amountForMerchant = Number(rawAmount);
+
+            // Fallback: if metadata missing merchant info, try to fetch order from Order Service
+            if ((!merchantId || !Number.isFinite(amountForMerchant) || amountForMerchant <= 0) && payment.orderId) {
+                const orderServiceUrl =
+                    process.env.ORDER_SERVICE_URL || process.env.ORDER_SERVICE || process.env.ORDER_SERVICE_URL_BASE;
+                if (orderServiceUrl) {
+                    try {
+                        const url = `${orderServiceUrl.replace(/\/$/, '')}/api/orders/${encodeURIComponent(
+                            payment.orderId,
+                        )}`;
+                        logger.info('publishPaymentCompleted - fetching order for fallback metadata', {
+                            url,
+                            orderId: payment.orderId,
+                        });
+                        const resp = await axios.get(url, { timeout: 5000 });
+                        const order = resp.data?.data || resp.data;
+                        if (order) {
+                            merchantId =
+                                merchantId ||
+                                order.merchantId ||
+                                order.merchant_id ||
+                                order.merchant ||
+                                order.restaurantId ||
+                                order.restaurant_id ||
+                                order.restaurant;
+                            const total = Number(
+                                order.totalAmount || order.total_amount || order.total || payment.amount || 0,
+                            );
+                            amountForMerchant = amountForMerchant || Math.round(total * 0.9);
+
+                            // persist enriched metadata back to payment so future retries don't need lookup
+                            payment.metadata = { ...metadata, merchantId, amountForMerchant };
+                            await payment.save();
+                            logger.info('publishPaymentCompleted - enriched payment metadata from order service', {
+                                paymentId: payment.paymentId,
+                                merchantId,
+                                amountForMerchant,
+                            });
+                        }
+                    } catch (err) {
+                        logger.warn('publishPaymentCompleted - failed to fetch order for metadata fallback', {
+                            orderId: payment.orderId,
+                            error: err.message,
+                        });
+                    }
+                } else {
+                    logger.warn('publishPaymentCompleted - ORDER_SERVICE_URL not configured, cannot enrich metadata');
+                }
+            }
 
             // idempotency: only credit once
             if (
-                restaurantId &&
-                Number.isFinite(amountForRestaurant) &&
-                amountForRestaurant > 0 &&
-                !metadata.merchantCredited
+                merchantId &&
+                Number.isFinite(amountForMerchant) &&
+                amountForMerchant > 0 &&
+                !payment.metadata?.merchantCredited
             ) {
                 try {
+                    // Wallet model stores restaurantId field; pass merchantId value as the wallet key
                     await walletService.credit(
-                        restaurantId,
+                        merchantId,
                         payment.orderId,
-                        amountForRestaurant,
+                        amountForMerchant,
                         `Auto credit from payment ${payment.paymentId}`,
                     );
 
                     // mark as credited
-                    payment.metadata = { ...metadata, merchantCredited: true };
+                    payment.metadata = { ...(payment.metadata || metadata), merchantCredited: true };
                     await payment.save();
-                    logger.info(`Auto-credited wallet for restaurant ${restaurantId} amount ${amountForRestaurant}`);
+                    logger.info(`Auto-credited wallet for merchant ${merchantId} amount ${amountForMerchant}`);
                 } catch (creditError) {
                     logger.error('Auto credit to merchant wallet failed (walletService.credit) ', {
                         paymentId: payment.paymentId,
-                        restaurantId,
-                        amountForRestaurant,
+                        merchantId,
+                        amountForMerchant,
                         error: creditError.stack || creditError,
-                        metadata,
+                        metadata: payment.metadata,
                     });
                 }
-            } else if (!restaurantId || !Number.isFinite(amountForRestaurant) || amountForRestaurant <= 0) {
+            } else if (!merchantId || !Number.isFinite(amountForMerchant) || amountForMerchant <= 0) {
                 logger.warn('publishPaymentCompleted - missing or invalid merchant metadata, skipping auto-credit', {
                     paymentId: payment.paymentId,
-                    restaurantId,
-                    amountForRestaurant: rawAmount,
+                    merchantId,
+                    amountForMerchant: rawAmount,
                 });
             }
         } catch (creditError) {
@@ -429,8 +538,8 @@ class PaymentService {
                 currency: (orderData.currency || 'USD').toLowerCase(),
                 // pass restaurant info into metadata so later when payment completes we can credit merchant
                 metadata: {
-                    restaurantId: orderData.restaurantId,
-                    amountForRestaurant: Math.round((orderData.totalAmount || 0) * 0.9), // default 10% platform fee
+                    merchantId: orderData.merchantId || orderData.restaurantId,
+                    amountForMerchant: Math.round((orderData.totalAmount || 0) * 0.9), // default 10% platform fee
                 },
             };
 

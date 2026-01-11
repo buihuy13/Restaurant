@@ -284,6 +284,7 @@ class OrderService {
                 orderId: this.generateOrderId(),
                 userId: orderData.userId,
                 restaurantId: restaurant.id,
+                merchantId: restaurant.merchantId,
                 restaurantName: restaurant.name,
                 restaurantSlug: restaurant.slug,
                 restaurantImage: restaurant.imageURL,
@@ -314,6 +315,7 @@ class OrderService {
                     orderId: order.orderId,
                     userId: order.userId,
                     restaurantId: restaurant.id,
+                    merchantId: restaurant.merchantId,
                     restaurantName: restaurant.name,
                     totalAmount: order.finalAmount,
                     paymentMethod: order.paymentMethod,
@@ -375,6 +377,7 @@ class OrderService {
                         orderId: this.generateOrderId(),
                         userId,
                         restaurantId: restaurant.id,
+                        merchantId: restaurant.merchantId,
                         restaurantName: restaurant.name,
                         restaurantSlug: restaurant.slug,
                         restaurantImage: restaurant.imageURL,
@@ -412,6 +415,7 @@ class OrderService {
                             orderId: order.orderId,
                             userId,
                             restaurantId: restaurant.id,
+                            merchantId: restaurant.merchantId,
                             restaurantName: restaurant.name,
                             totalAmount: order.finalAmount,
                             paymentMethod,
@@ -582,10 +586,11 @@ class OrderService {
                             orderId: order.orderId,
                             userId: order.userId,
                             restaurantId: order.restaurantId,
+                            merchantId: order.merchantId,
                             restaurantName: order.restaurantName,
                             totalAmount: order.finalAmount,
                             platformFee: Math.round(order.finalAmount * 0.1),
-                            amountForRestaurant: Math.round(order.finalAmount * 0.9),
+                            amountForMerchant: Math.round(order.finalAmount * 0.9),
                             items: order.items,
                             completedAt: new Date().toISOString(),
                             paymentMethod: order.paymentMethod,
@@ -757,14 +762,14 @@ class OrderService {
         await cacheService.invalidateUserOrders(order.userId);
 
         // Publish event: merchant accepted order
-        // await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.accepted', {
-        //     orderId: order.orderId,
-        //     userId: order.userId,
-        //     restaurantId: order.restaurantId,
-        //     restaurantName: order.restaurantName,
-        //     merchantId,
-        //     timestamp: new Date().toISOString(),
-        // });
+        await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.accepted', {
+            orderId: order.orderId,
+            userId: order.userId,
+            restaurantId: order.restaurantId,
+            restaurantName: order.restaurantName,
+            merchantId,
+            timestamp: new Date().toISOString(),
+        });
 
         logger.info(`Merchant ${merchantId} accepted order ${orderId}`);
         return order;
@@ -792,14 +797,15 @@ class OrderService {
         await cacheService.setOrder(order.orderId, order.toObject());
         await cacheService.invalidateUserOrders(order.userId);
 
-        // Publish event: merchant rejected
-        await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.rejected', {
+        // Publish event: merchant rejected — route into the generic cancelled queue so cancellations and rejections share the same queue
+        await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.cancelled', {
             orderId: order.orderId,
             userId: order.userId,
             restaurantId: order.restaurantId,
             restaurantName: order.restaurantName,
             merchantId,
             reason,
+            cancelType: 'rejected',
             timestamp: new Date().toISOString(),
         });
 

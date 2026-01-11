@@ -5,13 +5,14 @@ class InternalWalletController {
     // CỘNG TIỀN KHI ĐƠN HOÀN TẤT + KHÁCH ĐÃ THANH TOÁN
     async credit(req, res) {
         try {
-            const { restaurantId, orderId, amount, description } = req.body;
+            const { restaurantId, merchantId, orderId, amount, description } = req.body;
+            const walletKey = merchantId || restaurantId;
 
             // Validate nghiêm ngặt
-            if (!restaurantId || !orderId) {
+            if (!walletKey || !orderId) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Thiếu restaurantId hoặc orderId',
+                    message: 'Thiếu merchantId/restaurantId hoặc orderId',
                 });
             }
 
@@ -23,7 +24,7 @@ class InternalWalletController {
             }
 
             await walletService.credit(
-                restaurantId,
+                walletKey,
                 orderId,
                 parseFloat(amount),
                 description || `Đơn #${orderId} – đã giao thành công`,
@@ -37,7 +38,7 @@ class InternalWalletController {
                 success: true,
                 message: 'Cộng tiền vào ví nhà hàng thành công',
                 data: {
-                    restaurantId,
+                    merchantId: walletKey,
                     orderId,
                     amount: parseFloat(amount),
                     timestamp: new Date().toISOString(),

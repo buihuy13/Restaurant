@@ -44,6 +44,11 @@ const orderSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
+        merchantId: {
+            type: String,
+            required: false,
+            index: true,
+        },
         restaurantName: {
             type: String,
             required: true,

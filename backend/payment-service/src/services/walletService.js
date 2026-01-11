@@ -31,25 +31,22 @@ class WalletService {
             });
         }
 
-        const t = await Wallet.sequelize.transaction(); // BẮT ĐẦU TRANSACTION – QUAN TRỌNG NHẤT!
+        const t = await Wallet.sequelize.transaction(); // BEGIN TRANSACTION
 
         try {
-            let wallet = await Wallet.findOne({
+            // Use findOrCreate to lazy-init wallet if missing
+            const [wallet, created] = await Wallet.findOrCreate({
                 where: { restaurantId },
-                lock: t.LOCK.UPDATE, // khóa record để tránh race condition
+                defaults: {
+                    restaurantId,
+                    balance: 0,
+                    totalEarned: 0,
+                    totalWithdrawn: 0,
+                },
                 transaction: t,
             });
 
-            if (!wallet) {
-                wallet = await Wallet.create(
-                    {
-                        restaurantId,
-                        balance: 0,
-                        totalEarned: 0,
-                        totalWithdrawn: 0,
-                    },
-                    { transaction: t },
-                );
+            if (created) {
                 logger.info(`Tạo ví mới cho nhà hàng: ${restaurantId}`);
             }
 
@@ -226,9 +223,9 @@ class WalletService {
             await payout.wallet.increment('balance', { by: payout.amount, transaction: t });
             await payout.wallet.decrement('totalWithdrawn', { by: payout.amount, transaction: t });
 
-            await payout.update({ status: 'rejected', note: reason }, { transaction: t });
+            await payout.update({ status: 'failed', note: reason }, { transaction: t });
             await WalletTransaction.update(
-                { status: 'REJECTED' },
+                { status: 'FAILED' },
                 { where: { payoutRequestId: payout.id }, transaction: t },
             );
 

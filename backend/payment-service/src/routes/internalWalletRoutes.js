@@ -82,9 +82,10 @@ const requireInternalKey = (req, res, next) => {
  */
 router.post('/credit', requireInternalKey, async (req, res) => {
     try {
-        const { restaurantId, orderId, amount, description } = req.body;
+        const { restaurantId, merchantId, orderId, amount, description } = req.body;
+        const walletKey = merchantId || restaurantId;
 
-        if (!restaurantId || !orderId || !amount || amount <= 0) {
+        if (!walletKey || !orderId || !amount || amount <= 0) {
             return res.status(400).json({
                 success: false,
                 message: 'Thiếu restaurantId / orderId / amount hợp lệ',
@@ -92,7 +93,7 @@ router.post('/credit', requireInternalKey, async (req, res) => {
         }
 
         await walletService.credit(
-            restaurantId,
+            walletKey,
             orderId,
             parseFloat(amount),
             description || `Đơn #${orderId} hoàn tất – khách đã thanh toán`,

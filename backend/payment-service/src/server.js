@@ -10,6 +10,7 @@ import { errorHandler } from './middlewares/errorHandler.js';
 import rabbitmqConnection from './config/rabbitmq.js';
 import eurekaClient from './config/eureka.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import paymentController from './controllers/paymentController.js';
 import walletRoutes from './routes/walletRoutes.js';
 import { startOrderConsumer } from './consumers/orderConsumer.js';
 import { setupSwagger } from './config/swagger.js';
@@ -19,6 +20,9 @@ import internalWalletRoutes from './routes/internalWalletRoutes.js';
 
 const app = express();
 const PORT = process.env.PAYMENT_PORT || 8083;
+
+// Register Stripe webhook route with raw body BEFORE the JSON body parser so signature verification gets the raw payload
+app.post('/api/payments/webhook/stripe', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
 
 // Middlewares
 app.use(express.json());
@@ -30,7 +34,7 @@ app.use(
     cors({
         origin: ['http://localhost:8080', 'http://api-gateway:8080'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'stripe-signature', 'Stripe-Signature'],
     }),
 );
 

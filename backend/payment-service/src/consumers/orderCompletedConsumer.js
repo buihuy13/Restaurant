@@ -17,19 +17,21 @@ export const startOrderCompletedConsumer = async () => {
                     return; // KHÔNG CỘNG TIỀN
                 }
 
-                const platformFee = Math.round(orderData.totalAmount * 0.1); // 10% phí nền tảng
-                const amountForRestaurant = orderData.totalAmount - platformFee;
+                const platformFee = Math.round(orderData.totalAmount * 0.1); // 10% platform fee
+                const amountForMerchant = orderData.amountForMerchant || orderData.totalAmount - platformFee;
 
-                // Cập nhật ví của nhà hàng
-                let wallet = await Wallet.findOne({ where: { restaurantId: orderData.restaurantId } });
+                // Cập nhật ví của merchant (wallet stores restaurantId column but we'll pass merchantId value)
+                const merchantId =
+                    orderData.merchantId || orderData.merchant_id || orderData.restaurantId || orderData.restaurant_id;
+                let wallet = await Wallet.findOne({ where: { restaurantId: merchantId } });
                 if (!wallet) {
                     wallet = await Wallet.create({
-                        restaurantId: orderData.restaurantId,
+                        restaurantId: merchantId,
                         balance: 0,
                         totalEarned: 0,
                         totalWithdrawn: 0,
                     });
-                    logger.info(`Created new wallet for restaurant ${orderData.restaurantId}`);
+                    logger.info(`Created new wallet for merchant ${merchantId}`);
                 }
                 // Idempotency: avoid duplicate credit for same order
                 const existing = await WalletTransaction.findOne({
@@ -41,20 +43,20 @@ export const startOrderCompletedConsumer = async () => {
                     });
                 } else {
                     // Update wallet amounts atomically using increment
-                    await wallet.increment({ balance: amountForRestaurant, totalEarned: amountForRestaurant });
+                    await wallet.increment({ balance: amountForMerchant, totalEarned: amountForMerchant });
 
                     // Record transaction history
                     await WalletTransaction.create({
                         walletId: wallet.id,
                         orderId: orderData.orderId,
                         type: 'EARN',
-                        amount: amountForRestaurant,
+                        amount: amountForMerchant,
                         status: 'COMPLETED',
                         description: `Đơn hàng ${orderData.orderId} hoàn thành`,
                     });
                 }
 
-                logger.info(`Đã cập nhật ví cho nhà hàng ${orderData.restaurantId} với số tiền ${amountForRestaurant}`);
+                logger.info(`Đã cập nhật ví cho merchant ${merchantId} với số tiền ${amountForMerchant}`);
             } catch (error) {
                 logger.error('Error processing order completed event:', error);
             }

@@ -17,6 +17,9 @@ class RabbitMQConnection {
             ORDER_CREATED: 'order.created',
             ORDER_UPDATED: 'order.updated',
             ORDER_CANCELLED: 'order.cancelled',
+            ORDER_ACCEPTED: 'order.accepted',
+            ORDER_REJECTED: 'order.rejected',
+            ORDER_CANCELLED_BY_MERCHANT: 'order.cancelled.by.merchant',
             PAYMENT_COMPLETED: 'payment.completed',
             PAYMENT_FAILED: 'payment.failed',
             ORDER_COMPLETED: 'order.completed',
@@ -66,6 +69,13 @@ class RabbitMQConnection {
             await this.channel.bindQueue(this.queues.ORDER_CREATED, this.exchanges.ORDER, 'order.created');
             await this.channel.bindQueue(this.queues.ORDER_UPDATED, this.exchanges.ORDER, 'order.updated');
             await this.channel.bindQueue(this.queues.ORDER_CANCELLED, this.exchanges.ORDER, 'order.cancelled');
+            await this.channel.bindQueue(this.queues.ORDER_ACCEPTED, this.exchanges.ORDER, 'order.accepted');
+            await this.channel.bindQueue(this.queues.ORDER_REJECTED, this.exchanges.ORDER, 'order.rejected');
+            await this.channel.bindQueue(
+                this.queues.ORDER_CANCELLED_BY_MERCHANT,
+                this.exchanges.ORDER,
+                'order.cancelled.by.merchant',
+            );
             await this.channel.bindQueue(this.queues.PAYMENT_COMPLETED, this.exchanges.PAYMENT, 'payment.completed');
             await this.channel.bindQueue(this.queues.PAYMENT_FAILED, this.exchanges.PAYMENT, 'payment.failed');
 
