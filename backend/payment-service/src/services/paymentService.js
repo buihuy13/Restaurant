@@ -3,6 +3,7 @@ import logger from '../utils/logger.js';
 import stripeService from '../services/stripeService.js';
 import rabbitmqConnection from '../config/rabbitmq.js';
 import walletService from './walletService.js';
+import axios from 'axios';
 // import { Error } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,6 +17,9 @@ class PaymentService {
         try {
             const paymentId = this.generatePaymentId();
 
+            // Ensure metadata contains merchant info so auto-credit can run
+            const metadata = await this._ensureMetadata(paymentData);
+
             const payment = await Payment.create({
                 paymentId,
                 orderId: paymentData.orderId,
@@ -24,7 +28,7 @@ class PaymentService {
                 currency: paymentData.currency.toLowerCase() || 'usd',
                 paymentMethod: paymentData.paymentMethod,
                 status: 'pending',
-                metadata: paymentData.metadata || {},
+                metadata,
             });
 
             logger.info(`Created payment ${paymentId} (${paymentData.paymentMethod})`);
@@ -38,6 +42,53 @@ class PaymentService {
         } catch (error) {
             logger.error(`Create payment failed: ${error.message}`);
             throw error;
+        }
+    }
+
+    // Ensure metadata includes restaurantId and amountForRestaurant by fetching order if needed
+    async _ensureMetadata(paymentData) {
+        try {
+            const inputMeta = paymentData.metadata || {};
+            let restaurantId = inputMeta.restaurantId || inputMeta.restaurant_id;
+            let amountForRestaurant = inputMeta.amountForRestaurant || inputMeta.amount_for_restaurant;
+
+            if (!restaurantId || !amountForRestaurant) {
+                const orderServiceUrl =
+                    process.env.ORDER_SERVICE_URL || process.env.ORDER_SERVICE || process.env.ORDER_SERVICE_URL_BASE;
+                if (!orderServiceUrl) {
+                    logger.warn('ORDER_SERVICE_URL not configured; cannot enrich payment metadata');
+                    return { ...inputMeta };
+                }
+
+                try {
+                    const url = `${orderServiceUrl.replace(/\/$/, '')}/api/orders/${encodeURIComponent(
+                        paymentData.orderId,
+                    )}`;
+                    logger.info('Fetching order to enrich payment metadata', { url, orderId: paymentData.orderId });
+                    const resp = await axios.get(url, { timeout: 5000 });
+                    const order = resp.data?.data || resp.data;
+                    if (order) {
+                        restaurantId = restaurantId || order.restaurantId || order.restaurant_id || order.restaurant;
+                        const total = Number(
+                            order.totalAmount || order.total_amount || order.total || paymentData.amount || 0,
+                        );
+                        amountForRestaurant = amountForRestaurant || Math.round(total * 0.9);
+                    }
+                } catch (err) {
+                    logger.warn('Failed to fetch order for metadata enrichment', {
+                        orderId: paymentData.orderId,
+                        error: err.message,
+                    });
+                }
+            }
+
+            const out = { ...inputMeta };
+            if (restaurantId) out.restaurantId = restaurantId;
+            if (amountForRestaurant) out.amountForRestaurant = amountForRestaurant;
+            return out;
+        } catch (err) {
+            logger.error('Error in _ensureMetadata:', err);
+            return paymentData.metadata || {};
         }
     }
 
