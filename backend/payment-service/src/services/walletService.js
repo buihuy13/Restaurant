@@ -8,7 +8,10 @@ class WalletService {
     // 1. CỘNG TIỀN KHI ĐƠN HOÀN TẤT (Order Service gọi)
     async credit(restaurantId, orderId, amount, description = '') {
         // Validate đầu vào
+        logger.info('walletService.credit - entry', { restaurantId, orderId, amount, description });
+
         if (!restaurantId || !orderId || !amount || amount <= 0) {
+            logger.error('walletService.credit - invalid input', { restaurantId, orderId, amount });
             throw new Error('Thiếu hoặc sai thông tin: restaurantId, orderId, amount');
         }
 
@@ -22,6 +25,9 @@ class WalletService {
                     restaurantId,
                     orderId,
                     amount,
+                    existingTxId: existingTx.id,
+                    existingTxAmount: existingTx.amount,
+                    existingTxCreatedAt: existingTx.createdAt,
                 });
                 return; // already credited
             }
@@ -68,8 +74,21 @@ class WalletService {
 
             // Thành công → commit
             await t.commit();
-
-            logger.info(`Cộng tiền thành công: +${amount.toLocaleString()}đ → ví ${restaurantId} (đơn #${orderId})`);
+            // Log post-commit wallet state for debugging
+            try {
+                const freshWallet = await Wallet.findOne({ where: { restaurantId } });
+                logger.info(
+                    `Cộng tiền thành công: +${amount.toLocaleString()} → ví ${restaurantId} (đơn #${orderId})`,
+                    {
+                        walletBalance: freshWallet ? parseFloat(freshWallet.balance) : null,
+                        walletTotalEarned: freshWallet ? parseFloat(freshWallet.totalEarned) : null,
+                    },
+                );
+            } catch (logErr) {
+                logger.info(
+                    `Cộng tiền thành công: +${amount.toLocaleString()}đ → ví ${restaurantId} (đơn #${orderId})`,
+                );
+            }
         } catch (error) {
             // Có lỗi → rollback hết, không để tiền "bốc hơi"
             await t.rollback();

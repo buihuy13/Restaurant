@@ -444,6 +444,17 @@ class PaymentService {
             }
 
             // idempotency: only credit once
+            logger.info('=== DEBUG CREDIT START ===', {
+                paymentId: payment.paymentId,
+                orderId: payment.orderId,
+                rawMetadata: JSON.stringify(metadata),
+                hasMerchantId: !!merchantId,
+                merchantIdValue: merchantId,
+                hasAmount: Number.isFinite(amountForMerchant),
+                amountValue: amountForMerchant,
+                alreadyCredited: !!payment.metadata?.merchantCredited,
+                creditedOrders: payment.metadata?.creditedOrders,
+            });
             if (
                 merchantId &&
                 Number.isFinite(amountForMerchant) &&
