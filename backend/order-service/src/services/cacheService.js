@@ -14,7 +14,8 @@ class CacheService {
 
     async setOrder(orderId, orderData, ttl = 3600) {
         try {
-            await redisClient.set(`order:${orderId}`, JSON.stringify(orderData), ttl);
+            // modern @redis/client expects value as string/Buffer and options object for expiry
+            await redisClient.set(`order:${orderId}`, JSON.stringify(orderData), { EX: ttl });
         } catch (error) {
             logger.error('Cache set error:', error);
         }
@@ -40,7 +41,7 @@ class CacheService {
 
     async setUserOrders(userId, orders, ttl = 1800) {
         try {
-            await redisClient.set(`user_orders:${userId}`, JSON.stringify(orders), ttl);
+            await redisClient.set(`user_orders:${userId}`, JSON.stringify(orders), { EX: ttl });
         } catch (error) {
             logger.error('Cache set user orders error:', error);
         }
@@ -81,7 +82,8 @@ class CacheService {
                 throw new Error('userId is required');
             }
 
-            await redisClient.set(`cart:${userId}`, ttl, JSON.stringify(cartData));
+            // ensure correct argument order and types: key, value, options
+            await redisClient.set(`cart:${userId}`, JSON.stringify(cartData), { EX: ttl });
 
             logger.debug(`Cart cached: ${userId} (${cartData.restaurants?.length || 0} restaurants, TTL: ${ttl}s)`);
         } catch (error) {
