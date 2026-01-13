@@ -61,6 +61,12 @@ export const orderServiceOpenAPI = {
                     price: { type: 'number', example: 85000 },
                     quantity: { type: 'integer', example: 2 },
                     customizations: { type: 'string', example: 'Ít hành, thêm giá đỗ', nullable: true },
+                    cartItemImage: {
+                        type: 'string',
+                        format: 'uri',
+                        example: 'https://images.foodeats.vn/prod/123.jpg',
+                        nullable: true,
+                    },
                 },
                 example: {
                     productId: '66f8a1b2c3d4e5f6789abc12',
@@ -152,6 +158,12 @@ export const orderServiceOpenAPI = {
                     price: { type: 'number', example: 35000 },
                     quantity: { type: 'integer', example: 3 },
                     customizations: { type: 'string', example: 'Ít đá, 30% đường', nullable: true },
+                    cartItemImage: {
+                        type: 'string',
+                        format: 'uri',
+                        example: 'https://images.foodeats.vn/prod/123.jpg',
+                        nullable: true,
+                    },
                     subtotal: { type: 'number', example: 105000 },
                 },
                 example: {

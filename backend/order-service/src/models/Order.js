@@ -9,6 +9,7 @@ const orderItemSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    cartItemImage: { type: String, default: '' },
     quantity: {
         type: Number,
         required: true,

@@ -3,6 +3,7 @@ import Joi from 'joi';
 export const orderItemSchema = Joi.object({
     productId: Joi.string().required(),
     productName: Joi.string().required(),
+    cartItemImage: Joi.string().uri().allow('').optional(),
     quantity: Joi.number().integer().min(1).required(),
     price: Joi.number().min(0).required(),
     customizations: Joi.string().allow('').optional(),

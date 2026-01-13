@@ -90,17 +90,22 @@ class CartService {
 
             if (existingItem) {
                 logger.info(
-                    `📦 Item exists, updating quantity from ${existingItem.quantity} to ${
+                    `Item exists, updating quantity from ${existingItem.quantity} to ${
                         existingItem.quantity + item.quantity
                     }`,
                 );
                 existingItem.quantity += item.quantity;
                 existingItem.subtotal = existingItem.price * existingItem.quantity;
+                // update image if provided
+                if (item.cartItemImage || item.image) {
+                    existingItem.cartItemImage = item.cartItemImage || item.image;
+                }
             } else {
-                logger.info(`✨ Adding new item: ${item.productName}`);
+                logger.info(`Adding new item: ${item.productName}`);
                 restaurantCart.items.push({
                     productId: item.productId,
                     productName: item.productName,
+                    cartItemImage: item.cartItemImage || item.image || '',
                     price: item.price,
                     quantity: item.quantity,
                     customizations: item.customizations || '',
