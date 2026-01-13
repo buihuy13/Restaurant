@@ -12,20 +12,31 @@ class PaymentService {
         return `PAY${Date.now()}${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
     }
 
-    // Tạo thanh toán mới
+    // Tạo thanh toán mới (Phiên bản rút gọn)
     async createPayment(paymentData) {
         try {
             const paymentId = this.generatePaymentId();
 
-            // Ensure metadata contains merchant info so auto-credit can run
-            const metadata = await this._ensureMetadata(paymentData);
+            // Sử dụng metadata trực tiếp từ dữ liệu gửi lên, gán cả 2 loại key để an toàn
+            const inputMeta = paymentData.metadata || {};
+            const merchantId = inputMeta.merchantId || inputMeta.merchant_id;
+            const restaurantId = inputMeta.restaurantId || inputMeta.restaurant_id;
+            const amountForMerchant = inputMeta.amountForMerchant || inputMeta.amountForRestaurant;
+
+            const metadata = {
+                ...inputMeta,
+                merchantId: merchantId, // Truyền cả merchantId
+                restaurantId: restaurantId, // Truyền cả restaurantId
+                amountForMerchant: amountForMerchant,
+                amountForRestaurant: amountForMerchant,
+            };
 
             const payment = await Payment.create({
                 paymentId,
                 orderId: paymentData.orderId,
                 userId: paymentData.userId,
                 amount: paymentData.amount,
-                currency: paymentData.currency.toLowerCase() || 'usd',
+                currency: paymentData.currency ? paymentData.currency.toLowerCase() : 'usd',
                 paymentMethod: paymentData.paymentMethod,
                 status: 'pending',
                 metadata,
@@ -42,65 +53,6 @@ class PaymentService {
         } catch (error) {
             logger.error(`Create payment failed: ${error.message}`);
             throw error;
-        }
-    }
-
-    // Ensure metadata includes merchantId and amountForMerchant by fetching order if needed
-    async _ensureMetadata(paymentData) {
-        try {
-            const inputMeta = paymentData.metadata || {};
-            let merchantId =
-                inputMeta.merchantId || inputMeta.merchant_id || inputMeta.restaurantId || inputMeta.restaurant_id;
-            let amountForMerchant =
-                inputMeta.amountForMerchant ||
-                inputMeta.amount_for_merchant ||
-                inputMeta.amountForRestaurant ||
-                inputMeta.amount_for_restaurant;
-
-            if (!restaurantId || !amountForRestaurant) {
-                const orderServiceUrl =
-                    process.env.ORDER_SERVICE_URL || process.env.ORDER_SERVICE || process.env.ORDER_SERVICE_URL_BASE;
-                if (!orderServiceUrl) {
-                    logger.warn('ORDER_SERVICE_URL not configured; cannot enrich payment metadata');
-                    return { ...inputMeta };
-                }
-
-                try {
-                    const url = `${orderServiceUrl.replace(/\/$/, '')}/api/orders/${encodeURIComponent(
-                        paymentData.orderId,
-                    )}`;
-                    logger.info('Fetching order to enrich payment metadata', { url, orderId: paymentData.orderId });
-                    const resp = await axios.get(url, { timeout: 5000 });
-                    const order = resp.data?.data || resp.data;
-                    if (order) {
-                        merchantId =
-                            merchantId ||
-                            order.merchantId ||
-                            order.merchant_id ||
-                            order.merchant ||
-                            order.restaurantId ||
-                            order.restaurant_id ||
-                            order.restaurant;
-                        const total = Number(
-                            order.totalAmount || order.total_amount || order.total || paymentData.amount || 0,
-                        );
-                        amountForMerchant = amountForMerchant || Math.round(total * 0.9);
-                    }
-                } catch (err) {
-                    logger.warn('Failed to fetch order for metadata enrichment', {
-                        orderId: paymentData.orderId,
-                        error: err.message,
-                    });
-                }
-            }
-
-            const out = { ...inputMeta };
-            if (merchantId) out.merchantId = merchantId;
-            if (amountForMerchant) out.amountForMerchant = amountForMerchant;
-            return out;
-        } catch (err) {
-            logger.error('Error in _ensureMetadata:', err);
-            return paymentData.metadata || {};
         }
     }
 
