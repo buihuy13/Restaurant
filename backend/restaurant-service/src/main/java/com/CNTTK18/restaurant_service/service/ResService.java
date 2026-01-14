@@ -2,13 +2,16 @@ package com.CNTTK18.restaurant_service.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +35,6 @@ import com.CNTTK18.restaurant_service.model.Restaurants;
 import com.CNTTK18.restaurant_service.model.Reviews;
 import com.CNTTK18.restaurant_service.repository.ResRepository;
 import com.CNTTK18.restaurant_service.repository.ReviewRepository;
-import com.CNTTK18.restaurant_service.spec.RestaurantSpec;
 import com.CNTTK18.restaurant_service.util.ResUtil;
 
 import reactor.core.publisher.Mono;
@@ -54,64 +56,66 @@ public class ResService {
         this.distanceService = distanceService;
     }
 
-    public Mono<List<ResResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
-                                                                String rating, String category) {
-        List<String> categoryNames = null;
+    public Mono<Page<ResResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
+                                                                String rating, String category, Pageable pageable) {
+        if (location == null) {
+            throw new InvalidRequestException("longitude and latitude is mandatory");
+        }
+        List<String> categoryNames = (category == null || category.isBlank()) ? List.of()
+            : Arrays.stream(category.split(",")).map(String::toLowerCase).toList();
 
-        if (category != null && !category.isEmpty()) {
-            categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
+        if (search != null && search.isBlank()) {
+            search = null;
         }
 
-        Sort sort = Sort.unsorted();
-        if ("asc".equals(rating)) {
-            sort = Sort.by("rating").ascending();
-        } else if ("desc".equals(rating)) {
-            sort = Sort.by("rating").descending();
+        Sort sort = Sort.by("id").ascending();
+        if ("asc".equalsIgnoreCase(rating)) {
+            sort = Sort.by(
+                Sort.Order.asc("rating"),
+                Sort.Order.asc("id")
+            );
+        } else if ("desc".equalsIgnoreCase(rating)) {
+            sort = Sort.by(
+                Sort.Order.desc("rating"),
+                Sort.Order.asc("id")
+            );
         }
 
-        var resSpec = RestaurantSpec.allSpecification(search, true, categoryNames);
+        Pageable newPageable = PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            sort
+        );
 
-        List<Restaurants> res = resRepository.findAll(resSpec, sort);
+        if (nearby == null || nearby > 20000) {
+            nearby = 20000;
+        }
+        Page<Restaurants> res = resRepository.findRestaurantsWithinDistance(location.getLongitude(), location.getLatitude(), 
+                                                                            nearby, search, categoryNames, newPageable);         
+        if (res.isEmpty()) {
+            return Mono.just(Page.empty(newPageable));
+        }
+                
+        List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
+        List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
         
-        // Lấy các res trong bán kính nearby (theo đường chim bay)
-        if (location != null) {
-            res = res.stream().filter(
-                    r -> {
-                        Double distance = distanceService.calculateHaversineDistance(location.getLongitude(), location.getLatitude(),
-                                                                                    r.getLongitude(), r.getLatitude());
+        return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
+                    .map(response -> {
+                        List<Double> durations = response.getDurations().get(0);
+                        List<Double> distances = response.getDistances().get(0);
+
+                        List<ResResponseWithProduct> responseList = IntStream.range(0, res.getContent().size())
+                            .mapToObj(i -> {
+                                return ResUtil.mapResToResResponseWithProductandDistanceAndDuration(res.getContent().get(i), durations.get(i), distances.get(i));
+                            })
+                            .toList();
                         
-                        if (nearby == null || nearby > 20000) {
-                            return distance <= 20000;
-                        }
-                        return distance <= nearby;
-                    }
-            ).toList();
-
-            if (res.isEmpty()) {
-                return Mono.just(Collections.emptyList());
-            }
-
-            final List<Restaurants> filteredRes = res;
-            
-            List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
-            List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
-            
-            return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
-                        .map(response -> {
-                            List<Double> durations = response.getDurations().get(0);
-                            List<Double> distances = response.getDistances().get(0);
-
-                            return IntStream.range(0, filteredRes.size()).mapToObj(i -> {
-                                Restaurants resIndex = filteredRes.get(i);
-
-                                ResResponseWithProduct resResponseIndex = ResUtil.mapResToResResponseWithProduct(resIndex);
-                                resResponseIndex.setDuration(durations.get(i));
-                                resResponseIndex.setDistance(distances.get(i));
-                                return resResponseIndex;
-                            }).toList();
-                        });
-        }
-        return Mono.just(res.stream().map(ResUtil::mapResToResResponseWithProduct).toList());
+                        return new PageImpl<>(
+                            responseList,
+                            pageable,
+                            res.getTotalElements()
+                        );
+                    });
     }
 
     public Mono<ResResponseWithProduct> getRestaurantById(String id, Coordinates location) {
@@ -167,7 +171,7 @@ public class ResService {
                                                             .resName(resRequest.getResName())
                                                             .products(new HashSet<>())
                                                             .totalReview(0)
-                                                            .rating(0)
+                                                            .rating(0f)
                                                             .longitude(resRequest.getLongitude())
                                                             .latitude(resRequest.getLatitude())
                                                             .slug(SlugGenerator.generate(resRequest.getResName()))

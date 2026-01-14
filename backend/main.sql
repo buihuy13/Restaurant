@@ -94,6 +94,8 @@ create table restaurants (
     updated_at timestamp default current_timestamp
 );
 
+create index idx_restaurants_rating on restaurants(rating);
+
 create index idx_merchantid on restaurants(merchant_id);
 
 create table restaurant_categories (
@@ -128,6 +130,8 @@ create table products (
 create index idx_restaurantid on products(restaurant_id);
 
 create index idx_categoryid on products(category_id);
+
+create index idx_products_rating on products(rating);
 
 create table product_sizes (
     id varchar(255) primary key,

@@ -65,44 +65,44 @@ INSERT INTO restaurant_categories (restaurant_id, category_id) VALUES
 -- ============================================
 -- PRODUCTS
 -- ============================================
-INSERT INTO products (id, product_name, description, restaurant_id, image_url, category_id, volume, rating, slug, available, total_review) VALUES
+INSERT INTO products (id, product_name, description, restaurant_id, image_url, category_id, rating, slug, available, total_review) VALUES
 -- Pho Ha Noi
-('PROD001', 'Pho Bo Tai', 'Pho bo tai voi nuoc dung dam da, thit bo tai mem', 'RES001', 'https://res.cloudinary.com/demo/image/upload/phobo.jpg', 'CAT002', 100, 4.5, 'pho-bo-tai', true, 0),
-('PROD002', 'Pho Bo Chin', 'Pho bo chin voi thit bo chin mem, nuoc dung ngot thanh', 'RES001', 'https://res.cloudinary.com/demo/image/upload/phobochin.jpg', 'CAT002', 80, 4.3, 'pho-bo-chin', true, 0),
-('PROD003', 'Pho Ga', 'Pho ga voi thit ga ta, nuoc dung trong', 'RES001', 'https://res.cloudinary.com/demo/image/upload/phoga.jpg', 'CAT002', 90, 4.6, 'pho-ga', true, 0),
+('PROD001', 'Pho Bo Tai', 'Pho bo tai voi nuoc dung dam da, thit bo tai mem', 'RES001', 'https://res.cloudinary.com/demo/image/upload/phobo.jpg', 'CAT002', 4.5, 'pho-bo-tai', true, 0),
+('PROD002', 'Pho Bo Chin', 'Pho bo chin voi thit bo chin mem, nuoc dung ngot thanh', 'RES001', 'https://res.cloudinary.com/demo/image/upload/phobochin.jpg', 'CAT002', 4.3, 'pho-bo-chin', true, 0),
+('PROD003', 'Pho Ga', 'Pho ga voi thit ga ta, nuoc dung trong', 'RES001', 'https://res.cloudinary.com/demo/image/upload/phoga.jpg', 'CAT002', 4.6, 'pho-ga', true, 0),
 
 -- Bun Cha Obama
-('PROD004', 'Bun Cha Dac Biet', 'Bun cha dac biet voi cha vien, cha mieng, thit nuong', 'RES002', 'https://res.cloudinary.com/demo/image/upload/buncha.jpg', 'CAT002', 150, 4.8, 'bun-cha-dac-biet', true, 0),
-('PROD005', 'Bun Cha Thuong', 'Bun cha voi cha nuong thom lung', 'RES002', 'https://res.cloudinary.com/demo/image/upload/bunchath.jpg', 'CAT002', 120, 4.5, 'bun-cha-thuong', true, 0),
-('PROD006', 'Nem Ran', 'Nem ran gion rum, nhan thit heo', 'RES002', 'https://res.cloudinary.com/demo/image/upload/nemran.jpg', 'CAT003', 100, 4.4, 'nem-ran', true, 0),
+('PROD004', 'Bun Cha Dac Biet', 'Bun cha dac biet voi cha vien, cha mieng, thit nuong', 'RES002', 'https://res.cloudinary.com/demo/image/upload/buncha.jpg', 'CAT002', 4.8, 'bun-cha-dac-biet', true, 0),
+('PROD005', 'Bun Cha Thuong', 'Bun cha voi cha nuong thom lung', 'RES002', 'https://res.cloudinary.com/demo/image/upload/bunchath.jpg', 'CAT002', 4.5, 'bun-cha-thuong', true, 0),
+('PROD006', 'Nem Ran', 'Nem ran gion rum, nhan thit heo', 'RES002', 'https://res.cloudinary.com/demo/image/upload/nemran.jpg', 'CAT003', 4.4, 'nem-ran', true, 0),
 
 -- Pizza Hut Express
-('PROD007', 'Pizza Pepperoni', 'Pizza pepperoni voi xuc xich Y, pho mai mozzarella', 'RES003', 'https://res.cloudinary.com/demo/image/upload/pepperoni.jpg', 'CAT010', 80, 4.3, 'pizza-pepperoni', true, 0),
-('PROD008', 'Pizza Hai San', 'Pizza hai san voi tom, muc, so diep', 'RES003', 'https://res.cloudinary.com/demo/image/upload/seafood.jpg', 'CAT010', 60, 4.5, 'pizza-hai-san', true, 0),
-('PROD009', 'Pasta Carbonara', 'Mi Y sot kem trung, bacon', 'RES003', 'https://res.cloudinary.com/demo/image/upload/carbonara.jpg', 'CAT010', 50, 4.2, 'pasta-carbonara', true, 0),
+('PROD007', 'Pizza Pepperoni', 'Pizza pepperoni voi xuc xich Y, pho mai mozzarella', 'RES003', 'https://res.cloudinary.com/demo/image/upload/pepperoni.jpg', 'CAT010', 4.3, 'pizza-pepperoni', true, 0),
+('PROD008', 'Pizza Hai San', 'Pizza hai san voi tom, muc, so diep', 'RES003', 'https://res.cloudinary.com/demo/image/upload/seafood.jpg', 'CAT010', 4.5, 'pizza-hai-san', true, 0),
+('PROD009', 'Pasta Carbonara', 'Mi Y sot kem trung, bacon', 'RES003', 'https://res.cloudinary.com/demo/image/upload/carbonara.jpg', 'CAT010', 4.2, 'pasta-carbonara', true, 0),
 
 -- Korean BBQ House
-('PROD010', 'Thit Bo Nuong Han Quoc', 'Thit bo nuong kieu Han voi sot dac biet', 'RES004', 'https://res.cloudinary.com/demo/image/upload/bulgogi.jpg', 'CAT008', 70, 4.7, 'thit-bo-nuong-han-quoc', true, 0),
-('PROD011', 'Samgyeopsal', 'Thit ba chi nuong Han Quoc', 'RES004', 'https://res.cloudinary.com/demo/image/upload/samgyeopsal.jpg', 'CAT008', 90, 4.6, 'samgyeopsal', true, 0),
-('PROD012', 'Kimchi Jjigae', 'Canh kim chi cay nong', 'RES004', 'https://res.cloudinary.com/demo/image/upload/kimchi.jpg', 'CAT008', 60, 4.4, 'kimchi-jjigae', true, 0),
+('PROD010', 'Thit Bo Nuong Han Quoc', 'Thit bo nuong kieu Han voi sot dac biet', 'RES004', 'https://res.cloudinary.com/demo/image/upload/bulgogi.jpg', 'CAT008', 4.7, 'thit-bo-nuong-han-quoc', true, 0),
+('PROD011', 'Samgyeopsal', 'Thit ba chi nuong Han Quoc', 'RES004', 'https://res.cloudinary.com/demo/image/upload/samgyeopsal.jpg', 'CAT008', 4.6, 'samgyeopsal', true, 0),
+('PROD012', 'Kimchi Jjigae', 'Canh kim chi cay nong', 'RES004', 'https://res.cloudinary.com/demo/image/upload/kimchi.jpg', 'CAT008', 4.4, 'kimchi-jjigae', true, 0),
 
 -- Sushi Tokyo
-('PROD013', 'Sushi Ca Hoi', 'Sushi ca hoi tuoi nhap khau', 'RES005', 'https://res.cloudinary.com/demo/image/upload/salmon.jpg', 'CAT009', 100, 4.8, 'sushi-ca-hoi', true, 0),
-('PROD014', 'Sashimi Tong Hop', 'Sashimi tong hop ca hoi, ca ngu, bach tuoc', 'RES005', 'https://res.cloudinary.com/demo/image/upload/sashimi.jpg', 'CAT009', 50, 4.9, 'sashimi-tong-hop', true, 0),
-('PROD015', 'Maki Roll', 'Maki roll California', 'RES005', 'https://res.cloudinary.com/demo/image/upload/maki.jpg', 'CAT009', 80, 4.5, 'maki-roll', true, 0),
+('PROD013', 'Sushi Ca Hoi', 'Sushi ca hoi tuoi nhap khau', 'RES005', 'https://res.cloudinary.com/demo/image/upload/salmon.jpg', 'CAT009', 4.8, 'sushi-ca-hoi', true, 0),
+('PROD014', 'Sashimi Tong Hop', 'Sashimi tong hop ca hoi, ca ngu, bach tuoc', 'RES005', 'https://res.cloudinary.com/demo/image/upload/sashimi.jpg', 'CAT009', 4.9, 'sashimi-tong-hop', true, 0),
+('PROD015', 'Maki Roll', 'Maki roll California', 'RES005', 'https://res.cloudinary.com/demo/image/upload/maki.jpg', 'CAT009', 4.5, 'maki-roll', true, 0),
 
 -- Tra Sua Gong Cha
-('PROD016', 'Tra Sua Truyen Thong', 'Tra sua truyen thong voi tran chau den', 'RES006', 'https://res.cloudinary.com/demo/image/upload/milktea.jpg', 'CAT001', 200, 4.5, 'tra-sua-truyen-thong', true, 0),
-('PROD017', 'Tra Dao Cam Sa', 'Tra dao cam sa thanh mat', 'RES006', 'https://res.cloudinary.com/demo/image/upload/peachtea.jpg', 'CAT001', 180, 4.6, 'tra-dao-cam-sa', true, 0),
-('PROD018', 'Matcha Latte', 'Matcha latte beo ngay', 'RES006', 'https://res.cloudinary.com/demo/image/upload/matcha.jpg', 'CAT001', 150, 4.4, 'matcha-latte', true, 0),
+('PROD016', 'Tra Sua Truyen Thong', 'Tra sua truyen thong voi tran chau den', 'RES006', 'https://res.cloudinary.com/demo/image/upload/milktea.jpg', 'CAT001', 4.5, 'tra-sua-truyen-thong', true, 0),
+('PROD017', 'Tra Dao Cam Sa', 'Tra dao cam sa thanh mat', 'RES006', 'https://res.cloudinary.com/demo/image/upload/peachtea.jpg', 'CAT001', 4.6, 'tra-dao-cam-sa', true, 0),
+('PROD018', 'Matcha Latte', 'Matcha latte beo ngay', 'RES006', 'https://res.cloudinary.com/demo/image/upload/matcha.jpg', 'CAT001', 4.4, 'matcha-latte', true, 0),
 
 -- Com Tam Sai Gon
-('PROD019', 'Com Tam Suon Bi Cha', 'Com tam suon bi cha day du', 'RES007', 'https://res.cloudinary.com/demo/image/upload/comtam.jpg', 'CAT007', 100, 4.5, 'com-tam-suon-bi-cha', true, 0),
-('PROD020', 'Com Tam Suon Nuong', 'Com tam suon nuong thom lung', 'RES007', 'https://res.cloudinary.com/demo/image/upload/comtamsuon.jpg', 'CAT007', 120, 4.4, 'com-tam-suon-nuong', true, 0),
+('PROD019', 'Com Tam Suon Bi Cha', 'Com tam suon bi cha day du', 'RES007', 'https://res.cloudinary.com/demo/image/upload/comtam.jpg', 'CAT007', 4.5, 'com-tam-suon-bi-cha', true, 0),
+('PROD020', 'Com Tam Suon Nuong', 'Com tam suon nuong thom lung', 'RES007', 'https://res.cloudinary.com/demo/image/upload/comtamsuon.jpg', 'CAT007', 4.4, 'com-tam-suon-nuong', true, 0),
 
 -- Banh Mi Huynh Hoa
-('PROD021', 'Banh Mi Dac Biet', 'Banh mi dac biet voi pate, thit nguoi, cha lua', 'RES008', 'https://res.cloudinary.com/demo/image/upload/banhmi.jpg', 'CAT005', 300, 4.9, 'banh-mi-dac-biet', true, 0),
-('PROD022', 'Banh Mi Thit Nuong', 'Banh mi thit nuong voi nuoc sot dac biet', 'RES008', 'https://res.cloudinary.com/demo/image/upload/banhmithit.jpg', 'CAT005', 200, 4.7, 'banh-mi-thit-nuong', true, 0);
+('PROD021', 'Banh Mi Dac Biet', 'Banh mi dac biet voi pate, thit nguoi, cha lua', 'RES008', 'https://res.cloudinary.com/demo/image/upload/banhmi.jpg', 'CAT005', 4.9, 'banh-mi-dac-biet', true, 0),
+('PROD022', 'Banh Mi Thit Nuong', 'Banh mi thit nuong voi nuoc sot dac biet', 'RES008', 'https://res.cloudinary.com/demo/image/upload/banhmithit.jpg', 'CAT005', 4.7, 'banh-mi-thit-nuong', true, 0);
 
 -- ============================================
 -- PRODUCT SIZES
@@ -174,7 +174,7 @@ INSERT INTO chat_rooms (id, user1_id, user2_id, last_message) VALUES
 ('ROOM001', 'testuserid', 'testmerchantid', 'Xin chao, toi muon dat mon'),
 ('ROOM002', 'user_gen_01', 'testmerchantid', 'Nha hang con mo cua khong?');
 
-INSERT INTO messages (id, sender_id, receiver_id, content, room_id, `read`) VALUES
+INSERT INTO messages (id, sender_id, receiver_id, content, room_id, `is_read`) VALUES
 ('MSG001', 'testuserid', 'testmerchantid', 'Xin chao, toi muon dat mon', 'ROOM001', true),
 ('MSG002', 'testmerchantid', 'testuserid', 'Da chao anh/chi, anh/chi muon dat mon gi a?', 'ROOM001', true),
 ('MSG003', 'testuserid', 'testmerchantid', 'Cho toi 1 phan Pho Bo Tai size L', 'ROOM001', false),
