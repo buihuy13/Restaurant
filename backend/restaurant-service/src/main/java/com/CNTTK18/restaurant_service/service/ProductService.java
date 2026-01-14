@@ -3,7 +3,6 @@ package com.CNTTK18.restaurant_service.service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,7 +11,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +33,6 @@ import com.CNTTK18.restaurant_service.repository.ProductRepository;
 import com.CNTTK18.restaurant_service.repository.ResRepository;
 import com.CNTTK18.restaurant_service.repository.ReviewRepository;
 import com.CNTTK18.restaurant_service.repository.SizeRepository;
-import com.CNTTK18.restaurant_service.spec.ProductSpec;
 import com.CNTTK18.restaurant_service.util.ProductUtil;
 import com.CNTTK18.restaurant_service.util.ResUtil;
 
@@ -45,6 +44,7 @@ import com.CNTTK18.restaurant_service.dto.product.response.ProductResponse;
 import com.CNTTK18.restaurant_service.dto.restaurant.request.Coordinates;
 import com.CNTTK18.restaurant_service.dto.restaurant.response.ResResponse;
 import com.CNTTK18.restaurant_service.exception.ForbiddenException;
+import com.CNTTK18.restaurant_service.exception.InvalidRequestException;
 
 @Service
 public class ProductService {
@@ -68,49 +68,36 @@ public class ProductService {
         this.distanceService = distanceService;
     }
 
-    public Mono<List<ProductResponse>> getAllProducts(String rating, String category, BigDecimal minPrice, 
-                                BigDecimal maxPrice, String locationsorted, String search, 
-                                Integer nearby, Coordinates location) {
-        List<String> categoryNames = new ArrayList<>();
-        if (category != null && !category.isEmpty()) {
-            categoryNames = Arrays.asList(category.split(",")).stream().map(c -> c.toLowerCase()).toList();
-        }
-        Sort sort = Sort.unsorted();
-        if ("asc".equals(rating)) {
-            sort = Sort.by("rating").ascending();
-        } else if ("desc".equals(rating)) {
-            sort = Sort.by("rating").descending();
-        }
-        var productSpec = ProductSpec.allSpecification(search, true, categoryNames, minPrice, maxPrice);
-
-        List<Products> products = productRepo.findAll(productSpec, sort);
-
+    public Mono<Page<ProductResponse>> getAllProducts(String rating, String category, BigDecimal minPrice, 
+                                BigDecimal maxPrice, String search, Integer nearby, Coordinates location, String locationsorted, Pageable pageable) {
         if (location == null) {
-            return Mono.just(products.stream().map(ProductUtil::mapProductToProductResponseWitoutResParam).toList());
+            throw new InvalidRequestException("longitude and latitude is mandatory");
         }
+        List<String> categoryNames = (category == null || category.isBlank()) ? List.of()
+            : Arrays.stream(category.split(",")).map(String::toLowerCase).toList();
+        
+        if (search != null && search.isBlank()) {
+            search = null;
+        }
+
+        String sort = getSorted(locationsorted, rating);
+        if (nearby == null || nearby > 20000) {
+            nearby = 20000;
+        }
+
+        Page<Products> products = productRepo.findProductsWithinDistance(location.getLongitude(), location.getLatitude(), nearby, search, 
+                                                categoryNames, maxPrice, minPrice, sort, pageable);
 
         List<Restaurants> res = products.stream().map(r -> r.getRestaurant()).distinct().toList();
-        
-        // Lấy các res trong bán kính nearby (theo đường chim bay)
-        res = res.stream().filter(
-            r -> {
-                Double distance = distanceService.calculateHaversineDistance(location.getLongitude(), location.getLatitude(),
-                                                                            r.getLongitude(), r.getLatitude());
-                if (nearby == null || nearby > 20000) {
-                    return distance <= 20000;
-                }                                         
-                return distance <= nearby;
-            }
-        ).toList();
 
         if (res.isEmpty()) {
-            return Mono.just(Collections.emptyList());
+            return Mono.just(Page.empty(pageable));
         }
         final List<Restaurants> filteredRes = res;
 
         List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
         List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
-        final List<Products> filteredProducts = products;
+        final Page<Products> filteredProducts = products;
 
         return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
                     .map(response -> {
@@ -126,23 +113,28 @@ public class ProductService {
                             return resResponseIndex;
                         }).collect(Collectors.toMap(ResResponse::getId, Function.identity()));
 
-                        List<ProductResponse> productResponses = filteredProducts.stream()
-                                                                .map(p -> ProductUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId()))) 
-                                                                .toList();
-                        if (locationsorted != null) {
-                            if (locationsorted.equals("asc")) {
-                                productResponses = productResponses.stream()
-                                                    .sorted((p1, p2) -> Double.compare(p1.getRestaurant().getDistance(), p2.getRestaurant().getDistance()))
-                                                    .toList();
-                            }
-                            else if (locationsorted.equals("desc")) {
-                                productResponses = productResponses.stream()
-                                                    .sorted((p1, p2) -> Double.compare(p2.getRestaurant().getDistance(), p1.getRestaurant().getDistance()))
-                                                    .toList();
-                            }
-                        }
-                        return productResponses;
+                        return filteredProducts.map(p -> ProductUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId())));
                     });
+    }
+
+    private String getSorted(String locationsorted, String rating) {
+        if (rating != null && !rating.isBlank()) {
+            if ("asc".equalsIgnoreCase(rating)) {
+                return "rating_id_asc";
+            }
+            if ("desc".equalsIgnoreCase(rating)) {
+                return "rating_id_desc";
+            }
+        }
+        if (locationsorted != null  && !locationsorted.isBlank()) {
+            if ("asc".equalsIgnoreCase(locationsorted)) {
+                return "location_id_asc";
+            }
+            if ("desc".equalsIgnoreCase(locationsorted)) {
+                return "location_id_desc";
+            }
+        }
+        return "id_asc";
     }
 
     public ProductResponse getProductById(String id) {

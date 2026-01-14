@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,18 +48,19 @@ public class ResController {
     @Tag(name = "Get")
     @Operation(summary = "Get all restaurants")
     @GetMapping()
-    public Mono<ResponseEntity<List<ResResponseWithProduct>>> getAllRestaurants(@RequestParam(required = false) Double lat,
+    public Mono<ResponseEntity<Page<ResResponseWithProduct>>> getAllRestaurants(@RequestParam(required = false) Double lat,
                                                                @RequestParam(required = false) Double lon,
                                                                @RequestParam(required = false) String search, 
                                                                @RequestParam(required = false) Integer nearby,
                                                                @RequestParam(required = false) String rating,
-                                                               @RequestParam(required = false) String category) {
+                                                               @RequestParam(required = false) String category,
+                                                               Pageable pageable) {
 
         Coordinates location = null;
         if (lon != null && lat != null) {
             location = new Coordinates(lon, lat);
         }
-        return resService.getAllRestaurants(location, search, nearby, rating, category).map(
+        return resService.getAllRestaurants(location, search, nearby, rating, category, pageable).map(
             resList -> ResponseEntity.ok(resList)
         );
     }

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,21 +46,22 @@ public class ProductController {
     @Tag(name = "Get")
     @Operation(summary = "Get all products")
     @GetMapping("")
-    public Mono<ResponseEntity<List<ProductResponse>>> getAllProducts(@RequestParam(required = false) String rating,
+    public Mono<ResponseEntity<Page<ProductResponse>>> getAllProducts(@RequestParam(required = false) String rating,
                                                                @RequestParam(required = false) String category,
                                                                @RequestParam(required = false) BigDecimal minPrice,
                                                                @RequestParam(required = false) BigDecimal maxPrice,
-                                                               @RequestParam(required = false) String locationsorted,
                                                                @RequestParam(required = false) String search,
                                                                @RequestParam(required = false) Integer nearby,
                                                                @RequestParam(required = false) Double lat,
-                                                               @RequestParam(required = false) Double lon) {
+                                                               @RequestParam(required = false) Double lon,
+                                                               @RequestParam(required = false) String locationsorted,
+                                                               Pageable pageable) {
                                                             
         Coordinates location = null;
         if (lon != null && lat != null) {
             location = new Coordinates(lon, lat);
         }
-        return productService.getAllProducts(rating, category, minPrice, maxPrice, locationsorted, search, nearby, location)
+        return productService.getAllProducts(rating, category, minPrice, maxPrice, search, nearby, location, locationsorted, pageable)
                             .map(productList -> ResponseEntity.ok(productList));
     }
 
