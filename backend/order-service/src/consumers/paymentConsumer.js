@@ -8,13 +8,15 @@ const startPaymentConsumer = async () => {
         rabbitmqConnection.consumeMessage(rabbitmqConnection.queues.PAYMENT_COMPLETED, async (message) => {
             logger.info('Payment completed event received:', message);
 
-            await orderService.updatePaymentStatus(message.orderId, 'completed', message);
+            // map payment.completed -> order.paymentStatus = 'paid'
+            await orderService.updatePaymentStatus(message.orderId, 'paid', message);
         });
 
         // Listen for payment failed events
         rabbitmqConnection.consumeMessage(rabbitmqConnection.queues.PAYMENT_FAILED, async (message) => {
             logger.info('Payment failed event received:', message);
 
+            // keep 'failed' for payment failures
             await orderService.updatePaymentStatus(message.orderId, 'failed', message);
         });
 

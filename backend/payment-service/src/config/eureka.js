@@ -19,7 +19,7 @@ const getLocalIp = () => {
 
 const eurekaClient = new Eureka({
     instance: {
-        instanceId: `${getLocalIp()}:payment-service:${process.env.PAYMENT_PORT || 8082}`,
+        instanceId: `${getLocalIp()}:payment-service:${process.env.PAYMENT_PORT || 8083}`,
         app: 'PAYMENT-SERVICE',
         hostName: process.env.EUREKA_INSTANCE_HOSTNAME || 'payment-service',
         ipAddr: getLocalIp(),

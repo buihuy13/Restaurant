@@ -187,7 +187,7 @@ class GroupOrderService {
 
             // Kiểm tra thanh toán nếu yêu cầu
             if (groupOrder.allowIndividualPayment) {
-                const unpaidParticipants = groupOrder.participants.filter((p) => p.paymentStatus !== 'completed');
+                const unpaidParticipants = groupOrder.participants.filter((p) => p.paymentStatus !== 'paid');
 
                 if (unpaidParticipants.length > 0) {
                     logger.warn(`Confirming with ${unpaidParticipants.length} unpaid participants`);
@@ -200,9 +200,14 @@ class GroupOrderService {
             groupOrder.participants.forEach((participant) => {
                 participant.items.forEach((item) => {
                     // Tìm xem món này đã có trong allItems chưa
-                    const existingItem = allItems.find(
-                        (i) => i.productId === item.productId && i.customizations === item.customizations,
-                    );
+                    const itemSizeId = item.sizeId || null;
+                    const itemCustom = (item.customizations || '').trim();
+
+                    const existingItem = allItems.find((i) => {
+                        const iSize = i.sizeId || null;
+                        const iCustom = (i.customizations || '').trim();
+                        return i.productId === item.productId && iSize === itemSizeId && iCustom === itemCustom;
+                    });
 
                     if (existingItem) {
                         // Tăng số lượng
@@ -212,6 +217,8 @@ class GroupOrderService {
                         allItems.push({
                             productId: item.productId,
                             productName: item.productName,
+                            sizeId: item.sizeId || null,
+                            sizeName: item.sizeName || null,
                             quantity: item.quantity,
                             price: item.price,
                             customizations: item.customizations || '',
@@ -229,7 +236,8 @@ class GroupOrderService {
                 orderNote: `Group Order: ${groupOrder.groupNote}\nParticipants: ${groupOrder.participants
                     .map((p) => p.userName)
                     .join(', ')}`,
-                paymentMethod: groupOrder.paymentMethod === 'split' ? 'cash' : groupOrder.paymentMethod,
+                // If mode is 'split' the final order payment method should be 'card'
+                paymentMethod: groupOrder.paymentMethod === 'split' ? 'card' : groupOrder.paymentMethod,
             };
 
             const finalOrder = await orderService.createOrder(orderData, token);
@@ -365,7 +373,7 @@ class GroupOrderService {
                 if (paymentResult.success) {
                     // Đánh dấu tất cả participants đã được thanh toán
                     groupOrder.participants.forEach((participant) => {
-                        participant.paymentStatus = 'completed';
+                        participant.paymentStatus = 'paid';
                         participant.paymentMethod = paymentData.paymentMethod;
                         participant.paymentTransactionId = paymentResult.transactionId;
                         const participantShare = participant.totalAmount / groupOrder.totalAmount;
@@ -411,7 +419,7 @@ class GroupOrderService {
             }
 
             // Kiểm tra đã thanh toán chưa
-            if (participant.paymentStatus === 'completed') {
+            if (participant.paymentStatus === 'paid') {
                 throw new Error('You have already paid for this order');
             }
 
@@ -444,7 +452,7 @@ class GroupOrderService {
 
                 // Nếu thanh toán thành công
                 if (paymentResult.success) {
-                    participant.paymentStatus = 'completed';
+                    participant.paymentStatus = 'paid';
                     participant.paymentTransactionId = paymentResult.transactionId;
                     participant.paidAmount = totalToPay;
                     participant.paidAt = new Date();
@@ -499,16 +507,6 @@ class GroupOrderService {
             return response.data;
         } catch (error) {
             logger.error('Payment service error:', error);
-
-            // Nếu payment service không available, cho phép thanh toán cash
-            if (paymentData.paymentMethod === 'cash') {
-                return {
-                    success: true,
-                    transactionId: `CASH_${Date.now()}`,
-                    message: 'Cash payment accepted',
-                };
-            }
-
             throw new Error('Payment service unavailable');
         }
     }
@@ -523,7 +521,7 @@ class GroupOrderService {
             }
 
             const totalParticipants = groupOrder.participants.length;
-            const paidParticipants = groupOrder.participants.filter((p) => p.paymentStatus === 'completed').length;
+            const paidParticipants = groupOrder.participants.filter((p) => p.paymentStatus === 'paid').length;
 
             const allPaid = totalParticipants === paidParticipants && totalParticipants > 0;
 

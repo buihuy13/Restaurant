@@ -36,6 +36,14 @@ spring:
                     enabled: true
                     #lower-case-service-id: true
             routes:
+                - id: payment-service-webhook
+                  uri: lb://payment-service
+                  predicates:
+                      - Path=/api/payments/webhook/stripe
+                      - Method=POST
+                  filters:
+                      - PreserveHostHeader # Giữ nguyên header từ Stripe
+
                 - id: user-service-approvement
                   uri: lb://user-service
                   predicates:
@@ -598,11 +606,6 @@ spring:
                       - RewritePath=/socket\.io/(?<segment>.*), /socket.io/${segment}
 
                 # Payment-Service
-                - id: payment-service-webhook
-                  uri: lb://payment-service
-                  predicates:
-                      - Path=/api/payments/webhook/stripe
-
                 - id: payment-service-get
                   uri: lb://payment-service
                   predicates:

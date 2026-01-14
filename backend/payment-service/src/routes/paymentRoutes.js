@@ -21,7 +21,7 @@ const router = express.Router();
  *               orderId: { type: string }
  *               userId: { type: string }
  *               amount: { type: number }
- *               paymentMethod: { type: string, enum: [cash, card, wallet] }
+ *               paymentMethod: { type: string, enum: [card] }
  *     responses:
  *       201:
  *         description: Tạo thành công

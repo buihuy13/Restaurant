@@ -76,8 +76,8 @@ class PaymentService {
                     paymentId: payment.paymentId,
                     orderId: payment.orderId,
                     userId: payment.userId,
-                    merchantId:
-                        payment.metadata?.merchantId || payment.metadata?.merchant_id || payment.metadata?.restaurantId,
+                    merchantId: payment.metadata?.merchantId || payment.metadata?.merchant_id,
+                    restaurantId: payment.metadata?.restaurantId || payment.metadata?.restaurant_id,
                     amountForMerchant:
                         payment.metadata?.amountForMerchant ||
                         payment.metadata?.amount_for_merchant ||
@@ -219,6 +219,12 @@ class PaymentService {
     // Xử lý webhook từ Stripe
     async handleStripeWebhook(event) {
         const { type, data } = event;
+
+        logger.info('=== STRIPE WEBHOOK RECEIVED ===', {
+            type,
+            paymentIntentId: data.object?.id,
+            metadata: data.object?.metadata,
+        });
 
         try {
             // Prefer paymentId from metadata (more reliable), fall back to transactionId

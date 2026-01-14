@@ -10,6 +10,10 @@ const orderItemSchema = new mongoose.Schema({
         required: true,
     },
     cartItemImage: { type: String, default: '' },
+    // Optional size info carried from cart
+    sizeId: { type: String, default: null },
+    sizeName: { type: String, default: null },
+    imageURL: { type: String, default: '' },
     quantity: {
         type: Number,
         required: true,
@@ -97,8 +101,8 @@ const orderSchema = new mongoose.Schema(
         },
         paymentStatus: {
             type: String,
-            enum: ['pending', 'processing', 'completed', 'failed', 'refunded'],
-            default: 'pending',
+            enum: ['unpaid', 'processing', 'paid', 'failed', 'refunded'],
+            default: 'unpaid',
         },
         paymentMethod: {
             type: String,

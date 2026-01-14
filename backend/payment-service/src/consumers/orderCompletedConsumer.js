@@ -2,6 +2,8 @@ import rabbitmqConnection from '../config/rabbitmq.js';
 import Wallet from '../models/Wallet.js';
 import WalletTransaction from '../models/WalletTransaction.js';
 import logger from '../utils/logger.js';
+import Payment from '../models/Payment.js';
+import walletService from '../services/walletService.js';
 
 export const startOrderCompletedConsumer = async () => {
     try {
@@ -9,60 +11,85 @@ export const startOrderCompletedConsumer = async () => {
             try {
                 logger.info('Order completed event received:', orderData);
 
-                if (!['completed'].includes(orderData.paymentStatus?.toLowerCase())) {
-                    logger.error(
-                        `BLOCKED: Order ${orderData.orderId} not paid but received completed event!`,
-                        orderData,
+                // Khi nhận event order.completed, chỉ cộng tiền nếu:
+                // - Có payment liên quan và payment.status === 'completed'
+                // - payment.metadata cho biết merchantId và amountForMerchant
+                // - payment chưa được đánh dấu merchantCredited (idempotency)
+
+                const orderId = orderData.orderId || orderData.id || orderData.order_id;
+                if (!orderId) {
+                    logger.warn('order.completed missing orderId, skipping credit');
+                    return;
+                }
+
+                logger.info(`Order completed event received for ${orderId}`);
+
+                try {
+                    const payment = await Payment.findOne({ where: { orderId }, order: [['createdAt', 'DESC']] });
+                    if (!payment) {
+                        logger.info(`No payment found for order ${orderId}, skipping wallet credit`);
+                        return;
+                    }
+
+                    if (payment.status !== 'completed') {
+                        logger.info(
+                            `Payment for order ${orderId} not completed (status=${payment.status}), skipping credit`,
+                        );
+                        return;
+                    }
+
+                    const metadata = payment.metadata || {};
+                    const merchantId = metadata.merchantId || metadata.merchant_id;
+                    const rawAmount =
+                        metadata.amountForMerchant ||
+                        metadata.amount_for_merchant ||
+                        metadata.amountForRestaurant ||
+                        metadata.amount_for_restaurant;
+                    const amountForMerchant = Number(rawAmount);
+
+                    if (!merchantId || !Number.isFinite(amountForMerchant) || amountForMerchant <= 0) {
+                        logger.warn(
+                            `Missing merchant metadata or invalid amount for payment ${payment.paymentId}, skipping credit`,
+                            {
+                                paymentId: payment.paymentId,
+                                merchantId,
+                                amountForMerchant: rawAmount,
+                            },
+                        );
+                        return;
+                    }
+
+                    if (payment.metadata?.merchantCredited) {
+                        logger.info(
+                            `Payment ${payment.paymentId} already credited to merchant ${merchantId}, skipping`,
+                        );
+                        return;
+                    }
+
+                    // Perform credit
+                    await walletService.credit(
+                        merchantId,
+                        payment.orderId,
+                        amountForMerchant,
+                        `Auto credit from payment ${payment.paymentId} after order completed`,
                     );
-                    return; // KHÔNG CỘNG TIỀN
+
+                    // mark as credited
+                    payment.metadata = { ...(payment.metadata || {}), merchantCredited: true };
+                    await payment.save();
+
+                    logger.info(
+                        `Auto-credited wallet for merchant ${merchantId} amount ${amountForMerchant} for order ${orderId}`,
+                    );
+                } catch (err) {
+                    logger.error('Error processing wallet credit on order completed:', err);
                 }
-
-                const platformFee = Math.round(orderData.totalAmount * 0.1); // 10% platform fee
-                const amountForMerchant = orderData.amountForMerchant || orderData.totalAmount - platformFee;
-
-                // Cập nhật ví của merchant (wallet stores restaurantId column but we'll pass merchantId value)
-                const merchantId =
-                    orderData.merchantId || orderData.merchant_id || orderData.restaurantId || orderData.restaurant_id;
-                let wallet = await Wallet.findOne({ where: { restaurantId: merchantId } });
-                if (!wallet) {
-                    wallet = await Wallet.create({
-                        restaurantId: merchantId,
-                        balance: 0,
-                        totalEarned: 0,
-                        totalWithdrawn: 0,
-                    });
-                    logger.info(`Created new wallet for merchant ${merchantId}`);
-                }
-                // Idempotency: avoid duplicate credit for same order
-                const existing = await WalletTransaction.findOne({
-                    where: { orderId: orderData.orderId, type: 'EARN', status: 'COMPLETED' },
-                });
-                if (existing) {
-                    logger.info('OrderCompletedConsumer - duplicate wallet credit detected, skipping', {
-                        orderId: orderData.orderId,
-                    });
-                } else {
-                    // Update wallet amounts atomically using increment
-                    await wallet.increment({ balance: amountForMerchant, totalEarned: amountForMerchant });
-
-                    // Record transaction history
-                    await WalletTransaction.create({
-                        walletId: wallet.id,
-                        orderId: orderData.orderId,
-                        type: 'EARN',
-                        amount: amountForMerchant,
-                        status: 'COMPLETED',
-                        description: `Đơn hàng ${orderData.orderId} hoàn thành`,
-                    });
-                }
-
-                logger.info(`Đã cập nhật ví cho merchant ${merchantId} với số tiền ${amountForMerchant}`);
             } catch (error) {
                 logger.error('Error processing order completed event:', error);
             }
         });
     } catch (error) {
         logger.error('Error starting order completed consumer:', error);
-        setTimeout(startOrderCompletedConsumer, 5000); // Thử lại sau 5 giây
+        setTimeout(startOrderCompletedConsumer, 5000);
     }
 };

@@ -127,7 +127,7 @@ export const orderServiceOpenAPI = {
                     ],
                     totalAmount: 192000,
                     status: 'pending',
-                    paymentMethod: 'wallet',
+                    paymentMethod: 'card',
                     createdAt: '2025-04-05T10:00:00Z',
                 },
             },

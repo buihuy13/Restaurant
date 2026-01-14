@@ -34,8 +34,9 @@ const Payment = sequelize.define(
             defaultValue: 'USD',
         },
         paymentMethod: {
-            type: DataTypes.ENUM('cash', 'card', 'wallet'),
+            type: DataTypes.ENUM('card'),
             allowNull: false,
+            defaultValue: 'card',
         },
         paymentGateway: {
             type: DataTypes.STRING(50),

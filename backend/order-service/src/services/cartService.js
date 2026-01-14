@@ -16,18 +16,20 @@ class CartService {
             let cart = await cacheService.getCart(userId);
 
             if (!cart) {
-                cart = await Cart.findOne({ userId });
-                if (cart) {
-                    await cacheService.setCart(userId, cart.toObject());
+                const cartDoc = await Cart.findOne({ userId });
+                if (cartDoc) {
+                    const cartObj = cartDoc.toObject();
+                    await cacheService.setCart(userId, cartObj);
                     logger.info(`Cart found in database`);
+                    return cartObj;
                 } else {
                     logger.info(`No cart found for user: ${userId}`);
+                    return null;
                 }
             } else {
                 logger.info(`Cart found in cache`);
+                return cart; // cached value is already a plain object
             }
-
-            return cart || null;
         } catch (error) {
             logger.error('Get cart error:', error.message);
             throw error;
@@ -85,8 +87,15 @@ class CartService {
                 cart.restaurants.push(restaurantCart);
             }
 
-            // Check if item already exists
-            const existingItem = restaurantCart.items.find((i) => i.productId === item.productId);
+            // Check if item already exists — match by productId + sizeId + customizations
+            const itemSizeId = item.sizeId || null;
+            const itemCustom = (item.customizations || '').trim();
+
+            const existingItem = restaurantCart.items.find((i) => {
+                const iSize = i.sizeId || null;
+                const iCustom = (i.customizations || '').trim();
+                return i.productId === item.productId && iSize === itemSizeId && iCustom === itemCustom;
+            });
 
             if (existingItem) {
                 logger.info(
@@ -100,12 +109,19 @@ class CartService {
                 if (item.cartItemImage || item.image) {
                     existingItem.cartItemImage = item.cartItemImage || item.image;
                 }
+                // update size/name if provided
+                if (item.sizeId) existingItem.sizeId = item.sizeId;
+                if (item.sizeName) existingItem.sizeName = item.sizeName;
+                if (item.imageURL) existingItem.imageURL = item.imageURL;
             } else {
                 logger.info(`Adding new item: ${item.productName}`);
                 restaurantCart.items.push({
                     productId: item.productId,
                     productName: item.productName,
-                    cartItemImage: item.cartItemImage || item.image || '',
+                    cartItemImage: item.cartItemImage || item.image || item.imageURL || '',
+                    sizeId: item.sizeId || null,
+                    sizeName: item.sizeName || null,
+                    imageURL: item.imageURL || '',
                     price: item.price,
                     quantity: item.quantity,
                     customizations: item.customizations || '',
@@ -115,10 +131,11 @@ class CartService {
 
             // Save and cache
             await cart.save();
-            await cacheService.setCart(userId, cart.toObject());
+            const cartObj = cart.toObject();
+            await cacheService.setCart(userId, cartObj);
 
             logger.info(`Item added successfully. Cart now has ${cart.restaurants.length} restaurant(s)`);
-            return cart;
+            return cartObj;
         } catch (error) {
             logger.error(`Add item to cart error: ${error.message}`);
             throw error;
@@ -126,9 +143,9 @@ class CartService {
     }
 
     // Update item quantity
-    async updateItemQuantity(userId, restaurantId, productId, quantity) {
+    async updateItemQuantity(userId, restaurantId, productId, quantity, sizeId = null, customizations = '') {
         try {
-            logger.info(`📝 Updating item quantity: ${userId} - ${restaurantId} - ${productId} -> qty: ${quantity}`);
+            logger.info(`Updating item quantity: ${userId} - ${restaurantId} - ${productId} -> qty: ${quantity}`);
 
             if (quantity <= 0) {
                 throw new Error('Quantity must be greater than 0');
@@ -146,20 +163,26 @@ class CartService {
                 throw new Error(`Restaurant ${restaurantId} not found in cart`);
             }
 
-            const item = restaurantCart.items.find((i) => i.productId === productId);
+            const customTrim = (customizations || '').trim();
+            const item = restaurantCart.items.find((i) => {
+                const iSize = i.sizeId || null;
+                const iCustom = (i.customizations || '').trim();
+                return i.productId === productId && iSize === (sizeId || null) && iCustom === customTrim;
+            });
 
             if (!item) {
-                throw new Error(`Product ${productId} not found in cart`);
+                throw new Error(`Product ${productId} (sizeId=${sizeId}) not found in cart`);
             }
 
             item.quantity = quantity;
             item.subtotal = item.price * quantity;
 
             await cart.save();
-            await cacheService.setCart(userId, cart.toObject());
+            const cartObj = cart.toObject();
+            await cacheService.setCart(userId, cartObj);
 
             logger.info(`Item quantity updated to ${quantity}`);
-            return cart;
+            return cartObj;
         } catch (error) {
             logger.error(`Update item quantity error: ${error.message}`);
             throw error;
@@ -167,7 +190,7 @@ class CartService {
     }
 
     // Remove item from cart
-    async removeItemFromCart(userId, restaurantId, productId) {
+    async removeItemFromCart(userId, restaurantId, productId, sizeId = null, customizations = '') {
         try {
             logger.info(`Removing item: ${userId} - ${restaurantId} - ${productId}`);
 
@@ -183,11 +206,17 @@ class CartService {
                 throw new Error(`Restaurant ${restaurantId} not found in cart`);
             }
 
+            const customTrim = (customizations || '').trim();
             const initialLength = restaurantCart.items.length;
-            restaurantCart.items = restaurantCart.items.filter((i) => i.productId !== productId);
+            restaurantCart.items = restaurantCart.items.filter((i) => {
+                const iSize = i.sizeId || null;
+                const iCustom = (i.customizations || '').trim();
+                // keep items that DO NOT match the target; remove the one that matches all three
+                return !(i.productId === productId && iSize === (sizeId || null) && iCustom === customTrim);
+            });
 
             if (restaurantCart.items.length === initialLength) {
-                throw new Error(`Product ${productId} not found in cart`);
+                throw new Error(`Product ${productId} (sizeId=${sizeId}) not found in cart`);
             }
 
             // Remove restaurant if no items left
@@ -205,10 +234,11 @@ class CartService {
             }
 
             await cart.save();
-            await cacheService.setCart(userId, cart.toObject());
+            const cartObj = cart.toObject();
+            await cacheService.setCart(userId, cartObj);
 
             logger.info(`Item removed from cart`);
-            return cart;
+            return cartObj;
         } catch (error) {
             logger.error(`Remove item error: ${error.message}`);
             throw error;
@@ -237,15 +267,16 @@ class CartService {
             if (cart.restaurants.length === 0) {
                 await Cart.deleteOne({ userId });
                 await cacheService.deleteCart(userId);
-                logger.info(`🧹 Cart deleted (empty)`);
+                logger.info(`Cart deleted (empty)`);
                 return null;
             }
 
             await cart.save();
-            await cacheService.setCart(userId, cart.toObject());
+            const cartObj = cart.toObject();
+            await cacheService.setCart(userId, cartObj);
 
             logger.info(`Restaurant removed from cart`);
-            return cart;
+            return cartObj;
         } catch (error) {
             logger.error(`Remove restaurant error: ${error.message}`);
             throw error;
@@ -255,7 +286,7 @@ class CartService {
     // Clear entire cart
     async clearCart(userId) {
         try {
-            logger.info(`🧹 Clearing cart for user: ${userId}`);
+            logger.info(`Clearing cart for user: ${userId}`);
 
             const result = await Cart.deleteOne({ userId });
 
@@ -276,7 +307,7 @@ class CartService {
     // Update cart details for specific restaurant
     async updateCartDetails(userId, restaurantId, details) {
         try {
-            logger.info(`✏️ Updating cart details: ${userId} - ${restaurantId}`);
+            logger.info(`Updating cart details: ${userId} - ${restaurantId}`);
 
             const cart = await Cart.findOne({ userId });
 
@@ -292,12 +323,12 @@ class CartService {
 
             if (details.notes !== undefined) {
                 restaurantCart.notes = details.notes;
-                logger.info(`📝 Notes updated: ${details.notes}`);
+                logger.info(`Notes updated: ${details.notes}`);
             }
 
             if (details.deliveryAddress !== undefined) {
                 restaurantCart.deliveryAddress = details.deliveryAddress;
-                logger.info(`📍 Delivery address updated`);
+                logger.info(`Delivery address updated`);
             }
 
             if (details.discount !== undefined) {
@@ -311,10 +342,11 @@ class CartService {
             }
 
             await cart.save();
-            await cacheService.setCart(userId, cart.toObject());
+            const cartObj = cart.toObject();
+            await cacheService.setCart(userId, cartObj);
 
             logger.info(`Cart details updated`);
-            return cart;
+            return cartObj;
         } catch (error) {
             logger.error(`Update cart details error: ${error.message}`);
             throw error;
@@ -324,7 +356,7 @@ class CartService {
     // Get cart for checkout (validation)
     async getCartForCheckout(userId) {
         try {
-            logger.info(`🛒 Preparing cart for checkout: ${userId}`);
+            logger.info(`Preparing cart for checkout: ${userId}`);
 
             const cart = await Cart.findOne({ userId });
 
@@ -353,12 +385,13 @@ class CartService {
             }
 
             // Calculate grand total
-            const grandTotal = cart.restaurants.reduce((sum, r) => sum + r.totalAmount, 0);
+            const cartObj = cart.toObject();
+            const grandTotal = cartObj.restaurants.reduce((sum, r) => sum + r.totalAmount, 0);
 
             logger.info(`Cart ready for checkout: ${cart.restaurants.length} restaurant(s), total: ${grandTotal}`);
 
             return {
-                cart,
+                cart: cartObj,
                 restaurantCount: cart.restaurants.length,
                 itemCount: cart.restaurants.reduce((sum, r) => sum + r.items.length, 0),
                 grandTotal: parseFloat(grandTotal.toFixed(2)),
@@ -385,11 +418,12 @@ class CartService {
                 };
             }
 
+            const cartObj = cart.toObject();
             return {
-                totalRestaurants: cart.restaurants.length,
-                totalItems: cart.restaurants.reduce((sum, r) => sum + r.items.length, 0),
-                grandTotal: parseFloat(cart.restaurants.reduce((sum, r) => sum + r.totalAmount, 0).toFixed(2)),
-                restaurants: cart.restaurants.map((r) => ({
+                totalRestaurants: cartObj.restaurants.length,
+                totalItems: cartObj.restaurants.reduce((sum, r) => sum + r.items.length, 0),
+                grandTotal: parseFloat(cartObj.restaurants.reduce((sum, r) => sum + r.totalAmount, 0).toFixed(2)),
+                restaurants: cartObj.restaurants.map((r) => ({
                     restaurantId: r.restaurantId,
                     restaurantName: r.restaurantName,
                     itemCount: r.items.length,

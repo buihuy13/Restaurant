@@ -48,12 +48,14 @@ const participantSchema = new mongoose.Schema({
     // Thông tin thanh toán riêng
     paymentStatus: {
         type: String,
-        enum: ['pending', 'processing', 'completed', 'failed'],
-        default: 'pending',
+        // Use unpaid/processing/paid for consistency with Order.paymentStatus
+        enum: ['unpaid', 'processing', 'paid', 'failed'],
+        default: 'unpaid',
     },
     paymentMethod: {
         type: String,
-        enum: ['cash', 'card', 'wallet'],
+        // Only card payments supported
+        enum: ['card'],
         default: null,
     },
     paymentTransactionId: {
@@ -166,7 +168,8 @@ const groupOrderSchema = new mongoose.Schema(
         // Phương thức thanh toán mặc định (nếu thanh toán chung)
         paymentMethod: {
             type: String,
-            enum: ['cash', 'card', 'wallet', 'split'], // split = mỗi người tự thanh toán
+            // 'split' is kept as a mode; payment methods themselves are card-only
+            enum: ['card', 'split'], // split = mỗi người tự thanh toán via card
             default: 'split',
         },
         // Tổng số tiền đã được thanh toán

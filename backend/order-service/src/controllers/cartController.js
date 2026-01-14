@@ -89,7 +89,7 @@ class CartController {
     async updateItemQuantity(req, res) {
         try {
             const { userId, restaurantId, productId } = req.params;
-            const { quantity } = req.body;
+            const { quantity, sizeId = null, customizations = '' } = req.body;
 
             if (!userId || !restaurantId || !productId) {
                 return res.status(400).json({
@@ -107,7 +107,14 @@ class CartController {
 
             logger.info(`PATCH - Update quantity: ${userId} - ${restaurantId} - ${productId} -> ${quantity}`);
 
-            const cart = await cartService.updateItemQuantity(userId, restaurantId, productId, quantity);
+            const cart = await cartService.updateItemQuantity(
+                userId,
+                restaurantId,
+                productId,
+                quantity,
+                sizeId,
+                customizations,
+            );
 
             res.status(200).json({
                 status: 'success',
@@ -127,6 +134,7 @@ class CartController {
     async removeItemFromCart(req, res) {
         try {
             const { userId, restaurantId, productId } = req.params;
+            const { sizeId = null, customizations = '' } = req.query;
 
             if (!userId || !restaurantId || !productId) {
                 return res.status(400).json({
@@ -137,7 +145,7 @@ class CartController {
 
             logger.info(`DELETE - Remove item: ${userId} - ${restaurantId} - ${productId}`);
 
-            const cart = await cartService.removeItemFromCart(userId, restaurantId, productId);
+            const cart = await cartService.removeItemFromCart(userId, restaurantId, productId, sizeId, customizations);
 
             res.status(200).json({
                 status: 'success',
@@ -145,7 +153,7 @@ class CartController {
                 data: cart,
             });
         } catch (error) {
-            logger.error(`❌ Remove item error: ${error.message}`);
+            logger.error(`Remove item error: ${error.message}`);
             res.status(400).json({
                 status: 'error',
                 message: error.message,

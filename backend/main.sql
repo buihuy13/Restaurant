@@ -197,7 +197,7 @@ CREATE TABLE payments (
   userId VARCHAR(100) NOT NULL,
   amount DECIMAL(10, 2) NOT NULL CHECK (amount >= 0),
   currency CHAR(3) DEFAULT 'USD',
-  paymentMethod ENUM('cash', 'card', 'wallet') NOT NULL,
+    paymentMethod ENUM('card') NOT NULL,
   paymentGateway VARCHAR(50) DEFAULT 'stripe',
   transactionId VARCHAR(200),
   status ENUM('pending', 'processing', 'completed', 'failed', 'refunded') DEFAULT 'pending',

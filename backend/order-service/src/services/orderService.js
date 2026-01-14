@@ -295,7 +295,7 @@ class OrderService {
                 orderNote: orderData.orderNote || '',
                 estimatedDeliveryTime: new Date(Date.now() + estimatedTime * 60000),
                 status: 'pending',
-                paymentStatus: 'pending',
+                paymentStatus: 'unpaid',
             });
 
             await order.save();
@@ -393,7 +393,7 @@ class OrderService {
                         orderNote: restaurantCart.notes || '',
                         estimatedDeliveryTime: new Date(Date.now() + (restaurant.duration || 45) * 60000),
                         status: 'pending',
-                        paymentStatus: 'pending',
+                        paymentStatus: 'unpaid',
                     });
 
                     await order.save();
@@ -572,7 +572,7 @@ class OrderService {
             // If order is completed, publish order.completed event to trigger wallet crediting
             if (statusData.status === 'completed') {
                 // KIỂM TRA THANH TOÁN TRƯỚC KHI CỘNG TIỀN!
-                if (order.paymentStatus !== 'paid' && order.paymentStatus !== 'completed') {
+                if (order.paymentStatus !== 'paid') {
                     logger.warn(`Order ${order.orderId} completed but payment not paid yet. Skip wallet credit.`, {
                         paymentStatus: order.paymentStatus,
                     });
@@ -617,11 +617,13 @@ class OrderService {
                 throw new Error('Order not found');
             }
 
+            // Update payment status. Do NOT auto-confirm the order when
+            // payment completes — the restaurant must explicitly accept
+            // the order to transition it to 'confirmed'. Only mark an
+            // order cancelled on payment failure.
             order.paymentStatus = paymentStatus;
 
-            if (paymentStatus === 'completed') {
-                order.status = 'confirmed';
-            } else if (paymentStatus === 'failed') {
+            if (paymentStatus === 'failed') {
                 order.status = 'cancelled';
                 order.cancellationReason = 'Payment failed';
             }
@@ -665,7 +667,7 @@ class OrderService {
                 orderId: order.orderId,
                 userId: order.userId,
                 reason,
-                refundRequired: order.paymentStatus === 'completed',
+                refundRequired: order.paymentStatus === 'paid',
                 timestamp: new Date().toISOString(),
             });
 
@@ -854,7 +856,7 @@ class OrderService {
             merchantId,
             reason,
             previousStatus,
-            refundRequired: order.paymentStatus === 'completed' || order.paymentStatus === 'paid',
+            refundRequired: order.paymentStatus === 'paid',
             timestamp: new Date().toISOString(),
         });
 
