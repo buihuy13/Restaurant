@@ -401,53 +401,16 @@ class PaymentService {
                 }
             }
 
-            // idempotency: only credit once
-            logger.info('=== DEBUG CREDIT START ===', {
+            // Do NOT auto-credit merchant here. Crediting must wait until the Order Service
+            // emits an explicit order.completed event (which guarantees the order lifecycle
+            // reached 'completed' state). Defer all crediting to the orderCompleted consumer
+            // to ensure both order.status === 'completed' and payment.status === 'paid'.
+            logger.info('publishPaymentCompleted - deferred merchant credit to order.completed consumer', {
                 paymentId: payment.paymentId,
                 orderId: payment.orderId,
-                rawMetadata: JSON.stringify(metadata),
-                hasMerchantId: !!merchantId,
-                merchantIdValue: merchantId,
-                hasAmount: Number.isFinite(amountForMerchant),
-                amountValue: amountForMerchant,
-                alreadyCredited: !!payment.metadata?.merchantCredited,
-                creditedOrders: payment.metadata?.creditedOrders,
+                merchantId,
+                amountForMerchant,
             });
-            if (
-                merchantId &&
-                Number.isFinite(amountForMerchant) &&
-                amountForMerchant > 0 &&
-                !payment.metadata?.merchantCredited
-            ) {
-                try {
-                    // Wallet model stores restaurantId field; pass merchantId value as the wallet key
-                    await walletService.credit(
-                        merchantId,
-                        payment.orderId,
-                        amountForMerchant,
-                        `Auto credit from payment ${payment.paymentId}`,
-                    );
-
-                    // mark as credited
-                    payment.metadata = { ...(payment.metadata || metadata), merchantCredited: true };
-                    await payment.save();
-                    logger.info(`Auto-credited wallet for merchant ${merchantId} amount ${amountForMerchant}`);
-                } catch (creditError) {
-                    logger.error('Auto credit to merchant wallet failed (walletService.credit) ', {
-                        paymentId: payment.paymentId,
-                        merchantId,
-                        amountForMerchant,
-                        error: creditError.stack || creditError,
-                        metadata: payment.metadata,
-                    });
-                }
-            } else if (!merchantId || !Number.isFinite(amountForMerchant) || amountForMerchant <= 0) {
-                logger.warn('publishPaymentCompleted - missing or invalid merchant metadata, skipping auto-credit', {
-                    paymentId: payment.paymentId,
-                    merchantId,
-                    amountForMerchant: rawAmount,
-                });
-            }
         } catch (creditError) {
             logger.error(`Auto credit to merchant wallet failed: ${creditError.message}`, {
                 stack: creditError.stack || creditError,

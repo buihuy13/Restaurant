@@ -25,15 +25,25 @@ export const startOrderCompletedConsumer = async () => {
                 logger.info(`Order completed event received for ${orderId}`);
 
                 try {
+                    // Ensure the order itself is in completed state before attempting to credit
+                    const orderStatusRaw = orderData.status || orderData.orderStatus || orderData.state;
+                    const orderStatus = orderStatusRaw ? String(orderStatusRaw).toLowerCase() : null;
+                    if (orderStatus !== 'completed') {
+                        logger.info(
+                            `Order ${orderId} event received but order status is not completed (status=${orderStatusRaw}), skipping credit`,
+                        );
+                        return;
+                    }
                     const payment = await Payment.findOne({ where: { orderId }, order: [['createdAt', 'DESC']] });
                     if (!payment) {
                         logger.info(`No payment found for order ${orderId}, skipping wallet credit`);
                         return;
                     }
 
-                    if (payment.status !== 'completed') {
+                    // We expect payment.status to be 'paid' in the new convention
+                    if (String(payment.status).toLowerCase() !== 'paid') {
                         logger.info(
-                            `Payment for order ${orderId} not completed (status=${payment.status}), skipping credit`,
+                            `Payment for order ${orderId} not paid (status=${payment.status}), skipping credit`,
                         );
                         return;
                     }

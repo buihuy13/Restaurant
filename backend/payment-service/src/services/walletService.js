@@ -151,6 +151,8 @@ class WalletService {
 
         const t = await Wallet.sequelize.transaction();
         try {
+            // Create payout request but DO NOT deduct wallet balance yet.
+            // Admin must approve to perform actual debit.
             const payout = await PayoutRequest.create(
                 {
                     walletId: wallet.id,
@@ -162,9 +164,7 @@ class WalletService {
                 { transaction: t },
             );
 
-            await wallet.decrement('balance', { by: amount, transaction: t });
-            await wallet.increment('totalWithdrawn', { by: amount, transaction: t });
-
+            // Create a pending wallet transaction record for audit/UI purposes.
             await WalletTransaction.create(
                 {
                     walletId: wallet.id,
@@ -190,9 +190,13 @@ class WalletService {
         const t = await Wallet.sequelize.transaction();
         try {
             const payout = await PayoutRequest.findByPk(payoutId, {
-                include: [{ model: Wallet, attributes: ['restaurantId'] }],
+                include: [{ model: Wallet, attributes: ['restaurantId', 'id', 'balance', 'totalWithdrawn'] }],
             });
             if (!payout || payout.status !== 'pending') throw new Error('Yêu cầu không hợp lệ');
+
+            // Perform actual wallet debit now that admin approved
+            await payout.wallet.decrement('balance', { by: payout.amount, transaction: t });
+            await payout.wallet.increment('totalWithdrawn', { by: payout.amount, transaction: t });
 
             await payout.update(
                 {
@@ -239,9 +243,7 @@ class WalletService {
             const payout = await PayoutRequest.findByPk(payoutId, { include: [Wallet] });
             if (!payout || payout.status !== 'pending') throw new Error('Yêu cầu không hợp lệ');
 
-            await payout.wallet.increment('balance', { by: payout.amount, transaction: t });
-            await payout.wallet.decrement('totalWithdrawn', { by: payout.amount, transaction: t });
-
+            // Since balance was NOT deducted at request time, do not add money back.
             await payout.update({ status: 'failed', note: reason }, { transaction: t });
             await WalletTransaction.update(
                 { status: 'FAILED' },
@@ -249,7 +251,7 @@ class WalletService {
             );
 
             await t.commit();
-            return { success: true, message: 'Đã từ chối và hoàn tiền vào ví' };
+            return { success: true, message: 'Đã từ chối yêu cầu rút tiền' };
         } catch (error) {
             await t.rollback();
             throw error;
