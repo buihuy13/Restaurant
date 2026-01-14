@@ -65,17 +65,19 @@ class CartService {
                 });
             }
 
-            // Find restaurant in cart
-            let restaurantCart = cart.restaurants.find((r) => r.restaurantId === restaurant.restaurantId);
+            // Find restaurant index in cart
+            let restaurantIndex = cart.restaurants.findIndex((r) => r.restaurantId === restaurant.restaurantId);
 
-            if (!restaurantCart) {
+            // If restaurant doesn't exist, create and add it
+            if (restaurantIndex === -1) {
                 logger.info(`Adding new restaurant to cart: ${restaurant.restaurantName} (${restaurant.restaurantId})`);
-                restaurantCart = {
+
+                cart.restaurants.push({
                     restaurantId: restaurant.restaurantId,
                     restaurantName: restaurant.restaurantName,
                     restaurantSlug: restaurant.restaurantSlug || '',
                     restaurantImage: restaurant.restaurantImage || '',
-                    items: [],
+                    items: [], // Empty array for now
                     subtotal: 0,
                     tax: 0,
                     deliveryFee: restaurant.deliveryFee || 0,
@@ -83,61 +85,110 @@ class CartService {
                     totalAmount: 0,
                     notes: '',
                     deliveryAddress: '',
-                };
-                cart.restaurants.push(restaurantCart);
+                });
+
+                // Get the new index after push
+                restaurantIndex = cart.restaurants.length - 1;
             }
 
-            // Check if item already exists — match by productId + sizeId + customizations
+            // NOW work directly with cart.restaurants[restaurantIndex] for all operations
+            const restaurantCart = cart.restaurants[restaurantIndex];
+
+            // Normalize values for comparison
             const itemSizeId = item.sizeId || null;
             const itemCustom = (item.customizations || '').trim();
+            const itemProductId = String(item.productId).trim();
 
-            const existingItem = restaurantCart.items.find((i) => {
+            // Find existing item with normalized comparison
+            const existingItemIndex = restaurantCart.items.findIndex((i) => {
                 const iSize = i.sizeId || null;
                 const iCustom = (i.customizations || '').trim();
-                return i.productId === item.productId && iSize === itemSizeId && iCustom === itemCustom;
+                const iProductId = String(i.productId).trim();
+                return iProductId === itemProductId && iSize === itemSizeId && iCustom === itemCustom;
             });
 
-            if (existingItem) {
-                logger.info(
-                    `Item exists, updating quantity from ${existingItem.quantity} to ${
-                        existingItem.quantity + item.quantity
-                    }`,
-                );
-                existingItem.quantity += item.quantity;
+            if (existingItemIndex >= 0) {
+                // Item exists - update quantity
+                const existingItem = restaurantCart.items[existingItemIndex];
+                const oldQuantity = existingItem.quantity;
+                const newQuantity = oldQuantity + item.quantity;
+
+                logger.info(`Item exists, updating quantity from ${oldQuantity} to ${newQuantity}`);
+
+                existingItem.quantity = newQuantity;
                 existingItem.subtotal = existingItem.price * existingItem.quantity;
-                // update image if provided
+
+                // Update optional fields if provided
                 if (item.cartItemImage || item.image) {
                     existingItem.cartItemImage = item.cartItemImage || item.image;
                 }
-                // update size/name if provided
+                if (item.imageURL) {
+                    existingItem.imageURL = item.imageURL;
+                }
                 if (item.sizeId) existingItem.sizeId = item.sizeId;
                 if (item.sizeName) existingItem.sizeName = item.sizeName;
-                if (item.imageURL) existingItem.imageURL = item.imageURL;
             } else {
-                logger.info(`Adding new item: ${item.productName}`);
+                // Item doesn't exist - add new item
+                logger.info(`Adding new item: ${item.productName} (productId: ${itemProductId})`);
+
                 restaurantCart.items.push({
-                    productId: item.productId,
+                    productId: itemProductId,
                     productName: item.productName,
                     cartItemImage: item.cartItemImage || item.image || item.imageURL || '',
-                    sizeId: item.sizeId || null,
+                    sizeId: itemSizeId,
                     sizeName: item.sizeName || null,
                     imageURL: item.imageURL || '',
                     price: item.price,
                     quantity: item.quantity,
-                    customizations: item.customizations || '',
+                    customizations: itemCustom,
                     subtotal: item.price * item.quantity,
                 });
+
+                logger.info(`Item pushed. Restaurant now has ${restaurantCart.items.length} items`);
             }
 
-            // Save and cache
+            // CRITICAL: Mark modified to ensure Mongoose saves nested changes
+            cart.markModified('restaurants');
+
+            // Verification before save
+            logger.info(`Before save - Restaurant ${restaurant.restaurantId} has ${restaurantCart.items.length} items`);
+
+            if (restaurantCart.items.length === 0) {
+                logger.error('ERROR: Restaurant items array is empty before save!');
+                throw new Error('Failed to add item to cart: items array is empty');
+            }
+
+            // Save to database
             await cart.save();
+
+            // Verification after save
+            const savedCart = await Cart.findOne({ userId });
+            const savedRestaurant = savedCart?.restaurants.find((r) => r.restaurantId === restaurant.restaurantId);
+
+            if (savedRestaurant) {
+                logger.info(
+                    `After save - Restaurant ${restaurant.restaurantId} has ${savedRestaurant.items.length} items`,
+                );
+
+                if (savedRestaurant.items.length === 0) {
+                    logger.error('ERROR: Restaurant items array is empty after save!');
+                    throw new Error('Cart saved but items array is empty');
+                }
+            }
+
+            // Cache the result
             const cartObj = cart.toObject();
             await cacheService.setCart(userId, cartObj);
 
-            logger.info(`Item added successfully. Cart now has ${cart.restaurants.length} restaurant(s)`);
+            const totalItems = cart.restaurants.reduce((sum, r) => sum + r.items.length, 0);
+            logger.info(
+                `Item added successfully. Cart has ${cart.restaurants.length} restaurant(s), ${totalItems} total items`,
+            );
+
             return cartObj;
         } catch (error) {
             logger.error(`Add item to cart error: ${error.message}`);
+            logger.error(`Stack trace: ${error.stack}`);
             throw error;
         }
     }
