@@ -22,7 +22,7 @@ class PdfReportService {
                 size: 'A4',
                 margins: { top: 50, bottom: 50, left: 50, right: 50 },
                 info: {
-                    Title: `Báo Cáo Dashboard - ${restaurantInfo.restaurantName}`,
+                    Title: `Dashboard Report - ${restaurantInfo.restaurantName}`,
                     Author: 'Restaurant Management System',
                     Subject: `Dashboard Report ${startDate} to ${endDate}`,
                 },
@@ -64,7 +64,7 @@ class PdfReportService {
         // Title
         doc.fontSize(24)
             .fillColor('#2563eb')
-            .text('BÁO CÁO DASHBOARD', { align: 'center' });
+            .text('DASHBOARD REPORT', { align: 'center' });
 
         doc.moveDown(0.5);
 
@@ -83,7 +83,7 @@ class PdfReportService {
         doc.fontSize(12)
             .fillColor('#374151')
             .text(
-                `Thời gian: ${this._formatDate(startDate)} - ${this._formatDate(endDate)}`,
+                `Period: ${this._formatDate(startDate)} - ${this._formatDate(endDate)}`,
                 { align: 'center' }
             );
 
@@ -96,15 +96,15 @@ class PdfReportService {
      * Add executive summary
      */
     async _addExecutiveSummary(doc, overview, revenue) {
-        this._addSectionTitle(doc, '📊 TỔNG QUAN');
+        this._addSectionTitle(doc, '📊 OVERVIEW');
 
         const summaryData = [
-            ['Tổng đơn hàng', this._formatNumber(overview.totalOrders)],
-            ['Tổng doanh thu', this._formatCurrency(overview.totalRevenue)],
-            ['Giá trị đơn TB', this._formatCurrency(overview.averageOrderValue)],
-            ['Đơn hoàn thành', this._formatNumber(overview.completedOrders)],
-            ['Đơn đang xử lý', this._formatNumber(overview.pendingOrders + overview.confirmedOrders + overview.preparingOrders)],
-            ['Đơn hủy', this._formatNumber(overview.cancelledOrders)],
+            ['Total Orders', this._formatNumber(overview.totalOrders)],
+            ['Total Revenue', this._formatCurrency(overview.totalRevenue)],
+            ['Avg Order Value', this._formatCurrency(overview.averageOrderValue)],
+            ['Completed Orders', this._formatNumber(overview.completedOrders)],
+            ['Processing Orders', this._formatNumber(overview.pendingOrders + overview.confirmedOrders + overview.preparingOrders)],
+            ['Cancelled Orders', this._formatNumber(overview.cancelledOrders)],
         ];
 
         this._addTable(doc, summaryData, 2);
@@ -115,12 +115,12 @@ class PdfReportService {
      * Add revenue section
      */
     async _addRevenueSection(doc, revenue) {
-        this._addSectionTitle(doc, '💰 PHÂN TÍCH DOANH THU');
+        this._addSectionTitle(doc, '💰 REVENUE ANALYTICS');
 
         doc.fontSize(10).fillColor('#374151');
-        doc.text(`Tổng doanh thu: ${this._formatCurrency(revenue.totalRevenue)}`);
-        doc.text(`Tổng đơn hàng: ${this._formatNumber(revenue.totalOrders)}`);
-        doc.text(`Giá trị đơn TB: ${this._formatCurrency(revenue.averageOrderValue)}`);
+        doc.text(`Total Revenue: ${this._formatCurrency(revenue.totalRevenue)}`);
+        doc.text(`Total Orders: ${this._formatNumber(revenue.totalOrders)}`);
+        doc.text(`Avg Order Value: ${this._formatCurrency(revenue.averageOrderValue)}`);
         doc.moveDown(1);
 
         if (revenue.revenueByRestaurant && revenue.revenueByRestaurant.length > 0) {
@@ -130,7 +130,7 @@ class PdfReportService {
                 this._formatCurrency(r.totalRevenue),
             ]);
 
-            this._addTable(doc, [['Nhà hàng', 'Số đơn', 'Doanh thu'], ...revenueData], 3);
+            this._addTable(doc, [['Restaurant', 'Orders', 'Revenue'], ...revenueData], 3);
         }
 
         doc.moveDown(1);
@@ -142,7 +142,7 @@ class PdfReportService {
     async _addOrderAnalytics(doc, statusBreakdown, overview) {
         if (doc.y > 600) doc.addPage();
 
-        this._addSectionTitle(doc, '📦 PHÂN TÍCH ĐƠN HÀNG');
+        this._addSectionTitle(doc, '📦 ORDER ANALYTICS');
 
         // Status breakdown table
         if (statusBreakdown && statusBreakdown.length > 0) {
@@ -152,7 +152,7 @@ class PdfReportService {
                 this._formatCurrency(s.totalAmount),
             ]);
 
-            this._addTable(doc, [['Trạng thái', 'Số lượng', 'Tổng tiền'], ...statusData], 3);
+            this._addTable(doc, [['Status', 'Quantity', 'Total Amount'], ...statusData], 3);
         }
 
         doc.moveDown(1);
@@ -164,7 +164,7 @@ class PdfReportService {
     async _addTopProducts(doc, topProducts) {
         if (doc.y > 600) doc.addPage();
 
-        this._addSectionTitle(doc, '🏆 SẢN PHẨM BÁN CHẠY');
+        this._addSectionTitle(doc, '🏆 TOP SELLING PRODUCTS');
 
         if (topProducts && topProducts.length > 0) {
             const productData = topProducts.map((p, index) => [
@@ -176,11 +176,11 @@ class PdfReportService {
 
             this._addTable(
                 doc,
-                [['#', 'Sản phẩm', 'Số lượng', 'Doanh thu'], ...productData],
+                [['#', 'Product', 'Quantity', 'Revenue'], ...productData],
                 4
             );
         } else {
-            doc.fontSize(10).fillColor('#6b7280').text('Không có dữ liệu');
+            doc.fontSize(10).fillColor('#6b7280').text('No data available');
         }
 
         doc.moveDown(1);
@@ -192,21 +192,21 @@ class PdfReportService {
     async _addRatingSection(doc, ratings) {
         if (doc.y > 600) doc.addPage();
 
-        this._addSectionTitle(doc, '⭐ ĐÁNH GIÁ KHÁCH HÀNG');
+        this._addSectionTitle(doc, '⭐ CUSTOMER RATINGS');
 
         doc.fontSize(10).fillColor('#374151');
-        doc.text(`Tổng đánh giá: ${this._formatNumber(ratings.totalRatings)}`);
-        doc.text(`Điểm trung bình: ${ratings.averageRating.toFixed(1)}/5.0`);
+        doc.text(`Total Ratings: ${this._formatNumber(ratings.totalRatings)}`);
+        doc.text(`Average Rating: ${ratings.averageRating.toFixed(1)}/5.0`);
         doc.moveDown(0.5);
 
         // Rating distribution
         if (ratings.ratingDistribution) {
             const ratingData = [
-                ['5 sao ⭐⭐⭐⭐⭐', this._formatNumber(ratings.ratingDistribution[5])],
-                ['4 sao ⭐⭐⭐⭐', this._formatNumber(ratings.ratingDistribution[4])],
-                ['3 sao ⭐⭐⭐', this._formatNumber(ratings.ratingDistribution[3])],
-                ['2 sao ⭐⭐', this._formatNumber(ratings.ratingDistribution[2])],
-                ['1 sao ⭐', this._formatNumber(ratings.ratingDistribution[1])],
+                ['5 stars ⭐⭐⭐⭐⭐', this._formatNumber(ratings.ratingDistribution[5])],
+                ['4 stars ⭐⭐⭐⭐', this._formatNumber(ratings.ratingDistribution[4])],
+                ['3 stars ⭐⭐⭐', this._formatNumber(ratings.ratingDistribution[3])],
+                ['2 stars ⭐⭐', this._formatNumber(ratings.ratingDistribution[2])],
+                ['1 star ⭐', this._formatNumber(ratings.ratingDistribution[1])],
             ];
 
             this._addTable(doc, ratingData, 2);
@@ -221,12 +221,12 @@ class PdfReportService {
     async _addTimeAnalytics(doc, hourly, timeAnalytics) {
         if (doc.y > 600) doc.addPage();
 
-        this._addSectionTitle(doc, '⏰ PHÂN TÍCH THEO THỜI GIAN');
+        this._addSectionTitle(doc, '⏰ TIME-BASED ANALYTICS');
 
         // Peak hour
         doc.fontSize(10).fillColor('#374151');
-        doc.text(`Giờ cao điểm: ${timeAnalytics.peakHour.hour}:00 (${this._formatNumber(timeAnalytics.peakHour.totalOrders)} đơn)`);
-        doc.text(`Ngày bận nhất: ${timeAnalytics.busiestDay.dayName} (${this._formatNumber(timeAnalytics.busiestDay.totalOrders)} đơn)`);
+        doc.text(`Peak Hour: ${timeAnalytics.peakHour.hour}:00 (${this._formatNumber(timeAnalytics.peakHour.totalOrders)} orders)`);
+        doc.text(`Busiest Day: ${timeAnalytics.busiestDay.dayName} (${this._formatNumber(timeAnalytics.busiestDay.totalOrders)} orders)`);
         doc.moveDown(1);
 
         // Top 5 busiest hours
@@ -240,7 +240,7 @@ class PdfReportService {
                 this._formatCurrency(h.totalRevenue),
             ]);
 
-        this._addTable(doc, [['#', 'Khung giờ', 'Số đơn', 'Doanh thu'], ...topHours], 4);
+        this._addTable(doc, [['#', 'Time Slot', 'Orders', 'Revenue'], ...topHours], 4);
 
         doc.moveDown(1);
     }
@@ -250,20 +250,20 @@ class PdfReportService {
      */
     _addFooter(doc) {
         const pages = doc.bufferedPageRange();
-        for (let i = 0; i < pages.count; i++) {
+        for (let i = pages.start; i < pages.start + pages.count; i++) {
             doc.switchToPage(i);
 
             doc.fontSize(8)
                 .fillColor('#9ca3af')
                 .text(
-                    `Trang ${i + 1} / ${pages.count}`,
+                    `Page ${i - pages.start + 1} / ${pages.count}`,
                     50,
                     doc.page.height - 50,
                     { align: 'center' }
                 );
 
             doc.text(
-                `Tạo lúc: ${new Date().toLocaleString('vi-VN')}`,
+                `Generated: ${new Date().toLocaleString('en-US')}`,
                 50,
                 doc.page.height - 35,
                 { align: 'center' }
@@ -356,12 +356,12 @@ class PdfReportService {
      */
     _translateStatus(status) {
         const translations = {
-            pending: 'Chờ xác nhận',
-            confirmed: 'Đã xác nhận',
-            preparing: 'Đang chuẩn bị',
-            ready: 'Sẵn sàng',
-            completed: 'Hoàn thành',
-            cancelled: 'Đã hủy',
+            pending: 'Pending',
+            confirmed: 'Confirmed',
+            preparing: 'Preparing',
+            ready: 'Ready',
+            completed: 'Completed',
+            cancelled: 'Cancelled',
         };
         return translations[status] || status;
     }
