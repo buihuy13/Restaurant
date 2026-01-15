@@ -44,6 +44,7 @@ spring:
                   filters:
                       - PreserveHostHeader # Giữ nguyên header từ Stripe
 
+                #user-service
                 - id: user-service-approvement
                   uri: lb://user-service
                   predicates:
@@ -74,6 +75,13 @@ spring:
                       - Method=PUT
                   filters:
                       - name: JwtAuthentication
+                - id: user-service-post-address
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/address/*
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
                 - id: user-service-profile-put
                   uri: lb://user-service
                   predicates:
@@ -81,6 +89,11 @@ spring:
                       - Method=PUT
                   filters:
                       - name: JwtAuthentication
+                - id: user-service-email
+                  uri: lb://user-service
+                  predicates:
+                      - Path=/api/users/email/**
+                      - Method=POST
                 - id: user-service-auth
                   uri: lb://user-service
                   predicates:
@@ -90,13 +103,6 @@ spring:
                       - name: JwtAuthentication
                         args:
                             requiredRole: ADMIN
-                - id: user-service-email
-                  uri: lb://user-service
-                  predicates:
-                      - Path=/api/users/email/**
-                      - Method=POST
-                  filters:
-                      - name: JwtAuthentication
                 - id: oauth2-authorization
                   uri: lb://user-service
                   predicates:
@@ -119,6 +125,7 @@ spring:
                   uri: ${EUREKA_SERVER_URI}
                   predicates:
                       - Path=/eureka/**
+                #Restaurant service
                 - id: restaurant-service-size
                   uri: lb://restaurant-service
                   predicates:
