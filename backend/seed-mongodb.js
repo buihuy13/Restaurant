@@ -1,6 +1,7 @@
 // ============================================
 // MONGODB SEED DATA FOR RESTAURANT PROJECT
-// Run with mongosh or MongoDB Compass
+// Run with: mongosh < seed-mongodb.js
+// Or copy-paste into MongoDB Compass
 // ============================================
 
 // ===========================================
@@ -13,248 +14,143 @@ db.orders.drop();
 db.carts.drop();
 db.grouporders.drop();
 
-// ORDERS
-db.orders.insertMany([
-    {
-        _id: ObjectId(),
-        orderId: 'ORD-20260107-001',
-        slug: 'ord-20260107-001',
-        userId: 'testuserid',
-        restaurantId: 'RES001',
-        restaurantName: 'Pho Ha Noi',
-        items: [
-            {
-                productId: 'PROD001',
-                productName: 'Pho Bo Tai',
-                sizeId: 'L',
-                sizeName: 'Lon',
-                quantity: 2,
-                price: 55000,
-                subtotal: 110000,
-            },
-            {
-                productId: 'PROD003',
-                productName: 'Pho Ga',
-                sizeId: 'M',
-                sizeName: 'Vua',
-                quantity: 1,
-                price: 40000,
-                subtotal: 40000,
-            },
-        ],
-        totalAmount: 150000,
-        deliveryFee: 15000,
-        finalAmount: 165000,
-        deliveryAddress: {
-            location: '123 Ly Thuong Kiet, Q10, TP.HCM',
-            longitude: 106.660172,
-            latitude: 10.770833,
-        },
-        paymentMethod: 'card',
-        paymentStatus: 'processing',
-        status: 'completed',
-        note: 'It rau, them hanh',
-        createdAt: new Date('2026-01-05T10:30:00Z'),
-        updatedAt: new Date('2026-01-05T11:15:00Z'),
-        deliveredAt: new Date('2026-01-05T11:15:00Z'),
-    },
-    {
-        _id: ObjectId(),
-        orderId: 'ORD-20260107-002',
-        slug: 'ord-20260107-002',
-        userId: 'user_gen_01',
-        restaurantId: 'RES002',
-        restaurantName: 'Bun Cha Obama',
-        items: [
-            {
-                productId: 'PROD004',
-                productName: 'Bun Cha Dac Biet',
-                sizeId: 'L',
-                sizeName: 'Lon',
-                quantity: 1,
-                price: 65000,
-                subtotal: 65000,
-            },
-            {
-                productId: 'PROD006',
-                productName: 'Nem Ran',
-                sizeId: 'M',
-                sizeName: 'Vua',
-                quantity: 2,
-                price: 30000,
-                subtotal: 60000,
-            },
-        ],
-        totalAmount: 125000,
-        deliveryFee: 20000,
-        finalAmount: 145000,
-        deliveryAddress: {
-            location: '456 Nguyen Dinh Chieu, Q3, TP.HCM',
-            longitude: 106.686389,
-            latitude: 10.779444,
-        },
-        paymentMethod: 'card',
-        paymentStatus: 'processing',
-        status: 'processing',
-        note: '',
-        createdAt: new Date('2026-01-06T12:00:00Z'),
-        updatedAt: new Date('2026-01-06T12:45:00Z'),
-        deliveredAt: new Date('2026-01-06T12:45:00Z'),
-    },
-    {
-        _id: ObjectId(),
-        orderId: 'ORD-20260107-003',
-        slug: 'ord-20260107-003',
-        userId: 'user_gen_02',
-        restaurantId: 'RES003',
-        restaurantName: 'Pizza Hut Express',
-        items: [
-            {
-                productId: 'PROD007',
-                productName: 'Pizza Pepperoni',
-                sizeId: 'L',
-                sizeName: 'Lon',
-                quantity: 1,
-                price: 220000,
-                subtotal: 220000,
-            },
-        ],
-        totalAmount: 220000,
-        deliveryFee: 25000,
-        finalAmount: 245000,
-        deliveryAddress: {
-            location: '789 Dien Bien Phu, Binh Thanh, TP.HCM',
-            longitude: 106.710556,
-            latitude: 10.801667,
-        },
-        paymentMethod: 'card',
-        paymentStatus: 'pending',
-        status: 'preparing',
-        note: 'Extra cheese',
-        createdAt: new Date('2026-01-07T09:00:00Z'),
-        updatedAt: new Date('2026-01-07T09:15:00Z'),
-    },
-    {
-        _id: ObjectId(),
-        orderId: 'ORD-20260107-004',
-        slug: 'ord-20260107-004',
-        userId: 'testuserid',
-        restaurantId: 'RES005',
-        restaurantName: 'Sushi Tokyo',
-        items: [
-            {
-                productId: 'PROD013',
-                productName: 'Sushi Ca Hoi',
-                sizeId: 'L',
-                sizeName: 'Lon',
-                quantity: 2,
-                price: 180000,
-                subtotal: 360000,
-            },
-            {
-                productId: 'PROD014',
-                productName: 'Sashimi Tong Hop',
-                sizeId: 'M',
-                sizeName: 'Vua',
-                quantity: 1,
-                price: 250000,
-                subtotal: 250000,
-            },
-        ],
-        totalAmount: 610000,
-        deliveryFee: 30000,
-        finalAmount: 640000,
-        deliveryAddress: {
-            location: '123 Ly Thuong Kiet, Q10, TP.HCM',
-            longitude: 106.660172,
-            latitude: 10.770833,
-        },
-        paymentMethod: 'card',
-        paymentStatus: 'pending',
-        status: 'pending',
-        note: 'Giao gio an trua',
-        createdAt: new Date('2026-01-07T10:30:00Z'),
-        updatedAt: new Date('2026-01-07T10:30:00Z'),
-    },
-]);
+print('Seeding order database with comprehensive test data...');
 
-// CARTS
+// Helper function to generate random date within range
+function randomDate(start, end) {
+    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
+
+// ORDERS - Comprehensive test data for dashboard
+const merchantId = 'testmerchantid'; // Use this merchant ID for testing
+const restaurantId = 'RES001';
+const restaurantName = 'Pho Ha Noi';
+
+// Generate orders for the last 30 days with various times and ratings
+const orders = [];
+const now = new Date();
+const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+// Products for variety
+const products = [
+    { id: 'PROD001', name: 'Phở Bò Tái', price: 55000 },
+    { id: 'PROD002', name: 'Phở Gà', price: 50000 },
+    { id: 'PROD003', name: 'Bún Chả', price: 60000 },
+    { id: 'PROD004', name: 'Bún Bò Huế', price: 65000 },
+    { id: 'PROD005', name: 'Cơm Tấm Sườn', price: 45000 },
+    { id: 'PROD006', name: 'Bánh Mì Thịt', price: 25000 },
+    { id: 'PROD007', name: 'Gỏi Cuốn', price: 30000 },
+    { id: 'PROD008', name: 'Chả Giò', price: 35000 },
+];
+
+const statuses = ['completed', 'completed', 'completed', 'completed', 'pending', 'confirmed', 'preparing', 'ready', 'cancelled'];
+const ratings = [5, 5, 5, 4, 4, 4, 3, 2, 1, null, null]; // More 5-star ratings
+
+// Generate 100 orders
+for (let i = 0; i < 100; i++) {
+    const orderDate = randomDate(thirtyDaysAgo, now);
+    const hour = orderDate.getHours();
+
+    // Randomly select 1-3 products
+    const numProducts = Math.floor(Math.random() * 3) + 1;
+    const selectedProducts = [];
+    let totalAmount = 0;
+
+    for (let j = 0; j < numProducts; j++) {
+        const product = products[Math.floor(Math.random() * products.length)];
+        const quantity = Math.floor(Math.random() * 3) + 1;
+        const subtotal = product.price * quantity;
+        totalAmount += subtotal;
+
+        selectedProducts.push({
+            productId: product.id,
+            productName: product.name,
+            quantity: quantity,
+            price: product.price,
+            imageURL: `https://res.cloudinary.com/demo/image/upload/${product.id}.jpg`,
+        });
+    }
+
+    const deliveryFee = Math.floor(Math.random() * 20000) + 10000;
+    const tax = Math.floor(totalAmount * 0.1);
+    const discount = i % 10 === 0 ? Math.floor(totalAmount * 0.1) : 0;
+    const finalAmount = totalAmount + deliveryFee + tax - discount;
+
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+    const rating = status === 'completed' ? ratings[Math.floor(Math.random() * ratings.length)] : null;
+
+    orders.push({
+        _id: ObjectId(),
+        orderId: `ORD-${orderDate.getFullYear()}${String(orderDate.getMonth() + 1).padStart(2, '0')}${String(orderDate.getDate()).padStart(2, '0')}-${String(i + 1).padStart(3, '0')}`,
+        slug: `ord-${orderDate.getFullYear()}${String(orderDate.getMonth() + 1).padStart(2, '0')}${String(orderDate.getDate()).padStart(2, '0')}-${String(i + 1).padStart(3, '0')}`,
+        userId: `user_${Math.floor(Math.random() * 20) + 1}`,
+        restaurantId: restaurantId,
+        restaurantName: restaurantName,
+        merchantId: merchantId,
+        items: selectedProducts,
+        totalAmount: totalAmount,
+        deliveryFee: deliveryFee,
+        tax: tax,
+        discount: discount,
+        finalAmount: finalAmount,
+        deliveryAddress: {
+            street: `${Math.floor(Math.random() * 999) + 1} Nguyen Hue`,
+            city: 'Ho Chi Minh',
+            state: 'Vietnam',
+            zipCode: '700000',
+        },
+        paymentMethod: 'card',
+        paymentStatus: status === 'completed' ? 'paid' : status === 'cancelled' ? 'refunded' : 'processing',
+        status: status,
+        orderNote: i % 5 === 0 ? 'Ít rau, thêm hành' : '',
+        rating: rating,
+        review: rating ? (rating >= 4 ? 'Món ăn rất ngon!' : rating === 3 ? 'Tạm ổn' : 'Không ngon lắm') : null,
+        estimatedDeliveryTime: new Date(orderDate.getTime() + 30 * 60 * 1000),
+        actualDeliveryTime: status === 'completed' ? new Date(orderDate.getTime() + Math.random() * 60 * 60 * 1000) : null,
+        createdAt: orderDate,
+        updatedAt: new Date(orderDate.getTime() + Math.random() * 60 * 60 * 1000),
+    });
+}
+
+db.orders.insertMany(orders);
+
+print(`Inserted ${orders.length} orders for merchant: ${merchantId}`);
+print(`   Restaurant: ${restaurantName} (${restaurantId})`);
+
+// CARTS - Sample cart data
 db.carts.insertMany([
     {
         _id: ObjectId(),
-        userId: 'user_gen_03',
+        userId: 'user_test_1',
         restaurants: [
             {
-                restaurantId: 'RES006',
-                restaurantName: 'Tra Sua Gong Cha',
+                restaurantId: restaurantId,
+                restaurantName: restaurantName,
                 items: [
                     {
-                        productId: 'PROD016',
-                        productName: 'Tra Sua Truyen Thong',
-                        sizeId: 'L',
-                        sizeName: 'Lon',
+                        productId: 'PROD001',
+                        productName: 'Phở Bò Tái',
                         quantity: 2,
-                        price: 45000,
-                        subtotal: 90000,
+                        price: 55000,
+                        imageURL: 'https://res.cloudinary.com/demo/image/upload/PROD001.jpg',
                     },
                     {
-                        productId: 'PROD017',
-                        productName: 'Tra Dao Cam Sa',
-                        sizeId: 'M',
-                        sizeName: 'Vua',
+                        productId: 'PROD007',
+                        productName: 'Gỏi Cuốn',
                         quantity: 1,
-                        price: 40000,
-                        subtotal: 40000,
+                        price: 30000,
+                        imageURL: 'https://res.cloudinary.com/demo/image/upload/PROD007.jpg',
                     },
                 ],
-                subtotal: 130000,
+                subtotal: 140000,
             },
         ],
-        totalAmount: 130000,
-        updatedAt: new Date(),
-    },
-    {
-        _id: ObjectId(),
-        userId: 'user_gen_04',
-        restaurants: [
-            {
-                restaurantId: 'RES007',
-                restaurantName: 'Com Tam Sai Gon',
-                items: [
-                    {
-                        productId: 'PROD019',
-                        productName: 'Com Tam Suon Bi Cha',
-                        sizeId: 'L',
-                        sizeName: 'Lon',
-                        quantity: 1,
-                        price: 60000,
-                        subtotal: 60000,
-                    },
-                ],
-                subtotal: 60000,
-            },
-            {
-                restaurantId: 'RES008',
-                restaurantName: 'Banh Mi Huynh Hoa',
-                items: [
-                    {
-                        productId: 'PROD021',
-                        productName: 'Banh Mi Dac Biet',
-                        sizeId: 'M',
-                        sizeName: 'Vua',
-                        quantity: 2,
-                        price: 45000,
-                        subtotal: 90000,
-                    },
-                ],
-                subtotal: 90000,
-            },
-        ],
-        totalAmount: 150000,
+        totalAmount: 140000,
         updatedAt: new Date(),
     },
 ]);
 
+print('Inserted sample cart data');
 print('Order database seeded successfully!');
 
 // ===========================================
@@ -266,20 +162,22 @@ db = db.getSiblingDB('blog_db');
 db.blogs.drop();
 db.comments.drop();
 
+print('Seeding blog database...');
+
 // BLOGS
 db.blogs.insertMany([
     {
         _id: ObjectId(),
-        title: 'Top 10 Quan Pho Ngon Nhat Sai Gon',
+        title: 'Top 10 Quán Phở Ngon Nhất Sài Gòn',
         slug: 'top-10-quan-pho-ngon-nhat-sai-gon',
         content:
-            '# Top 10 Quan Pho Ngon Nhat Sai Gon 2026\n\nPho la mon an khong the thieu trong am thuc Viet Nam. Hom nay chung ta se cung kham pha 10 quan pho ngon nhat Sai Gon!\n\n## 1. Pho Ha Noi - Nguyen Hue\nNuoc dung dam da, thit bo tuoi ngon. Day la dia chi yeu thich cua nhieu nguoi sanh an.\n\n## 2. Pho Le - Vo Thi Sau\nPho gia truyen hon 30 nam, noi tieng voi nuoc dung trong va ngot thanh.\n\n## 3. Pho Hoa Pasteur\nThuong hieu lau doi, phuc vu tu 6h sang.\n\n*Hay thu va cho chung toi biet y kien cua ban nhe!*',
-        excerpt: 'Kham pha 10 quan pho ngon nhat Sai Gon 2026, tu pho truyen thong den pho fusion hien dai.',
+            '# Top 10 Quán Phở Ngon Nhất Sài Gòn 2026\n\nPhở là món ăn không thể thiếu trong ẩm thực Việt Nam. Hôm nay chúng ta sẽ cùng khám phá 10 quán phở ngon nhất Sài Gòn!\n\n## 1. Phở Hà Nội - Nguyễn Huệ\nNước dùng đậm đà, thịt bò tươi ngon. Đây là địa chỉ yêu thích của nhiều người sành ăn.\n\n## 2. Phở Lệ - Võ Thị Sáu\nPhở gia truyền hơn 30 năm, nổi tiếng với nước dùng trong và ngọt thanh.\n\n## 3. Phở Hòa Pasteur\nThương hiệu lâu đời, phục vụ từ 6h sáng.\n\n*Hãy thử và cho chúng tôi biết ý kiến của bạn nhé!*',
+        excerpt: 'Khám phá 10 quán phở ngon nhất Sài Gòn 2026, từ phở truyền thống đến phở fusion hiện đại.',
         coverImage: 'https://res.cloudinary.com/demo/image/upload/pho-cover.jpg',
         authorId: 'testuserid',
         authorName: 'Test User',
-        category: 'Am thuc',
-        tags: ['pho', 'sai gon', 'am thuc viet', 'top 10'],
+        category: 'Ẩm thực',
+        tags: ['phở', 'sài gòn', 'ẩm thực việt', 'top 10'],
         views: 1520,
         likes: ['user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05'],
         likesCount: 5,
@@ -291,37 +189,16 @@ db.blogs.insertMany([
     },
     {
         _id: ObjectId(),
-        title: 'Review Sushi Tokyo - Co Dang Tien Khong?',
-        slug: 'review-sushi-tokyo-co-dang-tien-khong',
-        content:
-            '# Review Sushi Tokyo - Co Dang Tien Khong?\n\nHom nay minh se review quan Sushi Tokyo tren duong Hai Ba Trung.\n\n## Khong gian\nQuan trang tri theo phong cach Nhat Ban truyen thong, sach se va thoang mat.\n\n## Chat luong mon an\n- **Sushi ca hoi**: 9/10 - Ca tuoi, tan trong mieng\n- **Sashimi tong hop**: 9.5/10 - Tuyet voi!\n- **Maki roll**: 8/10 - Kha on\n\n## Gia ca\nGia hoi cao nhung xung dang voi chat luong.\n\n## Ket luan\n5/5 - Highly recommended!',
-        excerpt: 'Review chi tiet quan Sushi Tokyo - tu khong gian, chat luong mon an den gia ca.',
-        coverImage: 'https://res.cloudinary.com/demo/image/upload/sushi-review.jpg',
-        authorId: 'user_gen_01',
-        authorName: 'User 01',
-        category: 'Review',
-        tags: ['sushi', 'nhat ban', 'review', 'hai ba trung'],
-        views: 890,
-        likes: ['testuserid', 'user_gen_02', 'user_gen_03'],
-        likesCount: 3,
-        commentsCount: 2,
-        status: 'published',
-        createdAt: new Date('2026-01-03T14:00:00Z'),
-        updatedAt: new Date('2026-01-03T14:00:00Z'),
-        publishedAt: new Date('2026-01-03T14:00:00Z'),
-    },
-    {
-        _id: ObjectId(),
-        title: 'Cong Thuc Nau Pho Bo Tai Nha',
+        title: 'Công Thức Nấu Phở Bò Tại Nhà',
         slug: 'cong-thuc-nau-pho-bo-tai-nha',
         content:
-            '# Cong Thuc Nau Pho Bo Tai Nha\n\n## Nguyen lieu\n\n### Nuoc dung:\n- 2kg xuong bo\n- 500g thit bo bap\n- 2 cu hanh tay\n- 1 cu gung\n- Hoa hoi, que, thao qua\n\n### Banh pho va rau:\n- 500g banh pho tuoi\n- Rau mui, hanh la, gia do\n\n## Cach lam\n\n1. **Chan xuong**: Dun soi nuoc, cho xuong vao chan 5 phut roi do bo nuoc.\n2. **Nuong hanh gung**: Nuong truc tiep tren bep den khi thom.\n3. **Nau nuoc dung**: Cho xuong, thit, hanh gung va gia vi vao noi. Nau 6-8 tieng.\n4. **Trung banh pho**: Cho banh pho vao nuoc soi 10 giay.\n5. **Hoan thanh**: Xep pho vao to, them thit, rau va chan nuoc dung.\n\nChuc cac ban thanh cong!',
-        excerpt: 'Huong dan chi tiet cach nau pho bo chuan vi tai nha voi cong thuc gia truyen.',
+            '# Công Thức Nấu Phở Bò Tại Nhà\n\n## Nguyên liệu\n\n### Nước dùng:\n- 2kg xương bò\n- 500g thịt bò bắp\n- 2 củ hành tây\n- 1 củ gừng\n- Hoa hồi, quế, thảo quả\n\n### Bánh phở và rau:\n- 500g bánh phở tươi\n- Rau mùi, hành lá, giá đỗ\n\n## Cách làm\n\n1. **Chần xương**: Đun sôi nước, cho xương vào chần 5 phút rồi đổ bỏ nước.\n2. **Nướng hành gừng**: Nướng trực tiếp trên bếp đến khi thơm.\n3. **Nấu nước dùng**: Cho xương, thịt, hành gừng và gia vị vào nồi. Nấu 6-8 tiếng.\n4. **Trụng bánh phở**: Cho bánh phở vào nước sôi 10 giây.\n5. **Hoàn thành**: Xếp phở vào tô, thêm thịt, rau và chan nước dùng.\n\nChúc các bạn thành công!',
+        excerpt: 'Hướng dẫn chi tiết cách nấu phở bò chuẩn vị tại nhà với công thức gia truyền.',
         coverImage: 'https://res.cloudinary.com/demo/image/upload/pho-recipe.jpg',
-        authorId: 'testmerchantid',
+        authorId: merchantId,
         authorName: 'Test Merchant',
-        category: 'Cong thuc',
-        tags: ['pho', 'cong thuc', 'nau an', 'viet nam'],
+        category: 'Công thức',
+        tags: ['phở', 'công thức', 'nấu ăn', 'việt nam'],
         views: 2340,
         likes: ['testuserid', 'user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06'],
         likesCount: 7,
@@ -333,72 +210,24 @@ db.blogs.insertMany([
     },
 ]);
 
-// Get blog IDs for comments
-const blogs = db.blogs.find().toArray();
-
-// COMMENTS
-db.comments.insertMany([
-    {
-        _id: ObjectId(),
-        blogId: blogs[0]._id,
-        content: 'Bai viet rat hay! Minh da thu Pho Ha Noi va rat ngon!',
-        authorId: 'user_gen_01',
-        authorName: 'User 01',
-        likes: ['testuserid', 'user_gen_02'],
-        likesCount: 2,
-        parentId: null,
-        createdAt: new Date('2026-01-02T09:00:00Z'),
-        updatedAt: new Date('2026-01-02T09:00:00Z'),
-    },
-    {
-        _id: ObjectId(),
-        blogId: blogs[0]._id,
-        content: 'Con thieu Pho Thin nha ban!',
-        authorId: 'user_gen_02',
-        authorName: 'User 02',
-        likes: [],
-        likesCount: 0,
-        parentId: null,
-        createdAt: new Date('2026-01-02T10:30:00Z'),
-        updatedAt: new Date('2026-01-02T10:30:00Z'),
-    },
-    {
-        _id: ObjectId(),
-        blogId: blogs[1]._id,
-        content: 'Gia bao nhieu vay ban?',
-        authorId: 'user_gen_03',
-        authorName: 'User 03',
-        likes: [],
-        likesCount: 0,
-        parentId: null,
-        createdAt: new Date('2026-01-04T08:00:00Z'),
-        updatedAt: new Date('2026-01-04T08:00:00Z'),
-    },
-    {
-        _id: ObjectId(),
-        blogId: blogs[2]._id,
-        content: 'Cam on cong thuc! Minh se thu lam cuoi tuan nay.',
-        authorId: 'user_gen_04',
-        authorName: 'User 04',
-        likes: ['testmerchantid'],
-        likesCount: 1,
-        parentId: null,
-        createdAt: new Date('2026-01-06T15:00:00Z'),
-        updatedAt: new Date('2026-01-06T15:00:00Z'),
-    },
-    {
-        _id: ObjectId(),
-        blogId: blogs[2]._id,
-        content: 'Nau bao lau thi duoc a?',
-        authorId: 'user_gen_05',
-        authorName: 'User 05',
-        likes: [],
-        likesCount: 0,
-        parentId: null,
-        createdAt: new Date('2026-01-06T16:00:00Z'),
-        updatedAt: new Date('2026-01-06T16:00:00Z'),
-    },
-]);
-
-print('Blog database seeded successfully!');
-print('All MongoDB databases seeded!');
+print('✅ Blog database seeded successfully!');
+print('\n========================================');
+print('🎉 All MongoDB databases seeded!');
+print('========================================');
+print('\n📊 DASHBOARD TESTING INFO:');
+print(`   Merchant ID: ${merchantId}`);
+print(`   Restaurant ID: ${restaurantId}`);
+print(`   Restaurant Name: ${restaurantName}`);
+print(`   Total Orders: ${orders.length}`);
+print('\n POSTMAN TESTING ENDPOINTS:');
+print('   GET http://localhost:8080/api/dashboard/merchant/testmerchantid/restaurant');
+print('   GET http://localhost:8080/api/merchant/testmerchantid/dashboard/overview');
+print('   GET http://localhost:8080/api/merchant/testmerchantid/dashboard/revenue');
+print('   GET http://localhost:8080/api/merchant/testmerchantid/dashboard/ratings');
+print('   GET http://localhost:8080/api/merchant/testmerchantid/dashboard/hourly');
+print('   GET http://localhost:8080/api/merchant/testmerchantid/dashboard/time-analytics');
+print('   GET http://localhost:8080/api/merchant/testmerchantid/dashboard/products/top');
+print('   GET http://localhost:8080/api/merchant/testmerchantid/dashboard/orders/status');
+print('   GET http://localhost:8080/api/merchant/testmerchantid/dashboard/revenue/trend');
+print('\nRemember to add Authorization header with JWT token!');
+print('========================================\n');

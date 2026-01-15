@@ -389,6 +389,109 @@ spring:
                         args:
                             requiredRole: MERCHANT, ADMIN
 
+                # ====================== MERCHANT DASHBOARD ======================
+                # Restaurant Service - Dashboard
+                - id: merchant-dashboard-restaurant-info
+                  uri: lb://restaurant-service
+                  predicates:
+                      - Path=/api/dashboard/merchant/{merchantId}/restaurant
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                # Order Service - Dashboard
+                - id: merchant-dashboard-overview
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/{merchantId}/dashboard/overview
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-dashboard-revenue
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/{merchantId}/dashboard/revenue
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-dashboard-order-status
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/{merchantId}/dashboard/orders/status
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-dashboard-top-products
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/{merchantId}/dashboard/products/top
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-dashboard-revenue-trend
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/{merchantId}/dashboard/revenue/trend
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-dashboard-ratings
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/{merchantId}/dashboard/ratings
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-dashboard-hourly
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/{merchantId}/dashboard/hourly
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-dashboard-time-analytics
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/{merchantId}/dashboard/time-analytics
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
+                - id: merchant-pdf-report
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/merchant/{merchantId}/reports/pdf
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: MERCHANT
+
                 # ====================== CART SERVICE (trong Order Service) ======================
                 - id: cart-get
                   uri: lb://order-service
