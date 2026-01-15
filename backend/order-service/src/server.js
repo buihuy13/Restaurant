@@ -14,6 +14,8 @@ import redisClient from './config/redis.js';
 import startPaymentConsumer from './consumers/paymentConsumer.js';
 import eurekaClient from './config/eureka.js';
 import orderMerchantRoutes from './routes/orderMerchantRoutes.js';
+import merchantDashboardRoutes from './routes/merchantDashboardRoutes.js';
+import pdfReportRoutes from './routes/pdfReportRoutes.js';
 import openapiRoute from './routes/openapiRoute.js';
 import http from 'http';
 import { initOrderSocket } from './config/socket.js';
@@ -57,6 +59,8 @@ app.use('/api/orders', orderRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/group-orders', groupOrderRouter);
 app.use('/api/merchant/orders', orderMerchantRoutes);
+app.use('/api/merchant', merchantDashboardRoutes);
+app.use('/api/merchant', pdfReportRoutes);
 
 // Setup swagger
 app.use('/', openapiRoute);
