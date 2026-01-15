@@ -492,6 +492,67 @@ spring:
                         args:
                             requiredRole: MERCHANT
 
+                # ====================== ADMIN DASHBOARD ======================
+                - id: admin-dashboard-overview
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/admin/dashboard/overview
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
+                - id: admin-dashboard-merchants
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/admin/dashboard/merchants
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
+                - id: admin-dashboard-revenue
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/admin/dashboard/revenue
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
+                - id: admin-dashboard-orders
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/admin/dashboard/orders
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
+                - id: admin-dashboard-merchants-top
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/admin/dashboard/merchants/top
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
+                - id: admin-dashboard-trends
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/admin/dashboard/trends
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
                 # ====================== CART SERVICE (trong Order Service) ======================
                 - id: cart-get
                   uri: lb://order-service

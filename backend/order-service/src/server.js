@@ -16,6 +16,7 @@ import eurekaClient from './config/eureka.js';
 import orderMerchantRoutes from './routes/orderMerchantRoutes.js';
 import merchantDashboardRoutes from './routes/merchantDashboardRoutes.js';
 import pdfReportRoutes from './routes/pdfReportRoutes.js';
+import adminDashboardRoutes from './routes/adminDashboardRoutes.js';
 import openapiRoute from './routes/openapiRoute.js';
 import http from 'http';
 import { initOrderSocket } from './config/socket.js';
@@ -61,6 +62,7 @@ app.use('/api/group-orders', groupOrderRouter);
 app.use('/api/merchant/orders', orderMerchantRoutes);
 app.use('/api/merchant', merchantDashboardRoutes);
 app.use('/api/merchant', pdfReportRoutes);
+app.use('/api/admin', adminDashboardRoutes);
 
 // Setup swagger
 app.use('/', openapiRoute);
