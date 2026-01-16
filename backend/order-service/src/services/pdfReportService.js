@@ -96,7 +96,7 @@ class PdfReportService {
      * Add executive summary
      */
     async _addExecutiveSummary(doc, overview, revenue) {
-        this._addSectionTitle(doc, '📊 OVERVIEW');
+        this._addSectionTitle(doc, 'EXECUTIVE SUMMARY');
 
         const summaryData = [
             ['Total Orders', this._formatNumber(overview.totalOrders)],
@@ -115,7 +115,7 @@ class PdfReportService {
      * Add revenue section
      */
     async _addRevenueSection(doc, revenue) {
-        this._addSectionTitle(doc, '💰 REVENUE ANALYTICS');
+        this._addSectionTitle(doc, 'REVENUE ANALYTICS');
 
         doc.fontSize(10).fillColor('#374151');
         doc.text(`Total Revenue: ${this._formatCurrency(revenue.totalRevenue)}`);
@@ -130,7 +130,7 @@ class PdfReportService {
                 this._formatCurrency(r.totalRevenue),
             ]);
 
-            this._addTable(doc, [['Restaurant', 'Orders', 'Revenue'], ...revenueData], 3);
+            this._addTable(doc, [['Restaurant Name', 'Total Orders', 'Total Revenue'], ...revenueData], 3);
         }
 
         doc.moveDown(1);
@@ -142,7 +142,7 @@ class PdfReportService {
     async _addOrderAnalytics(doc, statusBreakdown, overview) {
         if (doc.y > 600) doc.addPage();
 
-        this._addSectionTitle(doc, '📦 ORDER ANALYTICS');
+        this._addSectionTitle(doc, 'ORDER ANALYTICS');
 
         // Status breakdown table
         if (statusBreakdown && statusBreakdown.length > 0) {
@@ -152,7 +152,7 @@ class PdfReportService {
                 this._formatCurrency(s.totalAmount),
             ]);
 
-            this._addTable(doc, [['Status', 'Quantity', 'Total Amount'], ...statusData], 3);
+            this._addTable(doc, [['Order Status', 'Order Count', 'Total Amount'], ...statusData], 3);
         }
 
         doc.moveDown(1);
@@ -164,7 +164,7 @@ class PdfReportService {
     async _addTopProducts(doc, topProducts) {
         if (doc.y > 600) doc.addPage();
 
-        this._addSectionTitle(doc, '🏆 TOP SELLING PRODUCTS');
+        this._addSectionTitle(doc, 'TOP SELLING PRODUCTS');
 
         if (topProducts && topProducts.length > 0) {
             const productData = topProducts.map((p, index) => [
@@ -176,7 +176,7 @@ class PdfReportService {
 
             this._addTable(
                 doc,
-                [['#', 'Product', 'Quantity', 'Revenue'], ...productData],
+                [['Rank', 'Product Name', 'Quantity Sold', 'Total Revenue'], ...productData],
                 4
             );
         } else {
@@ -192,7 +192,7 @@ class PdfReportService {
     async _addRatingSection(doc, ratings) {
         if (doc.y > 600) doc.addPage();
 
-        this._addSectionTitle(doc, '⭐ CUSTOMER RATINGS');
+        this._addSectionTitle(doc, 'CUSTOMER RATINGS');
 
         doc.fontSize(10).fillColor('#374151');
         doc.text(`Total Ratings: ${this._formatNumber(ratings.totalRatings)}`);
@@ -202,11 +202,11 @@ class PdfReportService {
         // Rating distribution
         if (ratings.ratingDistribution) {
             const ratingData = [
-                ['5 stars ⭐⭐⭐⭐⭐', this._formatNumber(ratings.ratingDistribution[5])],
-                ['4 stars ⭐⭐⭐⭐', this._formatNumber(ratings.ratingDistribution[4])],
-                ['3 stars ⭐⭐⭐', this._formatNumber(ratings.ratingDistribution[3])],
-                ['2 stars ⭐⭐', this._formatNumber(ratings.ratingDistribution[2])],
-                ['1 star ⭐', this._formatNumber(ratings.ratingDistribution[1])],
+                ['5 Stars', this._formatNumber(ratings.ratingDistribution[5])],
+                ['4 Stars', this._formatNumber(ratings.ratingDistribution[4])],
+                ['3 Stars', this._formatNumber(ratings.ratingDistribution[3])],
+                ['2 Stars', this._formatNumber(ratings.ratingDistribution[2])],
+                ['1 Star', this._formatNumber(ratings.ratingDistribution[1])],
             ];
 
             this._addTable(doc, ratingData, 2);
@@ -221,7 +221,7 @@ class PdfReportService {
     async _addTimeAnalytics(doc, hourly, timeAnalytics) {
         if (doc.y > 600) doc.addPage();
 
-        this._addSectionTitle(doc, '⏰ TIME-BASED ANALYTICS');
+        this._addSectionTitle(doc, 'TIME-BASED ANALYTICS');
 
         // Peak hour
         doc.fontSize(10).fillColor('#374151');
@@ -240,7 +240,7 @@ class PdfReportService {
                 this._formatCurrency(h.totalRevenue),
             ]);
 
-        this._addTable(doc, [['#', 'Time Slot', 'Orders', 'Revenue'], ...topHours], 4);
+        this._addTable(doc, [['Rank', 'Time Period', 'Total Orders', 'Total Revenue'], ...topHours], 4);
 
         doc.moveDown(1);
     }
@@ -330,7 +330,7 @@ class PdfReportService {
      * Helper: Format currency
      */
     _formatCurrency(amount) {
-        return new Intl.NumberFormat('vi-VN', {
+        return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'VND',
         }).format(amount || 0);
@@ -340,7 +340,7 @@ class PdfReportService {
      * Helper: Format number
      */
     _formatNumber(num) {
-        return new Intl.NumberFormat('vi-VN').format(num || 0);
+        return new Intl.NumberFormat('en-US').format(num || 0);
     }
 
     /**
@@ -348,7 +348,7 @@ class PdfReportService {
      */
     _formatDate(dateString) {
         if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleDateString('vi-VN');
+        return new Date(dateString).toLocaleDateString('en-US');
     }
 
     /**

@@ -146,6 +146,32 @@ class AdminDashboardController {
             });
         }
     }
+
+    /**
+     * Get revenue by merchant
+     * GET /api/admin/dashboard/revenue/by-merchant
+     */
+    async getRevenueByMerchant(req, res) {
+        try {
+            const { startDate, endDate } = req.query;
+
+            const revenue = await adminDashboardService.getRevenueByMerchant(
+                startDate,
+                endDate
+            );
+
+            return res.status(200).json({
+                success: true,
+                data: revenue,
+            });
+        } catch (error) {
+            logger.error('Get revenue by merchant error:', error);
+            return res.status(500).json({
+                success: false,
+                message: error.message,
+            });
+        }
+    }
 }
 
 export default new AdminDashboardController();

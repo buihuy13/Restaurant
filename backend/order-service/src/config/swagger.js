@@ -31,6 +31,8 @@ export const orderServiceOpenAPI = {
         { name: 'Orders - User', description: 'Khách hàng đặt món, theo dõi, hủy, đánh giá' },
         { name: 'Orders - Merchant', description: 'Chủ quán: Xem đơn, Accept, Reject, Cancel' },
         { name: 'Orders - Admin', description: 'Quản trị viên toàn hệ thống' },
+        { name: 'Admin Dashboard', description: 'Admin analytics and system-wide statistics' },
+        { name: 'Merchant Dashboard', description: 'Merchant-specific analytics and performance metrics' },
     ],
     components: {
         securitySchemes: {
@@ -270,6 +272,138 @@ export const orderServiceOpenAPI = {
                         totalRestaurants: 2,
                         totalItems: 5,
                         grandTotal: 320000,
+                    },
+                },
+            },
+
+            // ==================== DASHBOARD SCHEMAS ====================
+            AdminSystemOverview: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: true },
+                    data: {
+                        type: 'object',
+                        properties: {
+                            totalOrders: { type: 'integer', example: 15234 },
+                            totalRevenue: { type: 'number', example: 2456789000 },
+                            totalMerchants: { type: 'integer', example: 156 },
+                            totalUsers: { type: 'integer', example: 8945 },
+                            averageOrderValue: { type: 'number', example: 161234 },
+                            completedOrders: { type: 'integer', example: 12456 },
+                            cancelledOrders: { type: 'integer', example: 1234 },
+                        },
+                    },
+                },
+            },
+            MerchantPerformance: {
+                type: 'object',
+                properties: {
+                    merchantId: { type: 'string', example: 'MERCHANT123' },
+                    merchantName: { type: 'string', example: 'Phở Thìn Lò Đúc' },
+                    totalOrders: { type: 'integer', example: 456 },
+                    totalRevenue: { type: 'number', example: 45678000 },
+                    averageOrderValue: { type: 'number', example: 100171 },
+                    completedOrders: { type: 'integer', example: 389 },
+                    cancelledOrders: { type: 'integer', example: 23 },
+                },
+            },
+            RevenueAnalytics: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: true },
+                    data: {
+                        type: 'object',
+                        properties: {
+                            totalRevenue: { type: 'number', example: 45678000 },
+                            totalOrders: { type: 'integer', example: 456 },
+                            averageOrderValue: { type: 'number', example: 100171 },
+                            revenueByRestaurant: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        restaurantId: { type: 'string', example: 'REST123' },
+                                        restaurantName: { type: 'string', example: 'Phở Thìn Lò Đúc' },
+                                        totalOrders: { type: 'integer', example: 234 },
+                                        totalRevenue: { type: 'number', example: 23456000 },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            OrderStatusBreakdown: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: true },
+                    data: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                status: { type: 'string', example: 'completed' },
+                                count: { type: 'integer', example: 389 },
+                                totalAmount: { type: 'number', example: 38900000 },
+                            },
+                        },
+                    },
+                },
+            },
+            TopProduct: {
+                type: 'object',
+                properties: {
+                    productId: { type: 'string', example: 'PROD123' },
+                    productName: { type: 'string', example: 'Phở bò tái nạm' },
+                    totalQuantity: { type: 'integer', example: 234 },
+                    totalRevenue: { type: 'number', example: 19890000 },
+                },
+            },
+            RatingStatistics: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: true },
+                    data: {
+                        type: 'object',
+                        properties: {
+                            totalRatings: { type: 'integer', example: 234 },
+                            averageRating: { type: 'number', example: 4.5 },
+                            ratingDistribution: {
+                                type: 'object',
+                                properties: {
+                                    '1': { type: 'integer', example: 5 },
+                                    '2': { type: 'integer', example: 12 },
+                                    '3': { type: 'integer', example: 34 },
+                                    '4': { type: 'integer', example: 89 },
+                                    '5': { type: 'integer', example: 94 },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            TimeAnalytics: {
+                type: 'object',
+                properties: {
+                    success: { type: 'boolean', example: true },
+                    data: {
+                        type: 'object',
+                        properties: {
+                            peakHour: {
+                                type: 'object',
+                                properties: {
+                                    hour: { type: 'integer', example: 12 },
+                                    totalOrders: { type: 'integer', example: 45 },
+                                },
+                            },
+                            busiestDay: {
+                                type: 'object',
+                                properties: {
+                                    dayName: { type: 'string', example: 'Saturday' },
+                                    totalOrders: { type: 'integer', example: 123 },
+                                },
+                            },
+                        },
                     },
                 },
             },

@@ -1,5 +1,6 @@
 import Order from '../models/Order.js';
 import logger from '../utils/logger.js';
+import axios from 'axios';
 
 class AdminDashboardService {
     /**
@@ -71,8 +72,10 @@ class AdminDashboardService {
                 { $match: dateFilter },
                 {
                     $group: {
-                        _id: '$merchantId',
-                        restaurantId: { $first: '$restaurantId' },
+                        _id: {
+                            merchantId: '$merchantId',
+                            restaurantId: '$restaurantId',
+                        },
                         restaurantName: { $first: '$restaurantName' },
                         totalOrders: { $sum: 1 },
                         totalRevenue: { $sum: '$finalAmount' },
@@ -85,22 +88,79 @@ class AdminDashboardService {
                         },
                     },
                 },
-                { $sort: { totalRevenue: -1 } },
             ]);
 
-            return merchantStats.map((m) => ({
-                merchantId: m._id,
-                restaurantId: m.restaurantId,
-                restaurantName: m.restaurantName,
-                totalOrders: m.totalOrders,
-                totalRevenue: m.totalRevenue,
-                averageOrderValue: m.averageOrderValue,
-                completedOrders: m.completedOrders,
-                cancelledOrders: m.cancelledOrders,
-                completionRate: m.totalOrders > 0
-                    ? ((m.completedOrders / m.totalOrders) * 100).toFixed(2)
-                    : 0,
-            }));
+            // Fetch merchantId from restaurant-service for orders without merchantId
+            const enrichedStats = await Promise.all(
+                merchantStats.map(async (stat) => {
+                    let merchantId = stat._id.merchantId;
+                    const restaurantId = stat._id.restaurantId;
+
+                    // If merchantId is null, fetch from restaurant-service
+                    if (!merchantId && restaurantId) {
+                        try {
+                            const response = await axios.get(
+                                `http://restaurant-service:8081/api/restaurants/${restaurantId}`
+                            );
+                            merchantId = response.data?.merchantId || restaurantId;
+                        } catch (error) {
+                            logger.warn(
+                                `Could not fetch merchantId for restaurant ${restaurantId}:`,
+                                error.message
+                            );
+                            // Fallback to restaurantId if fetch fails
+                            merchantId = restaurantId;
+                        }
+                    }
+
+                    return {
+                        merchantId: merchantId || restaurantId,
+                        restaurantId: restaurantId,
+                        restaurantName: stat.restaurantName,
+                        totalOrders: stat.totalOrders,
+                        totalRevenue: stat.totalRevenue,
+                        averageOrderValue: stat.averageOrderValue,
+                        completedOrders: stat.completedOrders,
+                        cancelledOrders: stat.cancelledOrders,
+                    };
+                })
+            );
+
+            // Group by merchantId and aggregate stats
+            const merchantMap = new Map();
+            enrichedStats.forEach((stat) => {
+                const existing = merchantMap.get(stat.merchantId);
+                if (existing) {
+                    existing.totalOrders += stat.totalOrders;
+                    existing.totalRevenue += stat.totalRevenue;
+                    existing.completedOrders += stat.completedOrders;
+                    existing.cancelledOrders += stat.cancelledOrders;
+                    existing.averageOrderValue =
+                        existing.totalRevenue / existing.totalOrders;
+                } else {
+                    merchantMap.set(stat.merchantId, { ...stat });
+                }
+            });
+
+            // Convert map to array and sort by revenue
+            const result = Array.from(merchantMap.values())
+                .sort((a, b) => b.totalRevenue - a.totalRevenue)
+                .map((m) => ({
+                    merchantId: m.merchantId,
+                    restaurantId: m.restaurantId,
+                    restaurantName: m.restaurantName,
+                    totalOrders: m.totalOrders,
+                    totalRevenue: m.totalRevenue,
+                    averageOrderValue: m.averageOrderValue,
+                    completedOrders: m.completedOrders,
+                    cancelledOrders: m.cancelledOrders,
+                    completionRate:
+                        m.totalOrders > 0
+                            ? ((m.completedOrders / m.totalOrders) * 100).toFixed(2)
+                            : 0,
+                }));
+
+            return result;
         } catch (error) {
             logger.error('Error getting merchants performance:', error);
             throw new Error('Failed to get merchants performance');
@@ -218,23 +278,167 @@ class AdminDashboardService {
                 { $match: dateFilter },
                 {
                     $group: {
-                        _id: '$merchantId',
+                        _id: {
+                            merchantId: '$merchantId',
+                            restaurantId: '$restaurantId',
+                        },
                         totalRevenue: { $sum: '$finalAmount' },
                         totalOrders: { $sum: 1 },
+                        completedOrders: {
+                            $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] },
+                        },
+                        cancelledOrders: {
+                            $sum: { $cond: [{ $eq: ['$status', 'cancelled'] }, 1, 0] },
+                        },
                         averageOrderValue: { $avg: '$finalAmount' },
+                        // Calculate average rating (only for orders with ratings)
+                        totalRatings: {
+                            $sum: { $cond: [{ $ne: ['$rating', null] }, 1, 0] },
+                        },
+                        sumRatings: {
+                            $sum: { $cond: [{ $ne: ['$rating', null] }, '$rating', 0] },
+                        },
+                        // Track unique users for repeat order rate
+                        uniqueUsers: { $addToSet: '$userId' },
                     },
                 },
-                { $sort: { totalRevenue: -1 } },
-                { $limit: limit },
             ]);
 
-            return topMerchants.map((m, index) => ({
-                rank: index + 1,
-                merchantId: m._id,
-                totalRevenue: m.totalRevenue,
-                totalOrders: m.totalOrders,
-                averageOrderValue: m.averageOrderValue,
-            }));
+            // Fetch merchantId from restaurant-service for orders without merchantId
+            const enrichedMerchants = await Promise.all(
+                topMerchants.map(async (merchant) => {
+                    let merchantId = merchant._id.merchantId;
+                    const restaurantId = merchant._id.restaurantId;
+
+                    // If merchantId is null, fetch from restaurant-service
+                    if (!merchantId && restaurantId) {
+                        try {
+                            const response = await axios.get(
+                                `http://restaurant-service:8081/api/restaurants/${restaurantId}`
+                            );
+                            merchantId = response.data?.merchantId || restaurantId;
+                        } catch (error) {
+                            logger.warn(
+                                `Could not fetch merchantId for restaurant ${restaurantId}:`,
+                                error.message
+                            );
+                            merchantId = restaurantId;
+                        }
+                    }
+
+                    return {
+                        merchantId: merchantId || restaurantId,
+                        totalRevenue: merchant.totalRevenue,
+                        totalOrders: merchant.totalOrders,
+                        completedOrders: merchant.completedOrders,
+                        cancelledOrders: merchant.cancelledOrders,
+                        averageOrderValue: merchant.averageOrderValue,
+                        totalRatings: merchant.totalRatings,
+                        sumRatings: merchant.sumRatings,
+                        uniqueUsers: merchant.uniqueUsers,
+                    };
+                })
+            );
+
+            // Group by merchantId and aggregate stats
+            const merchantMap = new Map();
+            enrichedMerchants.forEach((merchant) => {
+                const existing = merchantMap.get(merchant.merchantId);
+                if (existing) {
+                    existing.totalOrders += merchant.totalOrders;
+                    existing.totalRevenue += merchant.totalRevenue;
+                    existing.completedOrders += merchant.completedOrders;
+                    existing.cancelledOrders += merchant.cancelledOrders;
+                    existing.totalRatings += merchant.totalRatings;
+                    existing.sumRatings += merchant.sumRatings;
+                    existing.averageOrderValue =
+                        existing.totalRevenue / existing.totalOrders;
+                    // Merge unique users
+                    merchant.uniqueUsers.forEach((userId) => {
+                        if (!existing.uniqueUsers.includes(userId)) {
+                            existing.uniqueUsers.push(userId);
+                        }
+                    });
+                } else {
+                    merchantMap.set(merchant.merchantId, { ...merchant });
+                }
+            });
+
+            // Calculate performance metrics and score
+            const merchantsWithScore = Array.from(merchantMap.values()).map((m) => {
+                // 1. Success Rate (0-100)
+                const successRate =
+                    m.totalOrders > 0 ? (m.completedOrders / m.totalOrders) * 100 : 0;
+
+                // 2. Average Rating (0-5)
+                const averageRating =
+                    m.totalRatings > 0 ? m.sumRatings / m.totalRatings : 0;
+
+                // 3. Repeat Order Rate (0-100)
+                const repeatOrderRate =
+                    m.uniqueUsers.length > 0
+                        ? ((m.totalOrders - m.uniqueUsers.length) / m.totalOrders) * 100
+                        : 0;
+
+                // 4. Normalize revenue (0-100) - will be normalized against max revenue
+                const revenueScore = m.totalRevenue;
+
+                return {
+                    merchantId: m.merchantId,
+                    totalRevenue: m.totalRevenue,
+                    totalOrders: m.totalOrders,
+                    completedOrders: m.completedOrders,
+                    cancelledOrders: m.cancelledOrders,
+                    averageOrderValue: m.averageOrderValue,
+                    successRate: parseFloat(successRate.toFixed(2)),
+                    averageRating: parseFloat(averageRating.toFixed(2)),
+                    repeatOrderRate: parseFloat(repeatOrderRate.toFixed(2)),
+                    totalRatings: m.totalRatings,
+                    revenueScore,
+                };
+            });
+
+            // Find max revenue for normalization
+            const maxRevenue = Math.max(
+                ...merchantsWithScore.map((m) => m.totalRevenue),
+                1
+            );
+
+            // Calculate final performance score
+            const merchantsWithFinalScore = merchantsWithScore.map((m) => {
+                const normalizedRevenue = (m.totalRevenue / maxRevenue) * 100;
+
+                // Performance Score Formula:
+                // 30% Success Rate + 25% Average Rating (scaled to 100) + 20% Revenue + 25% Repeat Order Rate
+                const performanceScore =
+                    m.successRate * 0.3 +
+                    (m.averageRating / 5) * 100 * 0.25 +
+                    normalizedRevenue * 0.2 +
+                    m.repeatOrderRate * 0.25;
+
+                return {
+                    ...m,
+                    performanceScore: parseFloat(performanceScore.toFixed(2)),
+                };
+            });
+
+            // Sort by performance score and apply limit
+            return merchantsWithFinalScore
+                .sort((a, b) => b.performanceScore - a.performanceScore)
+                .slice(0, limit)
+                .map((m, index) => ({
+                    rank: index + 1,
+                    merchantId: m.merchantId,
+                    performanceScore: m.performanceScore,
+                    totalRevenue: m.totalRevenue,
+                    totalOrders: m.totalOrders,
+                    completedOrders: m.completedOrders,
+                    successRate: m.successRate,
+                    averageRating: m.averageRating,
+                    totalRatings: m.totalRatings,
+                    repeatOrderRate: m.repeatOrderRate,
+                    averageOrderValue: m.averageOrderValue,
+                }));
         } catch (error) {
             logger.error('Error getting top merchants:', error);
             throw new Error('Failed to get top merchants');
@@ -291,7 +495,10 @@ class AdminDashboardService {
                 { $match: dateFilter },
                 {
                     $group: {
-                        _id: '$merchantId',
+                        _id: {
+                            merchantId: '$merchantId',
+                            restaurantId: '$restaurantId',
+                        },
                         totalRevenue: { $sum: '$finalAmount' },
                         totalOrders: { $sum: 1 },
                         totalProductAmount: { $sum: '$totalAmount' },
@@ -300,19 +507,71 @@ class AdminDashboardService {
                         totalDiscount: { $sum: '$discount' },
                     },
                 },
-                { $sort: { totalRevenue: -1 } },
             ]);
 
-            return revenueByMerchant.map((r) => ({
-                merchantId: r._id,
-                totalRevenue: r.totalRevenue,
-                totalOrders: r.totalOrders,
-                totalProductAmount: r.totalProductAmount,
-                totalDeliveryFee: r.totalDeliveryFee,
-                totalTax: r.totalTax,
-                totalDiscount: r.totalDiscount,
-                averageOrderValue: r.totalOrders > 0 ? r.totalRevenue / r.totalOrders : 0,
-            }));
+            // Fetch merchantId from restaurant-service for orders without merchantId
+            const enrichedRevenue = await Promise.all(
+                revenueByMerchant.map(async (rev) => {
+                    let merchantId = rev._id.merchantId;
+                    const restaurantId = rev._id.restaurantId;
+
+                    // If merchantId is null, fetch from restaurant-service
+                    if (!merchantId && restaurantId) {
+                        try {
+                            const response = await axios.get(
+                                `http://restaurant-service:8081/api/restaurants/${restaurantId}`
+                            );
+                            merchantId = response.data?.merchantId || restaurantId;
+                        } catch (error) {
+                            logger.warn(
+                                `Could not fetch merchantId for restaurant ${restaurantId}:`,
+                                error.message
+                            );
+                            merchantId = restaurantId;
+                        }
+                    }
+
+                    return {
+                        merchantId: merchantId || restaurantId,
+                        totalRevenue: rev.totalRevenue,
+                        totalOrders: rev.totalOrders,
+                        totalProductAmount: rev.totalProductAmount,
+                        totalDeliveryFee: rev.totalDeliveryFee,
+                        totalTax: rev.totalTax,
+                        totalDiscount: rev.totalDiscount,
+                    };
+                })
+            );
+
+            // Group by merchantId and aggregate stats
+            const merchantMap = new Map();
+            enrichedRevenue.forEach((rev) => {
+                const existing = merchantMap.get(rev.merchantId);
+                if (existing) {
+                    existing.totalOrders += rev.totalOrders;
+                    existing.totalRevenue += rev.totalRevenue;
+                    existing.totalProductAmount += rev.totalProductAmount;
+                    existing.totalDeliveryFee += rev.totalDeliveryFee;
+                    existing.totalTax += rev.totalTax;
+                    existing.totalDiscount += rev.totalDiscount;
+                } else {
+                    merchantMap.set(rev.merchantId, { ...rev });
+                }
+            });
+
+            // Convert map to array and sort by revenue
+            return Array.from(merchantMap.values())
+                .sort((a, b) => b.totalRevenue - a.totalRevenue)
+                .map((r) => ({
+                    merchantId: r.merchantId,
+                    totalRevenue: r.totalRevenue,
+                    totalOrders: r.totalOrders,
+                    totalProductAmount: r.totalProductAmount,
+                    totalDeliveryFee: r.totalDeliveryFee,
+                    totalTax: r.totalTax,
+                    totalDiscount: r.totalDiscount,
+                    averageOrderValue: r.totalOrders > 0 ? r.totalRevenue / r.totalOrders : 0,
+                }));
         } catch (error) {
             logger.error('Error getting revenue by merchant:', error);
             throw new Error('Failed to get revenue by merchant');

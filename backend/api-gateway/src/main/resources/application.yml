@@ -560,6 +560,16 @@ spring:
                         args:
                             requiredRole: ADMIN
 
+                - id: admin-dashboard-revenue-by-merchant
+                  uri: lb://order-service
+                  predicates:
+                      - Path=/api/admin/dashboard/revenue/by-merchant
+                      - Method=GET
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: ADMIN
+
                 # ====================== CART SERVICE (trong Order Service) ======================
                 - id: cart-get
                   uri: lb://order-service
