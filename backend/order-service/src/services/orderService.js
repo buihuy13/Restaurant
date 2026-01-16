@@ -5,6 +5,7 @@ import Order from '../models/Order.js';
 import Cart from '../models/Cart.js';
 import cacheService from './cacheService.js';
 import { notifyNewOrder } from '../config/socket.js';
+import { calculateDeliveryFee } from '../utils/deliveryFeeCalculator.js';
 
 class OrderService {
     generateOrderId() {
@@ -93,6 +94,9 @@ class OrderService {
     }
 
     normalizeRestaurantData(rawData) {
+        const distance = parseFloat(rawData.distance) || 0;
+        const duration = parseInt(rawData.duration) || 0;
+
         return {
             id: rawData.id || rawData.restaurantId,
             name: rawData.resName || rawData.name || rawData.restaurantName,
@@ -110,9 +114,9 @@ class OrderService {
             imageURL: rawData.imageURL || rawData.image,
             rating: parseFloat(rawData.rating) || 0,
             totalReview: rawData.totalReview || 0,
-            deliveryFee: parseFloat(rawData.deliveryFee) || 0,
-            duration: parseInt(rawData.duration) || 45,
-            distance: parseFloat(rawData.distance) || 0,
+            deliveryFee: calculateDeliveryFee(distance, duration),
+            duration: duration,
+            distance: distance,
             products: rawData.products || [],
             categories: rawData.cate || rawData.categories || [],
         };
