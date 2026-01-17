@@ -7,6 +7,9 @@ import upload from '../config/multer.js';
 
 const router = express.Router();
 
+// Mount upload routes for rich text editor
+router.use('/upload', uploadRoutes);
+
 // Multer middleware cho createBlog - hỗ trợ 1 ảnh bìa + nhiều ảnh content
 const uploadBlogImages = upload.fields([
     { name: 'featuredImage', maxCount: 1 },

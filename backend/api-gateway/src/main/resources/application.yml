@@ -1005,7 +1005,27 @@ spring:
                         args:
                             requiredRole: USER,ADMIN,MERCHANT
 
-                # UPLOAD ROUTES (ảnh bìa, ảnh comment)
+                # UPLOAD ROUTES (ảnh bìa, ảnh comment, rich text editor)
+                - id: blog-upload-editor-image
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/upload/editor-image
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
+                - id: blog-upload-multiple
+                  uri: lb://blog-service
+                  predicates:
+                      - Path=/api/blogs/upload/multiple
+                      - Method=POST
+                  filters:
+                      - name: JwtAuthentication
+                        args:
+                            requiredRole: USER,ADMIN,MERCHANT
+
                 - id: blog-upload-image
                   uri: lb://blog-service
                   predicates:
