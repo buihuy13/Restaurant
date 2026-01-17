@@ -170,38 +170,45 @@ $$ LANGUAGE plpgsql;
 -- Fake data
 
 INSERT INTO categories (id, cate_name) VALUES
-('CAT001', 'Do uong'),
-('CAT002', 'Mon chinh'),
-('CAT003', 'Mon phu'),
-('CAT004', 'Trang mieng'),
-('CAT005', 'Do an nhanh'),
-('CAT006', 'Mon chay'),
-('CAT007', 'Mon Viet'),
-('CAT008', 'Mon Han'),
-('CAT009', 'Mon Nhat'),
-('CAT010', 'Pizza & Pasta');
+('CAT001', 'Beverages'),
+('CAT002', 'Main Dishes'),
+('CAT003', 'Side Dishes'),
+('CAT004', 'Desserts'),
+('CAT005', 'Fast Food'),
+('CAT006', 'Vegetarian'),
+('CAT007', 'Vietnamese'),
+('CAT008', 'Korean'),
+('CAT009', 'Japanese'),
+('CAT010', 'Pizza & Pasta'),
+('CAT011', 'American'),
+('CAT012', 'Mexican'),
+('CAT013', 'Healthy');
 
 -- ============================================
 -- SIZES
 -- ============================================
 INSERT INTO size (id, name) VALUES
-('S', 'Nho'),
-('M', 'Vua'),
-('L', 'Lon'),
-('XL', 'Sieu lon');
+('S', 'Small'),
+('M', 'Medium'),
+('L', 'Large'),
+('XL', 'Extra Large');
 
 -- ============================================
 -- RESTAURANTS
 -- ============================================
 INSERT INTO restaurants (id, res_name, address, longitude, latitude, rating, opening_time, closing_time, image_url, phone, merchant_id, slug, enabled) VALUES
-('RES001', 'Pho Ha Noi', '123 Nguyen Hue, Q1, TP.HCM', 106.701317, 10.775658, 4.5, '06:00:00', '22:00:00', 'https://res.cloudinary.com/demo/image/upload/pho.jpg', '0901234567', 'testmerchantid', 'pho-ha-noi', true),
-('RES002', 'Bun Cha Obama', '456 Le Loi, Q1, TP.HCM', 106.698316, 10.773852, 4.8, '07:00:00', '21:00:00', 'https://res.cloudinary.com/demo/image/upload/buncha.jpg', '0901234568', 'testmerchantid', 'bun-cha-obama', true),
-('RES003', 'Pizza Hut Express', '789 Tran Hung Dao, Q5, TP.HCM', 106.680088, 10.754292, 4.2, '10:00:00', '23:00:00', 'https://res.cloudinary.com/demo/image/upload/pizza.jpg', '0901234569', 'testmerchantid', 'pizza-hut-express', true),
-('RES004', 'Korean BBQ House', '321 Pasteur, Q3, TP.HCM', 106.690167, 10.784308, 4.6, '11:00:00', '23:00:00', 'https://res.cloudinary.com/demo/image/upload/kbbq.jpg', '0901234570', 'testmerchantid', 'korean-bbq-house', true),
-('RES005', 'Sushi Tokyo', '555 Hai Ba Trung, Q1, TP.HCM', 106.696817, 10.788508, 4.7, '10:00:00', '22:00:00', 'https://res.cloudinary.com/demo/image/upload/sushi.jpg', '0901234571', 'testmerchantid', 'sushi-tokyo', true),
-('RES006', 'Tra Sua Gong Cha', '100 Nguyen Thi Minh Khai, Q3, TP.HCM', 106.686817, 10.780508, 4.4, '08:00:00', '22:00:00', 'https://res.cloudinary.com/demo/image/upload/trasua.jpg', '0901234572', 'testmerchantid', 'tra-sua-gong-cha', true),
-('RES007', 'Com Tam Sai Gon', '200 Vo Van Tan, Q3, TP.HCM', 106.683817, 10.775508, 4.3, '06:00:00', '21:00:00', 'https://res.cloudinary.com/demo/image/upload/comtam.jpg', '0901234573', 'testmerchantid', 'com-tam-sai-gon', true),
-('RES008', 'Banh Mi Huynh Hoa', '26 Le Thi Rieng, Q1, TP.HCM', 106.693817, 10.770508, 4.9, '06:00:00', '23:00:00', 'https://res.cloudinary.com/demo/image/upload/banhmi.jpg', '0901234574', 'testmerchantid', 'banh-mi-huynh-hoa', true);
+('RES001', 'The Gourmet Kitchen', '123 Nguyen Hue, District 1, HCMC', 106.701317, 10.775658, 4.5, '10:00:00', '22:00:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635125/burger_rrezhv.jpg', '0901234567', 'testmerchantid', 'the-gourmet-kitchen', true),
+('RES002', 'Pho Hanoi', '456 Le Loi, District 1, HCMC', 106.698316, 10.773852, 4.8, '06:00:00', '21:00:00', 'https://res.cloudinary.com/demo/image/upload/pho.jpg', '0901234568', 'merchant_002', 'pho-hanoi', true),
+('RES003', 'Pizza Hut Express', '789 Tran Hung Dao, District 5, HCMC', 106.680088, 10.754292, 4.2, '10:00:00', '23:00:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635183/pizza_hks2cw.jpg', '0901234569', 'merchant_003', 'pizza-hut-express', true),
+('RES004', 'Korean BBQ House', '321 Pasteur, District 3, HCMC', 106.690167, 10.784308, 4.6, '11:00:00', '23:00:00', 'https://res.cloudinary.com/demo/image/upload/kbbq.jpg', '0901234570', 'merchant_004', 'korean-bbq-house', true),
+('RES005', 'Sushi Tokyo', '555 Hai Ba Trung, District 1, HCMC', 106.696817, 10.788508, 4.7, '10:00:00', '22:00:00', 'https://res.cloudinary.com/demo/image/upload/sushi.jpg', '0901234571', 'merchant_005', 'sushi-tokyo', true),
+('RES006', 'Bubble Tea Cafe', '100 Nguyen Thi Minh Khai, District 3, HCMC', 106.686817, 10.780508, 4.4, '08:00:00', '22:00:00', 'https://res.cloudinary.com/demo/image/upload/trasua.jpg', '0901234572', 'merchant_006', 'bubble-tea-cafe', true),
+('RES007', 'Saigon Street Food', '200 Vo Van Tan, District 3, HCMC', 106.683817, 10.775508, 4.3, '06:00:00', '21:00:00', 'https://res.cloudinary.com/demo/image/upload/comtam.jpg', '0901234573', 'merchant_007', 'saigon-street-food', true),
+('RES008', 'Banh Mi Express', '26 Le Thi Rieng, District 1, HCMC', 106.693817, 10.770508, 4.9, '06:00:00', '23:00:00', 'https://res.cloudinary.com/demo/image/upload/banhmi.jpg', '0901234574', 'merchant_008', 'banh-mi-express', true),
+('RES009', 'Burger House', '150 Dong Khoi, District 1, HCMC', 106.704817, 10.777508, 4.6, '10:00:00', '23:00:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635125/burger_rrezhv.jpg', '0901234575', 'merchant_009', 'burger-house', true),
+('RES010', 'Taco Bell Vietnam', '88 Pasteur, District 1, HCMC', 106.692817, 10.782508, 4.5, '11:00:00', '22:00:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635233/tacos_g0bqyg.jpg', '0901234576', 'merchant_010', 'taco-bell-vietnam', true),
+('RES011', 'Fried Chicken King', '45 Le Thanh Ton, District 1, HCMC', 106.699817, 10.779508, 4.7, '10:00:00', '23:00:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635215/garan_oak9ge.jpg', '0901234577', 'merchant_011', 'fried-chicken-king', true),
+('RES012', 'Healthy Bowl', '99 Nguyen Du, District 1, HCMC', 106.695817, 10.781508, 4.8, '07:00:00', '21:00:00', 'https://res.cloudinary.com/demo/image/upload/healthy-food.jpg', '0901234578', 'merchant_012', 'healthy-bowl', true);
 
 -- ============================================
 -- RESTAURANT CATEGORIES

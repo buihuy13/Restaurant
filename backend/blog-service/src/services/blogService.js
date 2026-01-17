@@ -1,9 +1,11 @@
 import mongoose from 'mongoose';
 import Blog from '../models/Blog.js';
+import Comment from '../models/Comment.js';
 import logger from '../utils/logger.js';
 import CloudinaryService from './cloudinaryService.js';
 import slugify from 'slugify';
 import AppError from '../utils/appError.js';
+import { parseMarkdown } from '../utils/markdown.js';
 
 class BlogService {
     async createBlog(blogData, featuredImageFile = null, imageFiles = []) {
@@ -170,8 +172,13 @@ class BlogService {
                 throw new Error('Blog not found');
             }
 
+            // Parse markdown content to HTML
+            const contentHtml = parseMarkdown(blog.content);
+
             return {
                 ...blog,
+                content: blog.content, // Original markdown
+                contentHtml, // Parsed HTML
                 likesCount: blog.likes?.length || 0,
             };
         } catch (error) {
@@ -192,8 +199,14 @@ class BlogService {
             await blog.save();
 
             const blogObj = blog.toObject();
+
+            // Parse markdown content to HTML
+            const contentHtml = parseMarkdown(blogObj.content);
+
             return {
                 ...blogObj,
+                content: blogObj.content, // Original markdown
+                contentHtml, // Parsed HTML
                 likesCount: blogObj.likes?.length || 0,
                 commentsCount: blogObj.comments?.length || 0,
             };
