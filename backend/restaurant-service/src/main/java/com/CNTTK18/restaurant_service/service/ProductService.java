@@ -74,16 +74,12 @@ public class ProductService {
             throw new InvalidRequestException("longitude and latitude is mandatory");
         }
         List<String> categoryNames = (category == null || category.isBlank()) ? List.of()
-            : Arrays.stream(category.split(",")).map(String::toLowerCase).toList();
+            : Arrays.stream(category.split(",")).map(String::trim).map(String::toLowerCase).toList();
         
-        if (search != null && search.isBlank()) {
-            search = null;
-        }
+        search = (search != null && !search.isBlank()) ? search : null;
+        nearby = (nearby == null || nearby > 20000) ? 20000 : nearby;
 
         String sort = getSorted(locationsorted, rating);
-        if (nearby == null || nearby > 20000) {
-            nearby = 20000;
-        }
 
         Page<Products> products = productRepo.findProductsWithinDistance(location.getLongitude(), location.getLatitude(), nearby, search, 
                                                 categoryNames, maxPrice, minPrice, sort, pageable);
