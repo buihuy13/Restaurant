@@ -210,11 +210,11 @@ db.blogs.insertMany([
     },
 ]);
 
-print('✅ Blog database seeded successfully!');
+print('Blog database seeded successfully!');
 print('\n========================================');
-print('🎉 All MongoDB databases seeded!');
+print('All MongoDB databases seeded!');
 print('========================================');
-print('\n📊 DASHBOARD TESTING INFO:');
+print('\nDASHBOARD TESTING INFO:');
 print(`   Merchant ID: ${merchantId}`);
 print(`   Restaurant ID: ${restaurantId}`);
 print(`   Restaurant Name: ${restaurantName}`);

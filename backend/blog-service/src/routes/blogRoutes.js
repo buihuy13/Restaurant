@@ -3,8 +3,15 @@ import blogController from '../controllers/blogController.js';
 import commentRoutes from './commentRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
 import { authenticate } from '../middlewares/authMiddleware.js';
+import upload from '../config/multer.js';
 
 const router = express.Router();
+
+// Multer middleware cho createBlog - hỗ trợ 1 ảnh bìa + nhiều ảnh content
+const uploadBlogImages = upload.fields([
+    { name: 'featuredImage', maxCount: 1 },
+    { name: 'images', maxCount: 10 },
+]);
 
 /**
  * @swagger
@@ -17,7 +24,7 @@ const router = express.Router();
  * @swagger
  * /api/blogs:
  *   post:
- *     summary: Tạo bài viết mới (có upload ảnh bìa)
+ *     summary: Tạo bài viết mới (có upload ảnh bìa + nhiều ảnh content)
  *     tags: [Blogs]
  *     security:
  *       - bearerAuth: []
@@ -52,7 +59,13 @@ const router = express.Router();
  *               featuredImage:
  *                 type: string
  *                 format: binary
- *                 description: Ảnh bìa bài viết
+ *                 description: Ảnh bìa bài viết (1 file)
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Ảnh trong nội dung bài viết (tối đa 10 files)
  *               author.userId:
  *                 type: string
  *                 example: "60d5ecb74b3d3f001c8b4567"
@@ -69,7 +82,7 @@ const router = express.Router();
  *           application/json:
  *             example:
  *               success: true
- *               message: "Blog created successfully"
+ *               message: "Tạo bài viết thành công"
  *               data:
  *                 _id: "67a1b2c3d4e5f67890123456"
  *                 title: "Top 10 quán chay ngon nhất Hà Nội 2025"
@@ -77,6 +90,12 @@ const router = express.Router();
  *                 excerpt: "Top 10 quán chay ngon nhất..."
  *                 featuredImage:
  *                   url: "https://res.cloudinary.com/dhaecxi8n/image/upload/v1733150000/blog/chay_hanoi_cover.jpg"
+ *                   publicId: "foodeats/blogs/covers/chay_hanoi_cover"
+ *                 images:
+ *                   - url: "https://res.cloudinary.com/dhaecxi8n/image/upload/v1733150001/blog/content/img1.jpg"
+ *                     publicId: "foodeats/blogs/content/img1"
+ *                   - url: "https://res.cloudinary.com/dhaecxi8n/image/upload/v1733150002/blog/content/img2.jpg"
+ *                     publicId: "foodeats/blogs/content/img2"
  *                 author:
  *                   userId: "60d5ecb74b3d3f001c8b4567"
  *                   name: "Nguyễn Văn A"
@@ -354,7 +373,7 @@ const router = express.Router();
 
 router.use('/upload', uploadRoutes);
 
-router.post('/', blogController.createBlog);
+router.post('/', uploadBlogImages, blogController.createBlog);
 router.get('/', blogController.getBlogs);
 
 router.get('/popular', blogController.getPopularBlogs);

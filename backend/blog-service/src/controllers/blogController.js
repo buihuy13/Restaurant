@@ -2,19 +2,43 @@ import logger from '../utils/logger.js';
 import blogService from '../services/blogService.js';
 import { createBlogSchema } from '../dtos/createBlogDto.js';
 import { updateBlogSchema } from '../dtos/updateBlogDto.js';
-import fs from 'fs/promises';
 
 class BlogController {
     createBlog = async (req, res, next) => {
         let featuredImageFile = null;
+        let imageFiles = [];
         // 1. Xử lý dữ liệu đầu vào – hỗ trợ cả form-data và raw JSON
         let blogData = {};
 
         try {
-            if (req.file) {
-                // Trường hợp upload ảnh qua multer (form-data)
+            // Log raw request data for debugging
+            logger.info('CreateBlog request received:', {
+                hasFiles: !!req.files,
+                hasFile: !!req.file,
+                filesKeys: req.files ? Object.keys(req.files) : [],
+                bodyKeys: Object.keys(req.body || {}),
+            });
+
+            // Xử lý files từ multer.fields()
+            if (req.files) {
+                // req.files là object với keys: 'featuredImage' và 'images'
+                if (req.files.featuredImage && req.files.featuredImage.length > 0) {
+                    featuredImageFile = req.files.featuredImage[0];
+                    logger.info('Featured image received:', {
+                        originalname: featuredImageFile.originalname,
+                        size: featuredImageFile.size,
+                        mimetype: featuredImageFile.mimetype,
+                    });
+                }
+                if (req.files.images && req.files.images.length > 0) {
+                    imageFiles = req.files.images;
+                    logger.info(`${imageFiles.length} content images received`);
+                }
+                blogData = { ...req.body };
+            } else if (req.file) {
+                // Trường hợp upload 1 ảnh qua multer.single() (backward compatible)
                 featuredImageFile = req.file;
-                blogData = req.body;
+                blogData = { ...req.body };
             } else if (req.body && Object.keys(req.body).length > 0) {
                 // Raw JSON (Postman "raw" hoặc frontend fetch)
                 blogData = req.body;
@@ -25,13 +49,46 @@ class BlogController {
                 });
             }
 
+            // Parse JSON fields from multipart/form-data
+            // Multer converts all fields to strings, so we need to parse JSON fields
+            if (typeof blogData.tags === 'string') {
+                try {
+                    blogData.tags = JSON.parse(blogData.tags);
+                } catch (e) {
+                    // If not valid JSON, try splitting by comma
+                    blogData.tags = blogData.tags.split(',').map((t) => t.trim()).filter(Boolean);
+                }
+            }
+
+            if (typeof blogData.author === 'string') {
+                try {
+                    blogData.author = JSON.parse(blogData.author);
+                } catch (e) {
+                    logger.warn('Failed to parse author field as JSON:', e.message);
+                }
+            }
+
+            if (typeof blogData.seo === 'string') {
+                try {
+                    blogData.seo = JSON.parse(blogData.seo);
+                } catch (e) {
+                    logger.warn('Failed to parse seo field as JSON:', e.message);
+                }
+            }
+
+            logger.info('Parsed blog data:', {
+                title: blogData.title,
+                hasAuthor: !!blogData.author,
+                authorUserId: blogData.author?.userId,
+                tagsCount: Array.isArray(blogData.tags) ? blogData.tags.length : 0,
+                category: blogData.category,
+                status: blogData.status,
+            });
+
             // 2. Validate với Joi – quan trọng: validate đúng dữ liệu (không phải req.body khi có file)
             const { error } = createBlogSchema.validate(blogData, { abortEarly: false });
 
             if (error) {
-                if (featuredImageFile) {
-                    await fs.promises.unlink(featuredImageFile.path).catch(() => {});
-                }
                 return res.status(400).json({
                     success: false,
                     message: 'Dữ liệu không hợp lệ',
@@ -39,8 +96,15 @@ class BlogController {
                 });
             }
 
-            // 3. Gọi service
-            const blog = await blogService.createBlog(blogData, featuredImageFile);
+            // 3. Gọi service với cả featuredImage và images
+            const blog = await blogService.createBlog(blogData, featuredImageFile, imageFiles);
+
+            logger.info('Blog created successfully:', {
+                blogId: blog._id,
+                title: blog.title,
+                hasFeaturedImage: !!blog.featuredImage,
+                imagesCount: blog.images?.length || 0,
+            });
 
             // 4. Trả kết quả
             return res.status(201).json({
@@ -49,17 +113,13 @@ class BlogController {
                 data: blog,
             });
         } catch (error) {
-            // Xóa file tạm nếu có lỗi
-            if (featuredImageFile) {
-                await fs.promises.unlink(featuredImageFile.path).catch(() => {});
-            }
-
             logger.error('BlogController.createBlog error:', {
                 message: error.message,
                 stack: error.stack,
                 userId: blogData.author?.userId || req.user?.id,
                 title: blogData.title,
-                hasFile: !!featuredImageFile,
+                hasFeaturedImage: !!featuredImageFile,
+                imagesCount: imageFiles.length,
             });
 
             return next(error); // để error middleware xử lý

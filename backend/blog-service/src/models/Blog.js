@@ -37,8 +37,16 @@ const blogSchema = new mongoose.Schema(
         },
         featuredImage: {
             url: { type: String, required: false },
+            publicId: { type: String, required: false },
             alt: { type: String, required: false },
         },
+        images: [
+            {
+                url: { type: String, required: true },
+                publicId: { type: String, required: false },
+                alt: { type: String, required: false },
+            },
+        ],
         category: {
             type: String,
             enum: ['recipe', 'review', 'tips', 'news', 'health', 'other'],

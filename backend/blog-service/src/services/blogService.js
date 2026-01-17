@@ -6,8 +6,8 @@ import slugify from 'slugify';
 import AppError from '../utils/appError.js';
 
 class BlogService {
-    async createBlog(blogData, featuredImageFile = null) {
-        let uploadedPublicId = null;
+    async createBlog(blogData, featuredImageFile = null, imageFiles = []) {
+        let uploadedPublicIds = [];
 
         try {
             const {
@@ -23,7 +23,7 @@ class BlogService {
 
             // === 1. Validate cơ bản ===
             if (!title?.trim()) throw new AppError('Tiêu đề bài viết là bắt buộc', 400);
-            if (!content?.trim()) throw new AppError('Nội dung bài viết là bắt bại', 400);
+            if (!content?.trim()) throw new AppError('Nội dung bài viết là bắt buộc', 400);
             if (!author?.userId) throw new AppError('Thiếu thông tin tác giả', 400);
 
             // === 2. Upload ảnh bìa nếu có ===
@@ -41,17 +41,35 @@ class BlogService {
                     width: uploadResult.width,
                     height: uploadResult.height,
                 };
-                uploadedPublicId = uploadResult.public_id;
+                uploadedPublicIds.push(uploadResult.public_id);
             }
 
-            // === 3. Tạo slug duy nhất ===
+            // === 3. Upload nhiều ảnh content nếu có ===
+            let images = [];
+            if (imageFiles && imageFiles.length > 0) {
+                const uploadPromises = imageFiles.map(async (file, index) => {
+                    const result = await CloudinaryService.uploadImage(
+                        file.buffer,
+                        'foodeats/blogs/content',
+                        `${title}_img_${index + 1}`,
+                    );
+                    uploadedPublicIds.push(result.public_id);
+                    return {
+                        url: result.secure_url,
+                        publicId: result.public_id,
+                    };
+                });
+                images = await Promise.all(uploadPromises);
+            }
+
+            // === 4. Tạo slug duy nhất ===
             let slug = slugify(title, { lower: true, strict: true, trim: true });
             const existingBlog = await Blog.findOne({ slug }).lean();
             if (existingBlog) {
                 slug = `${slug}-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 5)}`;
             }
 
-            // === 4. Tạo excerpt tự động ===
+            // === 5. Tạo excerpt tự động ===
             const cleanText = content
                 .replace(/<[^>]*>/g, ' ')
                 .replace(/\s+/g, ' ')
@@ -59,16 +77,17 @@ class BlogService {
             const excerpt =
                 providedExcerpt?.trim() || (cleanText.length > 200 ? cleanText.slice(0, 197) + '...' : cleanText);
 
-            // === 5. Tính thời gian đọc ===
+            // === 6. Tính thời gian đọc ===
             const readTime = Math.max(1, Math.ceil(cleanText.split(/\s+/).filter(Boolean).length / 200));
 
-            // === 6. TẠO BLOG – KHÔNG DÙNG TRANSACTION (an toàn với mọi môi trường) ===
+            // === 7. TẠO BLOG – KHÔNG DÙNG TRANSACTION (an toàn với mọi môi trường) ===
             const blog = await Blog.create({
                 title: title.trim(),
                 slug,
                 content: content.trim(),
                 excerpt,
                 featuredImage,
+                images,
                 author: {
                     userId: author.userId,
                     name: author.name?.trim() || 'Ẩn danh',
@@ -88,9 +107,13 @@ class BlogService {
             return await Blog.findById(blog._id).select('-likes -comments -__v').lean({ virtuals: true });
         } catch (error) {
             // Xóa ảnh nếu upload thất bại
-            if (uploadedPublicId) {
-                await CloudinaryService.deleteImage(uploadedPublicId).catch((err) =>
-                    logger.warn('Failed to delete uploaded image on error', err),
+            if (uploadedPublicIds.length > 0) {
+                await Promise.all(
+                    uploadedPublicIds.map((id) =>
+                        CloudinaryService.deleteImage(id).catch((err) =>
+                            logger.warn('Failed to delete uploaded image on error', err),
+                        ),
+                    ),
                 );
             }
 
