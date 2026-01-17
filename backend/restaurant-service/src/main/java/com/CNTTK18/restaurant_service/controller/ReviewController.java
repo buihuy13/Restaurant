@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -71,8 +72,8 @@ public class ReviewController {
     @Tag(name = "Delete")
     @Operation(summary = "Delete a review")
     @DeleteMapping("/{id}")
-    public ResponseEntity<MessageResponse> deleteReview(@PathVariable String id) {
-        reviewService.deleteReview(id);
+    public ResponseEntity<MessageResponse> deleteReview(@PathVariable String id, @AuthenticationPrincipal String userId) {
+        reviewService.deleteReview(id, userId);
         return ResponseEntity.ok(new MessageResponse("Delete Successfully"));
     }
 }

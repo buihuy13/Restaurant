@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.CascadeType;
@@ -66,6 +67,10 @@ public class Restaurants {
     @Column(name = "updated_at")
     @LastModifiedDate
     private Instant updatedAt;
+
+    // Sử dụng kdl của postgis spatial type
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point geom;
 
     @ManyToMany
     @JoinTable(
