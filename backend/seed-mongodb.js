@@ -336,7 +336,7 @@ db.blogs.insertMany([
         content:
             '# 5 Healthy Eating Habits for a Better Lifestyle\n\n## Introduction\n\nGood nutrition is the foundation of a healthy life. Here are 5 simple habits to improve your diet.\n\n## 1. Eat More Vegetables\n\nAim for at least 5 servings of vegetables daily. They\'re packed with vitamins, minerals, and fiber.\n\n## 2. Choose Whole Grains\n\nReplace white rice and bread with brown rice, quinoa, and whole wheat options.\n\n## 3. Stay Hydrated\n\nDrink 8 glasses of water daily. Limit sugary drinks and sodas.\n\n## 4. Control Portion Sizes\n\nUse smaller plates and listen to your body\'s hunger signals.\n\n## 5. Plan Your Meals\n\nMeal planning helps you make healthier choices and saves money.\n\n## Conclusion\n\nSmall changes lead to big results. Start with one habit and build from there!\n\n*Your health is your wealth.*',
         excerpt: 'Discover 5 simple and effective healthy eating habits that can transform your lifestyle and improve your wellbeing.',
-        coverImage: 'https://res.cloudinary.com/demo/image/upload/healthy-food.jpg',
+        coverImage: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768640680/orange-juice_qynanv.jpg',
         authorId: 'testuserid',
         authorName: 'Test User',
         category: 'Health & Wellness',
