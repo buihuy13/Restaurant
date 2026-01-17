@@ -6,7 +6,6 @@ import connectDB from './config/database.js';
 import rabbitmqConnection from './config/rabbitmq.js';
 import errorHandler from './middleware/errorHandler.js';
 import logger from './utils/logger.js';
-import rateLimit from 'express-rate-limit';
 import orderRouter from './routes/orderRoutes.js';
 import cartRouter from './routes/cartRoutes.js';
 import groupOrderRouter from './routes/groupOrderRoutes.js';
@@ -37,13 +36,6 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Rate limiting
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-});
-app.use('/api/', limiter);
 
 // Health check
 app.get('/health', (req, res) => {

@@ -4,7 +4,6 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import connectDB from './config/database.js';
 import blogRoutes from './routes/blogRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
@@ -15,21 +14,23 @@ import openapiRoute from './routes/openapiRoute.js';
 const app = express();
 const PORT = process.env.PORT || 8087;
 
-// Rate limiting
-const limiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
-    message: 'Too many requests from this IP, please try again later.',
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
 // Middlewares
-app.use(helmet());
-app.use(cors({ origin: true, credentials: true }));
+// CORS must be applied BEFORE helmet to avoid conflicts
+app.use(
+    cors({
+        origin: ['http://localhost:8080', 'http://api-gateway:8080'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        credentials: true,
+    }),
+);
+app.use(
+    helmet({
+        crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use('/api/', limiter);
 
 // Request logging
 app.use((req, res, next) => {
