@@ -189,26 +189,25 @@ class BlogService {
 
     async getBlogBySlug(slug) {
         try {
-            const blog = await Blog.findOne({ slug, status: 'published' });
+            const blog = await Blog.findOne({ slug, status: 'published' }).lean();
 
             if (!blog) {
                 throw new Error('Blog not found');
             }
 
-            blog.views += 1;
-            await blog.save();
-
-            const blogObj = blog.toObject();
+            // Use updateOne to increment views without triggering validation
+            await Blog.updateOne({ _id: blog._id }, { $inc: { views: 1 } });
 
             // Parse markdown content to HTML
-            const contentHtml = parseMarkdown(blogObj.content);
+            const contentHtml = parseMarkdown(blog.content);
 
             return {
-                ...blogObj,
-                content: blogObj.content, // Original markdown
+                ...blog,
+                views: blog.views + 1, // Return incremented value
+                content: blog.content, // Original markdown
                 contentHtml, // Parsed HTML
-                likesCount: blogObj.likes?.length || 0,
-                commentsCount: blogObj.comments?.length || 0,
+                likesCount: blog.likes?.length || 0,
+                commentsCount: blog.comments?.length || 0,
             };
         } catch (error) {
             logger.error('Get blog by slug error:', error);
