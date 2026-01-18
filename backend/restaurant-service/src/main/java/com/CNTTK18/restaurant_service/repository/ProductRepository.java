@@ -54,8 +54,6 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
         ORDER BY 
             p.id,
             CASE WHEN :sort = 'location_id_asc' THEN calc.distance_meters END ASC,
-            CASE WHEN :sort = 'location_id_desc' THEN calc.distance_meters END DESC,
-            CASE WHEN :sort = 'rating_id_asc' THEN p.rating END ASC,
             CASE WHEN :sort = 'rating_id_desc' THEN p.rating END DESC
             """, 
         countQuery = """

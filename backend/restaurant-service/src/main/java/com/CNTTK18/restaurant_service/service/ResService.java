@@ -64,21 +64,17 @@ public class ResService {
         List<String> categoryNames = (category == null || category.isBlank()) ? List.of()
             : Arrays.stream(category.split(",")).map(String::toLowerCase).toList();
 
-        if (search != null && search.isBlank()) {
-            search = null;
-        }
+        search = (search != null && !search.isBlank()) ? search : null;
 
-        Sort sort = Sort.by("id").ascending();
-        if ("asc".equalsIgnoreCase(rating)) {
-            sort = Sort.by(
-                Sort.Order.asc("rating"),
-                Sort.Order.asc("id")
-            );
-        } else if ("desc".equalsIgnoreCase(rating)) {
+        Sort sort = null;
+        if (rating != null && "desc".equalsIgnoreCase(rating)) {
             sort = Sort.by(
                 Sort.Order.desc("rating"),
                 Sort.Order.asc("id")
             );
+        }
+        else {
+            sort = Sort.by("id").ascending();
         }
 
         Pageable newPageable = PageRequest.of(
@@ -87,9 +83,7 @@ public class ResService {
             sort
         );
 
-        if (nearby == null || nearby > 20000) {
-            nearby = 20000;
-        }
+        nearby = (nearby == null || nearby > 20000) ? 20000 : nearby;
         Page<Restaurants> res = resRepository.findRestaurantsWithinDistance(location.getLongitude(), location.getLatitude(), 
                                                                             nearby, search, categoryNames, newPageable);         
         if (res.isEmpty()) {

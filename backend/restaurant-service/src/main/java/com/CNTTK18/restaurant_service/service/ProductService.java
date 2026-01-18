@@ -114,21 +114,11 @@ public class ProductService {
     }
 
     private String getSorted(String locationsorted, String rating) {
-        if (rating != null && !rating.isBlank()) {
-            if ("asc".equalsIgnoreCase(rating)) {
-                return "rating_id_asc";
-            }
-            if ("desc".equalsIgnoreCase(rating)) {
-                return "rating_id_desc";
-            }
+        if (rating != null && "desc".equalsIgnoreCase(rating)) {
+            return "rating_id_desc";
         }
-        if (locationsorted != null  && !locationsorted.isBlank()) {
-            if ("asc".equalsIgnoreCase(locationsorted)) {
-                return "location_id_asc";
-            }
-            if ("desc".equalsIgnoreCase(locationsorted)) {
-                return "location_id_desc";
-            }
+        if (locationsorted != null  && "asc".equalsIgnoreCase(locationsorted)) {
+            return "location_id_asc";
         }
         return "id_asc";
     }
