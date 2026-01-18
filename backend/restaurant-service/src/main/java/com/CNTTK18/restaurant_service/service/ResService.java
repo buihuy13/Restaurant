@@ -57,7 +57,42 @@ public class ResService {
     }
 
     public Mono<Page<ResResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
-                                                                String rating, String category, Pageable pageable) {
+                                                                String rating, String category, Pageable pageable, String userId) {
+                                    
+        if (userId == null || userId.isBlank()) {
+            return Mono.just(resRepository.findAll(PageRequest.of(0, 12))
+                                    .map(ResUtil::mapResToResResponseWithProduct));
+        }
+
+        Page<Restaurants> res = getRestaurantsAfterValidation(location, search, nearby, rating, category, pageable);    
+        if (res.isEmpty()) {
+            return Mono.just(Page.empty(pageable));
+        }
+                
+        List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
+        List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
+        
+        return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
+                    .map(response -> {
+                        List<Double> durations = response.getDurations().get(0);
+                        List<Double> distances = response.getDistances().get(0);
+
+                        List<ResResponseWithProduct> responseList = IntStream.range(0, res.getContent().size())
+                            .mapToObj(i -> {
+                                return ResUtil.mapResToResResponseWithProductandDistanceAndDuration(res.getContent().get(i), durations.get(i), distances.get(i));
+                            })
+                            .toList();
+                        
+                        return new PageImpl<>(
+                            responseList,
+                            pageable,
+                            res.getTotalElements()
+                        );
+                    });
+    }
+
+    private Page<Restaurants> getRestaurantsAfterValidation(Coordinates location, String search, Integer nearby,
+                                                            String rating, String category, Pageable pageable) {
         if (location == null) {
             throw new InvalidRequestException("longitude and latitude is mandatory");
         }
@@ -85,31 +120,8 @@ public class ResService {
 
         nearby = (nearby == null || nearby > 20000) ? 20000 : nearby;
         Page<Restaurants> res = resRepository.findRestaurantsWithinDistance(location.getLongitude(), location.getLatitude(), 
-                                                                            nearby, search, categoryNames, newPageable);         
-        if (res.isEmpty()) {
-            return Mono.just(Page.empty(newPageable));
-        }
-                
-        List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
-        List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
-        
-        return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
-                    .map(response -> {
-                        List<Double> durations = response.getDurations().get(0);
-                        List<Double> distances = response.getDistances().get(0);
-
-                        List<ResResponseWithProduct> responseList = IntStream.range(0, res.getContent().size())
-                            .mapToObj(i -> {
-                                return ResUtil.mapResToResResponseWithProductandDistanceAndDuration(res.getContent().get(i), durations.get(i), distances.get(i));
-                            })
-                            .toList();
-                        
-                        return new PageImpl<>(
-                            responseList,
-                            pageable,
-                            res.getTotalElements()
-                        );
-                    });
+                                                                            nearby, search, categoryNames, newPageable); 
+        return res;
     }
 
     public Mono<ResResponseWithProduct> getRestaurantById(String id, Coordinates location) {

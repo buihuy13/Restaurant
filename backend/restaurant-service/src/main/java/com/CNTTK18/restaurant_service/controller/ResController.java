@@ -54,13 +54,14 @@ public class ResController {
                                                                @RequestParam(required = false) Integer nearby,
                                                                @RequestParam(required = false) String rating,
                                                                @RequestParam(required = false) String category,
-                                                               Pageable pageable) {
+                                                               Pageable pageable,
+                                                               @AuthenticationPrincipal String userId) {
 
         Coordinates location = null;
         if (lon != null && lat != null) {
             location = new Coordinates(lon, lat);
         }
-        return resService.getAllRestaurants(location, search, nearby, rating, category, pageable).map(
+        return resService.getAllRestaurants(location, search, nearby, rating, category, pageable, userId).map(
             resList -> ResponseEntity.ok(resList)
         );
     }
