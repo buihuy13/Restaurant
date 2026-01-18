@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
+import slugify from 'slugify';
 
 // Schema cho từng người tham gia đặt món
 const participantSchema = new mongoose.Schema({
@@ -182,11 +183,25 @@ const groupOrderSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        // Slug cho URL 
+        slug: {
+            type: String,
+            unique: true,
+            index: true,
+        },
     },
     {
         timestamps: true,
     },
 );
+
+// Sinh slug tự động trước khi save
+groupOrderSchema.pre('save', function (next) {
+    if (!this.slug) {
+        this.slug = slugify(`${this.restaurantName}-${this.groupOrderId}`, { lower: true, strict: true });
+    }
+    next();
+});
 
 // shareToken default is provided by schema default (uuidv4)
 
