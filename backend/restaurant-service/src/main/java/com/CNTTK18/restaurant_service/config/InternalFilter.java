@@ -21,16 +21,13 @@ public class InternalFilter extends OncePerRequestFilter{
         try {
             String id = request.getHeader("user-id");
 
-            if (id != null && !id.isEmpty()) {
-                UsernamePasswordAuthenticationToken authenticationToken = 
+            UsernamePasswordAuthenticationToken authenticationToken = 
                         new UsernamePasswordAuthenticationToken(id, null, null);
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             throw e;
         }
     }
-    
 }

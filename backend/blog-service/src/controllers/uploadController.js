@@ -1,56 +1,12 @@
-// ========== src/controllers/uploadController.js ==========
-import cloudinaryService from '../services/cloudinaryService.js';
 import logger from '../utils/logger.js';
-
-/**
- * @swagger
- * tags:
- *   name: Upload
- *   description: Image upload API
- */
+import CloudinaryService from '../services/cloudinaryService.js';
 
 class UploadController {
     /**
-     * @swagger
-     * /api/blogs/upload/image:
-     *   post:
-     *     summary: Upload a single image
-     *     tags: [Upload]
-     *     security:
-     *       - bearerAuth: []
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         multipart/form-data:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               image:
-     *                 type: string
-     *                 format: binary
-     *     responses:
-     *       200:
-     *         description: Image uploaded successfully
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: object
-     *               properties:
-     *                 success:
-     *                   type: boolean
-     *                 message:
-     *                   type: string
-     *                 data:
-     *                   type: object
-     *                   properties:
-     *                     url:
-     *                       type: string
-     *                     publicId:
-     *                       type: string
-     *                     thumbnailUrl:
-     *                       type: string
+     * Upload single image for rich text editor
+     * Used when user clicks image button in editor toolbar
      */
-    async uploadSingleImage(req, res, next) {
+    uploadEditorImage = async (req, res) => {
         try {
             if (!req.file) {
                 return res.status(400).json({
@@ -59,139 +15,84 @@ class UploadController {
                 });
             }
 
-            const folder = process.env.CLOUDINARY_FOLDER || 'foodeats/blogs';
-            const result = await cloudinaryService.uploadImage(req.file.buffer, folder, req.file.originalname);
+            logger.info('Editor image upload:', {
+                originalname: req.file.originalname,
+                size: req.file.size,
+                mimetype: req.file.mimetype,
+            });
 
-            res.status(200).json({
+            // Upload to Cloudinary
+            const result = await CloudinaryService.uploadImage(
+                req.file.buffer,
+                'foodeats/blogs/editor',
+                req.file.originalname,
+            );
+
+            logger.info(`Editor image uploaded: ${result.public_id}`);
+
+            // Return URL for editor to insert into markdown
+            return res.status(200).json({
                 success: true,
-                message: 'Image uploaded successfully',
                 data: {
                     url: result.secure_url,
                     publicId: result.public_id,
-                    thumbnailUrl: cloudinaryService.generateThumbnailUrl(result.public_id),
                     width: result.width,
                     height: result.height,
-                    format: result.format,
-                    size: result.bytes,
                 },
             });
         } catch (error) {
-            logger.error('Upload single image controller error:', error);
-            next(error);
+            logger.error('Upload editor image error:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to upload image',
+                error: error.message,
+            });
         }
-    }
+    };
 
     /**
-     * @swagger
-     * /api/blogs/upload/images:
-     *   post:
-     *     summary: Upload multiple images
-     *     tags: [Upload]
-     *     security:
-     *       - bearerAuth: []
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         multipart/form-data:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               images:
-     *                 type: array
-     *                 items:
-     *                   type: string
-     *                   format: binary
-     *     responses:
-     *       200:
-     *         description: Images uploaded successfully
+     * Upload multiple images at once
      */
-    async uploadMultipleImages(req, res, next) {
+    uploadMultipleImages = async (req, res) => {
         try {
             if (!req.files || req.files.length === 0) {
                 return res.status(400).json({
                     success: false,
-                    message: 'No image files provided',
+                    message: 'No images provided',
                 });
             }
 
-            const folder = process.env.CLOUDINARY_FOLDER || 'foodeats/blogs';
-            const results = await cloudinaryService.uploadMultipleImages(req.files, folder);
+            logger.info(`Uploading ${req.files.length} images`);
 
-            const images = results.map((result) => ({
-                url: result.secure_url,
-                publicId: result.public_id,
-                thumbnailUrl: cloudinaryService.generateThumbnailUrl(result.public_id),
-                width: result.width,
-                height: result.height,
-                format: result.format,
-                size: result.bytes,
-            }));
+            const uploadPromises = req.files.map(async (file) => {
+                const result = await CloudinaryService.uploadImage(
+                    file.buffer,
+                    'foodeats/blogs/editor',
+                    file.originalname,
+                );
+                return {
+                    url: result.secure_url,
+                    publicId: result.public_id,
+                    width: result.width,
+                    height: result.height,
+                };
+            });
 
-            res.status(200).json({
+            const uploadedImages = await Promise.all(uploadPromises);
+
+            return res.status(200).json({
                 success: true,
-                message: `${images.length} images uploaded successfully`,
-                data: images,
+                data: uploadedImages,
             });
         } catch (error) {
-            logger.error('Upload multiple images controller error:', error);
-            next(error);
-        }
-    }
-
-    /**
-     * @swagger
-     * /api/blogs/upload/delete:
-     *   delete:
-     *     summary: Delete an image
-     *     tags: [Upload]
-     *     security:
-     *       - bearerAuth: []
-     *     requestBody:
-     *       required: true
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               publicId:
-     *                 type: string
-     *               url:
-     *                 type: string
-     *     responses:
-     *       200:
-     *         description: Image deleted successfully
-     */
-    async deleteImage(req, res, next) {
-        try {
-            const { publicId, url } = req.body;
-
-            if (!publicId && !url) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Public ID or URL is required',
-                });
-            }
-
-            const imagePublicId = publicId || cloudinaryService.extractPublicId(url);
-
-            if (!imagePublicId) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid public ID or URL',
-                });
-            }
-
-            await cloudinaryService.deleteImage(imagePublicId);
-
-            res.status(200).json({
-                success: true,
-                message: 'Image deleted successfully',
+            logger.error('Upload multiple images error:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to upload images',
+                error: error.message,
             });
-        } catch (error) {
-            logger.error('Delete image controller error:', error);
-            next(error);
         }
-    }
+    };
 }
 
 export default new UploadController();

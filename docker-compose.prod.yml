@@ -38,7 +38,22 @@ services:
             timeout: 5s
             retries: 3
             start_period: 60s
-
+    postgres:
+        image: postgis/postgis:16-3.4   # PostgreSQL + PostGIS
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            POSTGRES_DB: restaurant-service
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./backend/main_postgres.sql:/docker-entrypoint-initdb.d/03-init_postgres.sql
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres -d restaurant-service"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 60s
     mongodb:
         image: mongo:6.0
         container_name: mongodb
@@ -286,3 +301,4 @@ volumes:
     mongodb_data:
     caddy_data:
     caddy_config:
+    postgres_data:

@@ -10,6 +10,7 @@ import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.restaurant_service.data.ReviewType;
 import com.CNTTK18.restaurant_service.dto.api.UserResponse;
 import com.CNTTK18.restaurant_service.dto.review.request.ReviewRequest;
+import com.CNTTK18.restaurant_service.exception.ForbiddenException;
 import com.CNTTK18.restaurant_service.exception.InvalidRequestException;
 import com.CNTTK18.restaurant_service.model.Products;
 import com.CNTTK18.restaurant_service.model.Restaurants;
@@ -94,7 +95,10 @@ public class ReviewService {
     }
 
     @Transactional
-    public void deleteReview(String id) {
+    public void deleteReview(String id, String userId) {
+        if (id != null && userId != null && !userId.equals(id)) {
+            throw new ForbiddenException("Bạn không có quyền");
+        }
         Reviews rv = reviewRepo.findById(id).orElseThrow(() -> new ResourceNotFoundException("Review not found"));
         String rvType = rv.getReviewType();
         if (rvType.equals(ReviewType.PRODUCT.toString())) {

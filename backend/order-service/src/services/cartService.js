@@ -533,8 +533,17 @@ class CartService {
                 restaurants: cartObj.restaurants.map((r) => ({
                     restaurantId: r.restaurantId,
                     restaurantName: r.restaurantName,
+                    restaurantImage: r.restaurantImage || '',
                     itemCount: r.items.length,
                     totalAmount: r.totalAmount,
+                    items: r.items.map((item) => ({
+                        productId: item.productId,
+                        productName: item.productName,
+                        cartItemImage: item.cartItemImage || '',
+                        quantity: item.quantity,
+                        price: item.price,
+                        subtotal: item.subtotal,
+                    })),
                 })),
             };
         } catch (error) {

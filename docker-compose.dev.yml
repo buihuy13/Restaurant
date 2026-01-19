@@ -10,7 +10,10 @@ services:
     db:
         ports:
             - '3307:3306'
-
+    
+    postgres:
+        ports:
+            - "5433:5432"
     mongodb:
         ports:
             - '27017:27017'

@@ -55,13 +55,15 @@ public class ProductController {
                                                                @RequestParam(required = false) Double lat,
                                                                @RequestParam(required = false) Double lon,
                                                                @RequestParam(required = false) String locationsorted,
-                                                               Pageable pageable) {
+                                                               Pageable pageable,
+                                                               @AuthenticationPrincipal String userId) {
                                                             
         Coordinates location = null;
         if (lon != null && lat != null) {
             location = new Coordinates(lon, lat);
         }
-        return productService.getAllProducts(rating, category, minPrice, maxPrice, search, nearby, location, locationsorted, pageable)
+        return productService.getAllProducts(rating, category, minPrice, maxPrice, search, nearby, location, 
+                                            locationsorted, pageable, userId)
                             .map(productList -> ResponseEntity.ok(productList));
     }
 

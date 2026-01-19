@@ -28,36 +28,34 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
     Optional<Products> findBySlug(String slug);
 
     @Query(value = """
-        SELECT *
-        FROM (
-            SELECT DISTINCT p.*,
-                (6371000 * acos(
-                    LEAST(1.0, GREATEST(-1.0,
-                        cos(radians(:latitude)) *
-                        cos(radians(r.latitude)) *
-                        cos(radians(r.longitude) - radians(:longitude)) +
-                        sin(radians(:latitude)) *
-                        sin(radians(r.latitude))
-                    ))
-                )) AS haversine_distance
-            FROM products p
-            JOIN restaurants r ON p.restaurant_id = r.id
-            JOIN categories c ON c.id = p.category_id
-            JOIN product_sizes ps ON ps.product_id = p.id
-            WHERE r.enabled = true
-            AND (:search IS NULL OR LOWER(p.product_name) LIKE LOWER(CONCAT('%', :search, '%')))
-            AND (:#{#categories.size()} = 0 OR LOWER(c.cate_name) IN :categories)
-            AND (:minPrice IS NULL OR ps.price >= :minPrice)
-            AND (:maxPrice IS NULL OR ps.price <= :maxPrice)
-        ) t
-        WHERE t.haversine_distance <= :maxDistance
-        ORDER BY
-            CASE WHEN :sort = 'location_id_asc' THEN t.haversine_distance END ASC,
-            CASE WHEN :sort = 'location_id_desc' THEN t.haversine_distance END DESC,
-            CASE WHEN :sort = 'rating_id_asc' THEN t.rating END ASC,
-            CASE WHEN :sort = 'rating_id_desc' THEN t.rating END DESC,
-            t.id ASC
-        """, 
+        SELECT DISTINCT ON (p.id)
+            p.*,
+            calc.distance_meters
+        FROM products p
+        JOIN restaurants r ON p.restaurant_id = r.id
+        JOIN categories c ON c.id = p.category_id
+        JOIN product_sizes ps ON ps.product_id = p.id
+        CROSS JOIN LATERAL (
+            SELECT ST_Distance(
+                r.geom::geography,
+                ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography
+            ) AS distance_meters
+        ) calc
+        WHERE r.enabled = true
+        AND ST_DWithin(
+            r.geom::geography,
+            ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
+            :maxDistance
+        )
+        AND (:search IS NULL OR LOWER(p.product_name) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:#{#categories.size()} = 0 OR LOWER(c.cate_name) IN :categories)
+        AND (:minPrice IS NULL OR ps.price >= :minPrice)
+        AND (:maxPrice IS NULL OR ps.price <= :maxPrice)
+        ORDER BY 
+            p.id,
+            CASE WHEN :sort = 'location_id_asc' THEN calc.distance_meters END ASC,
+            CASE WHEN :sort = 'rating_id_desc' THEN p.rating END DESC
+            """, 
         countQuery = """
         SELECT COUNT(DISTINCT p.id)
         FROM products p
@@ -65,19 +63,15 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
         JOIN categories c ON c.id = p.category_id
         JOIN product_sizes ps ON ps.product_id = p.id
         WHERE r.enabled = true
+        AND ST_DWithin(
+            r.geom::geography,
+            ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
+            :maxDistance
+        )
         AND (:search IS NULL OR LOWER(p.product_name) LIKE LOWER(CONCAT('%', :search, '%')))
         AND (:#{#categories.size()} = 0 OR LOWER(c.cate_name) IN :categories)
         AND (:minPrice IS NULL OR ps.price >= :minPrice)
         AND (:maxPrice IS NULL OR ps.price <= :maxPrice)
-        AND (6371000 * acos(
-                LEAST(1.0, GREATEST(-1.0,
-                    cos(radians(:latitude)) * 
-                    cos(radians(r.latitude)) * 
-                    cos(radians(r.longitude) - radians(:longitude)) + 
-                    sin(radians(:latitude)) * 
-                    sin(radians(r.latitude))
-                ))
-            )) <= :maxDistance
         """,
         nativeQuery = true)
     Page<Products> findProductsWithinDistance(

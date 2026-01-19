@@ -4,8 +4,8 @@ import logger from '../utils/logger.js';
 import Order from '../models/Order.js';
 import Cart from '../models/Cart.js';
 import cacheService from './cacheService.js';
-import { notifyNewOrder } from '../config/socket.js';
 import { calculateDeliveryFee } from '../utils/deliveryFeeCalculator.js';
+import { notifyNewOrder, notifyOrderStatusUpdate } from '../config/socket.js';
 
 class OrderService {
     generateOrderId() {
@@ -564,6 +564,13 @@ class OrderService {
             await cacheService.setOrder(order.orderId, order.toObject());
             await cacheService.invalidateUserOrders(order.userId);
 
+            // Notify user via WebSocket
+            notifyOrderStatusUpdate(order.userId, {
+                orderId: order.orderId,
+                status: order.status,
+                previousStatus: prevStatus,
+            });
+
             // Publish event
             await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.status.updated', {
                 orderId: order.orderId,
@@ -638,6 +645,13 @@ class OrderService {
             await cacheService.setOrder(order.orderId, order.toObject());
             await cacheService.invalidateUserOrders(order.userId);
 
+            // Notify user via WebSocket
+            notifyOrderStatusUpdate(order.userId, {
+                orderId: order.orderId,
+                status: order.status,
+                paymentStatus: order.paymentStatus,
+            });
+
             logger.info(`Payment status updated: ${orderId} -> ${paymentStatus}`);
             return order;
         } catch (error) {
@@ -665,6 +679,14 @@ class OrderService {
             // Update cache
             await cacheService.deleteOrder(order.orderId);
             await cacheService.invalidateUserOrders(userId);
+
+            // Notify user via WebSocket
+            notifyOrderStatusUpdate(order.userId, {
+                orderId: order.orderId,
+                status: 'cancelled',
+                previousStatus: 'pending',
+                cancellationReason: reason,
+            });
 
             // Publish event
             await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.cancelled', {

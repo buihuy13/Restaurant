@@ -33,15 +33,11 @@ public interface ResRepository extends JpaRepository<Restaurants, String>, JpaSp
         WHERE r.enabled = true
         AND (:search IS NULL OR LOWER(r.res_name) LIKE LOWER(CONCAT('%', :search, '%')))
         AND (:#{#categories.size()} = 0 OR LOWER(c.cate_name) IN :categories)
-        AND (6371000 * acos(
-                LEAST(1.0, GREATEST(-1.0,
-                    cos(radians(:latitude)) * 
-                    cos(radians(r.latitude)) * 
-                    cos(radians(r.longitude) - radians(:longitude)) + 
-                    sin(radians(:latitude)) * 
-                    sin(radians(r.latitude))
-                ))
-            )) <= :maxDistance
+        AND ST_DWithin(
+            r.geom::geography,
+            ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
+            :maxDistance
+        )
         """, 
         countQuery = """
         SELECT COUNT(DISTINCT r.id)
@@ -51,15 +47,11 @@ public interface ResRepository extends JpaRepository<Restaurants, String>, JpaSp
         WHERE r.enabled = true
         AND (:search IS NULL OR LOWER(r.res_name) LIKE LOWER(CONCAT('%', :search, '%')))
         AND (:#{#categories.size()} = 0 OR LOWER(c.cate_name) IN :categories)
-        AND (6371000 * acos(
-                LEAST(1.0, GREATEST(-1.0,
-                    cos(radians(:latitude)) * 
-                    cos(radians(r.latitude)) * 
-                    cos(radians(r.longitude) - radians(:longitude)) + 
-                    sin(radians(:latitude)) * 
-                    sin(radians(r.latitude))
-                ))
-            )) <= :maxDistance
+        AND ST_DWithin(
+            r.geom::geography,
+            ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
+            :maxDistance
+        )
         """,
         nativeQuery = true)
     Page<Restaurants> findRestaurantsWithinDistance(

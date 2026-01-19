@@ -57,43 +57,16 @@ public class ResService {
     }
 
     public Mono<Page<ResResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
-                                                                String rating, String category, Pageable pageable) {
-        if (location == null) {
-            throw new InvalidRequestException("longitude and latitude is mandatory");
-        }
-        List<String> categoryNames = (category == null || category.isBlank()) ? List.of()
-            : Arrays.stream(category.split(",")).map(String::toLowerCase).toList();
-
-        if (search != null && search.isBlank()) {
-            search = null;
+                                                                String rating, String category, Pageable pageable, String userId) {
+                                    
+        if (userId == null || userId.isBlank()) {
+            return Mono.just(resRepository.findAll(PageRequest.of(0, 12))
+                                    .map(ResUtil::mapResToResResponseWithProduct));
         }
 
-        Sort sort = Sort.by("id").ascending();
-        if ("asc".equalsIgnoreCase(rating)) {
-            sort = Sort.by(
-                Sort.Order.asc("rating"),
-                Sort.Order.asc("id")
-            );
-        } else if ("desc".equalsIgnoreCase(rating)) {
-            sort = Sort.by(
-                Sort.Order.desc("rating"),
-                Sort.Order.asc("id")
-            );
-        }
-
-        Pageable newPageable = PageRequest.of(
-            pageable.getPageNumber(),
-            pageable.getPageSize(),
-            sort
-        );
-
-        if (nearby == null || nearby > 20000) {
-            nearby = 20000;
-        }
-        Page<Restaurants> res = resRepository.findRestaurantsWithinDistance(location.getLongitude(), location.getLatitude(), 
-                                                                            nearby, search, categoryNames, newPageable);         
+        Page<Restaurants> res = getRestaurantsAfterValidation(location, search, nearby, rating, category, pageable);    
         if (res.isEmpty()) {
-            return Mono.just(Page.empty(newPageable));
+            return Mono.just(Page.empty(pageable));
         }
                 
         List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
@@ -116,6 +89,39 @@ public class ResService {
                             res.getTotalElements()
                         );
                     });
+    }
+
+    private Page<Restaurants> getRestaurantsAfterValidation(Coordinates location, String search, Integer nearby,
+                                                            String rating, String category, Pageable pageable) {
+        if (location == null) {
+            throw new InvalidRequestException("longitude and latitude is mandatory");
+        }
+        List<String> categoryNames = (category == null || category.isBlank()) ? List.of()
+            : Arrays.stream(category.split(",")).map(String::toLowerCase).toList();
+
+        search = (search != null && !search.isBlank()) ? search : null;
+
+        Sort sort = null;
+        if (rating != null && "desc".equalsIgnoreCase(rating)) {
+            sort = Sort.by(
+                Sort.Order.desc("rating"),
+                Sort.Order.asc("id")
+            );
+        }
+        else {
+            sort = Sort.by("id").ascending();
+        }
+
+        Pageable newPageable = PageRequest.of(
+            pageable.getPageNumber(),
+            pageable.getPageSize(),
+            sort
+        );
+
+        nearby = (nearby == null || nearby > 20000) ? 20000 : nearby;
+        Page<Restaurants> res = resRepository.findRestaurantsWithinDistance(location.getLongitude(), location.getLatitude(), 
+                                                                            nearby, search, categoryNames, newPageable); 
+        return res;
     }
 
     public Mono<ResResponseWithProduct> getRestaurantById(String id, Coordinates location) {
