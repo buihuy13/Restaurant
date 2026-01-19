@@ -4,7 +4,7 @@
 version=$1
 tag=v$version
 
-if [[ "$version" =~ [0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "Deploying version $tag"
 else
     echo "Invalid version format. Please use semantic versioning (e.g., 1.0.0)."
@@ -12,7 +12,7 @@ else
 fi
 
 echo "Checking out git tag: $tag"
-git checkout v$version
+git checkout $tag
 
 github_username=buihuy13
 registry=ghcr.io
@@ -59,11 +59,10 @@ scp -i $deploy_host_private_key \
     ../caddy/Caddyfile.prod \
     ./update-containers.sh \
     ../docker-compose.prod.yml \
-    ../docker-compose.yml \
     ../.env \
     $deploy_host_username@$deploy_host:$remote_dir/
 
 echo "Executing upgrade script on remote host"
 ssh -i $deploy_host_private_key $deploy_host_username@$deploy_host "export VERSION=$version GITHUB_USER=$github_username; cd $remote_dir && bash ./update-containers.sh"
 
-echo "Deplpoyment of version $tag completed successfully."
+echo "Deployment of version $tag completed successfully."
