@@ -874,7 +874,7 @@ class OrderService {
         await cacheService.invalidateUserOrders(order.userId);
 
         // Publish event: merchant cancelled order
-        await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.cancelled.by.merchant', {
+        await rabbitmqConnection.publishMessage(rabbitmqConnection.exchanges.ORDER, 'order.cancelled', {
             orderId: order.orderId,
             userId: order.userId,
             restaurantId: order.restaurantId,

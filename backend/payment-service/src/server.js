@@ -15,8 +15,10 @@ import walletRoutes from './routes/walletRoutes.js';
 import { startOrderConsumer } from './consumers/orderConsumer.js';
 import { setupSwagger } from './config/swagger.js';
 import { startOrderCompletedConsumer } from './consumers/orderCompletedConsumer.js';
+import orderCancelledConsumer from './consumers/orderCancelledConsumer.js';
 import adminWalletRoutes from './routes/adminWalletRoutes.js';
 import internalWalletRoutes from './routes/internalWalletRoutes.js';
+
 
 const app = express();
 const PORT = process.env.PAYMENT_PORT || 8083;
@@ -91,6 +93,7 @@ const startServer = async () => {
         await rabbitmqConnection.connect();
         await startOrderConsumer();
         await startOrderCompletedConsumer();
+        await orderCancelledConsumer.start();
         // Syncing models is handled in connectDB(); avoid duplicate sync here to prevent ALTER conflicts
 
         app.listen(PORT, () => {
@@ -111,6 +114,7 @@ const startServer = async () => {
 // Graceful shutdown
 process.on('SIGTERM', async () => {
     logger.info('SIGTERM received, shutting down gracefully');
+    await orderCancelledConsumer.stop();
     await rabbitmqConnection.close();
     process.exit(0);
 });
