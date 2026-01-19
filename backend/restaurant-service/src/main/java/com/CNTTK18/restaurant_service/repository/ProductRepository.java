@@ -6,12 +6,14 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.CNTTK18.restaurant_service.dto.product.ProductIdWithDistance;
 import com.CNTTK18.restaurant_service.model.Products;
 import com.CNTTK18.restaurant_service.model.Restaurants;
 
@@ -27,9 +29,10 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
 
     Optional<Products> findBySlug(String slug);
 
+    // Nhận projection để tránh N+1 problem
     @Query(value = """
         SELECT DISTINCT ON (p.id)
-            p.*,
+            p.id,
             calc.distance_meters
         FROM products p
         JOIN restaurants r ON p.restaurant_id = r.id
@@ -53,7 +56,6 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
         AND (:maxPrice IS NULL OR ps.price <= :maxPrice)
         ORDER BY 
             p.id,
-            CASE WHEN :sort = 'location_id_asc' THEN calc.distance_meters END ASC,
             CASE WHEN :sort = 'rating_id_desc' THEN p.rating END DESC
             """, 
         countQuery = """
@@ -74,7 +76,7 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
         AND (:maxPrice IS NULL OR ps.price <= :maxPrice)
         """,
         nativeQuery = true)
-    Page<Products> findProductsWithinDistance(
+    Page<ProductIdWithDistance> findProductsWithinDistance(
         @Param("longitude") Double longitude,
         @Param("latitude") Double latitude,
         @Param("maxDistance") Integer maxDistance,
@@ -85,4 +87,7 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
         @Param("sort") String sort,
         Pageable pageable
     );
+
+    @EntityGraph(attributePaths = {"restaurant", "category", "productSizes", "productSizes.size"})
+    List<Products> findByIdIn(List<String> ids);
 }

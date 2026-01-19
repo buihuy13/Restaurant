@@ -3,6 +3,7 @@ package com.CNTTK18.restaurant_service.service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.Common.Util.SlugGenerator;
 import com.CNTTK18.restaurant_service.data.ReviewType;
+import com.CNTTK18.restaurant_service.dto.product.ProductIdWithDistance;
 import com.CNTTK18.restaurant_service.dto.product.request.ProductRequest;
 import com.CNTTK18.restaurant_service.dto.product.request.SizePrice;
 import com.CNTTK18.restaurant_service.model.ProductSize;
@@ -72,12 +75,12 @@ public class ProductService {
     public Mono<Page<ProductResponse>> getAllProducts(String rating, String category, BigDecimal minPrice, 
                                 BigDecimal maxPrice, String search, Integer nearby, Coordinates location,
                                 String locationsorted, Pageable pageable, String userId) {
-        if (userId == null || userId.isBlank()) {
-            return Mono.just(productRepo.findAll(PageRequest.of(0, 12))
-                                    .map(ProductUtil::mapProductToProductResponseWitoutResParam));
-        }
+        // if (userId == null || userId.isBlank()) {
+        //     return Mono.just(productRepo.findAll(PageRequest.of(0, 12))
+        //                             .map(ProductUtil::mapProductToProductResponseWitoutResParam));
+        // }
 
-        Page<Products> products = getProductsAfterValidation(rating, category, minPrice, maxPrice, search, nearby, 
+        List<Products> products = getProductsAfterValidation(rating, category, minPrice, maxPrice, search, nearby, 
                                                             location, locationsorted, pageable);
 
         List<Restaurants> res = products.stream().map(r -> r.getRestaurant()).distinct().toList();
@@ -89,7 +92,7 @@ public class ProductService {
 
         List<Double> startingPoints = List.of(location.getLongitude(), location.getLatitude());
         List<List<Double>> endPoints = res.stream().map(r -> List.of(r.getLongitude(), r.getLatitude())).toList();
-        final Page<Products> filteredProducts = products;
+        final List<Products> filteredProducts = products;
 
         return distanceService.getDistanceAndDurationInList(startingPoints, endPoints)
                     .map(response -> {
@@ -104,22 +107,25 @@ public class ProductService {
                             resResponseIndex.setDistance(distances.get(i));
                             return resResponseIndex;
                         }).collect(Collectors.toMap(ResResponse::getId, Function.identity()));
+                        List<ProductResponse> productResponses = filteredProducts.stream()
+                                                        .map(p -> ProductUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId()))).toList();
 
-                        return filteredProducts.map(p -> ProductUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId())));
+                        productResponses = sortProductResponse(productResponses, rating, locationsorted);
+                        return new PageImpl<>(productResponses, pageable, productResponses.size());
                     });
     }
 
-    private String getSorted(String locationsorted, String rating) {
+    private List<ProductResponse> sortProductResponse(List<ProductResponse> products, String rating, String locationsorted) {
         if (rating != null && "desc".equalsIgnoreCase(rating)) {
-            return "rating_id_desc";
+            products.sort(Comparator.comparing(ProductResponse::getRating).reversed());
         }
-        if (locationsorted != null  && "asc".equalsIgnoreCase(locationsorted)) {
-            return "location_id_asc";
+        else if (locationsorted != null && "asc".equals(locationsorted)) {
+            products.sort(Comparator.comparing(p -> p.getRestaurant().getDistance()));
         }
-        return "id_asc";
+        return products;
     }
 
-    private Page<Products> getProductsAfterValidation(String rating, String category, BigDecimal minPrice, 
+    private List<Products> getProductsAfterValidation(String rating, String category, BigDecimal minPrice, 
                                 BigDecimal maxPrice, String search, Integer nearby, Coordinates location,
                                 String locationsorted, Pageable pageable) {
 
@@ -132,10 +138,14 @@ public class ProductService {
         search = (search != null && !search.isBlank()) ? search : null;
         nearby = (nearby == null || nearby > 20000) ? 20000 : nearby;
 
-        String sort = getSorted(locationsorted, rating);
+        String sort = rating != null && "desc".equalsIgnoreCase(rating) ? "rating_id_desc" : "id_asc";
 
-        Page<Products> products = productRepo.findProductsWithinDistance(location.getLongitude(), location.getLatitude(), nearby, search, 
+        Page<ProductIdWithDistance> productResult = productRepo.findProductsWithinDistance(location.getLongitude(), location.getLatitude(), nearby, search, 
                                                 categoryNames, maxPrice, minPrice, sort, pageable);
+                            
+        List<String> productIds = productResult.getContent().stream().map(ProductIdWithDistance::getId).toList();
+        System.out.println("============================================================");
+        List<Products> products = productRepo.findByIdIn(productIds);
         return products;
     }
 

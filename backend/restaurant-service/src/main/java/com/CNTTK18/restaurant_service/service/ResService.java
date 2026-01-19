@@ -59,10 +59,10 @@ public class ResService {
     public Mono<Page<ResResponseWithProduct>> getAllRestaurants(Coordinates location, String search, Integer nearby,
                                                                 String rating, String category, Pageable pageable, String userId) {
                                     
-        if (userId == null || userId.isBlank()) {
-            return Mono.just(resRepository.findAll(PageRequest.of(0, 12))
-                                    .map(ResUtil::mapResToResResponseWithProduct));
-        }
+        // if (userId == null || userId.isBlank()) {
+        //     return Mono.just(resRepository.findAll(PageRequest.of(0, 12))
+        //                             .map(ResUtil::mapResToResResponseWithProduct));
+        // }
 
         Page<Restaurants> res = getRestaurantsAfterValidation(location, search, nearby, rating, category, pageable);    
         if (res.isEmpty()) {
