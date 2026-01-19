@@ -1,5 +1,4 @@
 services:
-    # Zookeeper: trình quản lý cho Kafka
     rabbitmq:
         ports:
             - '5672:5672' #Cho các service kết nối đến

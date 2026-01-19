@@ -1,5 +1,21 @@
 services:
-    # Zookeeper: trình quản lý cho Kafka
+    stripe-webhook:
+        image: stripe/stripe-cli:latest
+        container_name: stripe-webhook-listener
+        command: >
+            listen 
+            --api-key ${STRIPE_SECRET_KEY}
+            --forward-to http://api-gateway:8080/api/payments/webhook/stripe
+            --skip-verify
+        environment:
+            - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
+            - STRIPE_DEVICE_NAME=docker-webhook-listener
+        networks:
+            - default
+        depends_on:
+            - api-gateway
+            - payment-service
+        restart: unless-stopped
     rabbitmq:
         image: 'rabbitmq:3-management'
         environment:
@@ -31,7 +47,8 @@ services:
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
         volumes:
             - mysql_data:/var/lib/mysql
-            - ./backend/main.sql:/docker-entrypoint-initdb.d/main.sql
+            - ./backend/main.sql:/docker-entrypoint-initdb.d/01-main.sql
+            - ./backend/seed-data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
         healthcheck:
             test: ['CMD', 'mysqladmin', 'ping', '-h', 'db', '-u', 'root', '-p${DB_PASSWORD}']
             interval: 10s
@@ -47,7 +64,8 @@ services:
             POSTGRES_DB: restaurant-service
         volumes:
             - postgres_data:/var/lib/postgresql/data
-            - ./backend/main_postgres.sql:/docker-entrypoint-initdb.d/03-init_postgres.sql
+            - ./backend/main_postgres.sql:/docker-entrypoint-initdb.d/01-init_postgres.sql
+            - ./backend/seed-restaurant-data.sql:/docker-entrypoint-initdb.d/02-seed_restaurant_data.sql
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres -d restaurant-service"]
             interval: 10s
@@ -59,6 +77,7 @@ services:
         container_name: mongodb
         volumes:
             - mongodb_data:/data/db
+            - ./backend/seed-mongodb.js:/docker-entrypoint-initdb.d/seed-mongodb.js
         healthcheck:
             test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
             interval: 10s
@@ -185,11 +204,7 @@ services:
                 condition: service_started
 
     order-service:
-        build:
-            context: ./backend/order-service # build context là folder chứa package.json
-            dockerfile: Dockerfile
-            args:
-                - MODULE_PATH=order-service
+        image: ghcr.io/buihuy13/order-service:${VERSION}
         environment:
             - ORDER_PORT=${ORDER_PORT}
             - ORDER_SERVICE_DB_URL=${ORDER_SERVICE_DB_URL}
@@ -221,11 +236,7 @@ services:
         restart: unless-stopped
 
     payment-service:
-        build:
-            context: ./backend/payment-service
-            dockerfile: Dockerfile
-            args:
-                - MODULE_PATH=payment-service
+        image: ghcr.io/buihuy13/payment-service:${VERSION}
         environment:
             - PAYMENT_PORT=${PAYMENT_PORT}
             - PAYMENT_SERVICE_DB_URL=${PAYMENT_SERVICE_DB_URL}
@@ -253,11 +264,7 @@ services:
         restart: unless-stopped
 
     blog-service:
-        build:
-            context: ./backend/blog-service
-            dockerfile: Dockerfile
-            args:
-                - MODULE_PATH=blog-service
+        image: ghcr.io/buihuy13/blog-service:${VERSION}
         environment:
             - BLOG_PORT=${BLOG_PORT}
             - BLOG_SERVICE_DB_URL=${BLOG_SERVICE_DB_URL}

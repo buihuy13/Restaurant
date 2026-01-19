@@ -16,8 +16,6 @@ services:
             - api-gateway
             - payment-service
         restart: unless-stopped
-
-    # Zookeeper: trình quản lý cho Kafka
     rabbitmq:
         image: 'rabbitmq:3-management'
         environment:
