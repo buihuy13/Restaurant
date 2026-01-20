@@ -6,14 +6,13 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
+ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.CNTTK18.restaurant_service.dto.product.ProductIdWithDistance;
+import com.CNTTK18.restaurant_service.dto.product.ProductIdWithRating;
 import com.CNTTK18.restaurant_service.model.Products;
 import com.CNTTK18.restaurant_service.model.Restaurants;
 
@@ -33,17 +32,11 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
     @Query(value = """
         SELECT DISTINCT ON (p.id)
             p.id,
-            calc.distance_meters
+            p.rating
         FROM products p
         JOIN restaurants r ON p.restaurant_id = r.id
         JOIN categories c ON c.id = p.category_id
         JOIN product_sizes ps ON ps.product_id = p.id
-        CROSS JOIN LATERAL (
-            SELECT ST_Distance(
-                r.geom::geography,
-                ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography
-            ) AS distance_meters
-        ) calc
         WHERE r.enabled = true
         AND ST_DWithin(
             r.geom::geography,
@@ -76,7 +69,7 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
         AND (:maxPrice IS NULL OR ps.price <= :maxPrice)
         """,
         nativeQuery = true)
-    Page<ProductIdWithDistance> findProductsWithinDistance(
+    Page<ProductIdWithRating> findProductsWithinDistance(
         @Param("longitude") Double longitude,
         @Param("latitude") Double latitude,
         @Param("maxDistance") Integer maxDistance,
@@ -88,6 +81,11 @@ public interface ProductRepository extends JpaRepository<Products, String>, JpaS
         Pageable pageable
     );
 
-    @EntityGraph(attributePaths = {"restaurant", "category", "productSizes", "productSizes.size"})
+    @Query("SELECT DISTINCT p FROM Products p " +
+           "LEFT JOIN FETCH p.restaurant r " +       // Lấy luôn Nhà hàng
+           "LEFT JOIN FETCH p.category " +           // Lấy luôn Danh mục của Món ăn
+           "LEFT JOIN FETCH p.productSizes ps " +    // Lấy luôn bảng nối ProductSize
+           "LEFT JOIN FETCH ps.size " +              // Lấy luôn chi tiết tên Size (S, M, L)
+           "WHERE p.id IN :ids")
     List<Products> findByIdIn(List<String> ids);
 }

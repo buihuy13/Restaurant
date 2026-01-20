@@ -25,6 +25,7 @@ public interface ResRepository extends JpaRepository<Restaurants, String>, JpaSp
 
     Optional<Restaurants> findBySlug(String slug);
 
+    //FE chưa dùng nên chưa cần xử lý N+1
     @Query(value = """
         SELECT DISTINCT r.*
         FROM restaurants r

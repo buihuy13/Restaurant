@@ -22,7 +22,7 @@ import com.CNTTK18.Common.Exception.ResourceNotFoundException;
 import com.CNTTK18.Common.Util.RandomIdGenerator;
 import com.CNTTK18.Common.Util.SlugGenerator;
 import com.CNTTK18.restaurant_service.data.ReviewType;
-import com.CNTTK18.restaurant_service.dto.product.ProductIdWithDistance;
+import com.CNTTK18.restaurant_service.dto.product.ProductIdWithRating;
 import com.CNTTK18.restaurant_service.dto.product.request.ProductRequest;
 import com.CNTTK18.restaurant_service.dto.product.request.SizePrice;
 import com.CNTTK18.restaurant_service.model.ProductSize;
@@ -75,8 +75,22 @@ public class ProductService {
                                 BigDecimal maxPrice, String search, Integer nearby, Coordinates location,
                                 String locationsorted, Pageable pageable) {
 
-        List<Products> products = getProductsAfterValidation(rating, category, minPrice, maxPrice, search, nearby, 
-                                                            location, locationsorted, pageable);
+        if (location == null) {
+            throw new InvalidRequestException("longitude and latitude is mandatory");
+        }
+        List<String> categoryNames = (category == null || category.isBlank()) ? List.of()
+            : Arrays.stream(category.split(",")).map(String::trim).map(String::toLowerCase).toList();
+        
+        search = (search != null && !search.isBlank()) ? search : null;
+        nearby = (nearby == null || nearby > 20000) ? 20000 : nearby;
+
+        String sort = rating != null && "desc".equalsIgnoreCase(rating) ? "rating_id_desc" : "id_asc";
+
+        Page<ProductIdWithRating> productResult = productRepo.findProductsWithinDistance(location.getLongitude(), location.getLatitude(), nearby, search, 
+                                                categoryNames, maxPrice, minPrice, sort, pageable);
+                            
+        List<String> productIds = productResult.getContent().stream().map(ProductIdWithRating::getId).toList();
+        List<Products> products = productRepo.findByIdIn(productIds);
 
         List<Restaurants> res = products.stream().map(r -> r.getRestaurant()).distinct().toList();
 
@@ -103,10 +117,10 @@ public class ProductService {
                             return resResponseIndex;
                         }).collect(Collectors.toMap(ResResponse::getId, Function.identity()));
                         List<ProductResponse> productResponses = filteredProducts.stream()
-                                                        .map(p -> ProductUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId()))).toList();
+                                                        .map(p -> ProductUtil.mapProductToProductResponse(p, listResResponse.get(p.getRestaurant().getId()))).collect(Collectors.toList());;
 
                         productResponses = sortProductResponse(productResponses, rating, locationsorted);
-                        return new PageImpl<>(productResponses, pageable, productResponses.size());
+                        return new PageImpl<>(productResponses, pageable, productResult.getTotalElements());
                     });
     }
 
@@ -117,30 +131,6 @@ public class ProductService {
         else if (locationsorted != null && "asc".equals(locationsorted)) {
             products.sort(Comparator.comparing(p -> p.getRestaurant().getDistance()));
         }
-        return products;
-    }
-
-    private List<Products> getProductsAfterValidation(String rating, String category, BigDecimal minPrice, 
-                                BigDecimal maxPrice, String search, Integer nearby, Coordinates location,
-                                String locationsorted, Pageable pageable) {
-
-        if (location == null) {
-            throw new InvalidRequestException("longitude and latitude is mandatory");
-        }
-        List<String> categoryNames = (category == null || category.isBlank()) ? List.of()
-            : Arrays.stream(category.split(",")).map(String::trim).map(String::toLowerCase).toList();
-        
-        search = (search != null && !search.isBlank()) ? search : null;
-        nearby = (nearby == null || nearby > 20000) ? 20000 : nearby;
-
-        String sort = rating != null && "desc".equalsIgnoreCase(rating) ? "rating_id_desc" : "id_asc";
-
-        Page<ProductIdWithDistance> productResult = productRepo.findProductsWithinDistance(location.getLongitude(), location.getLatitude(), nearby, search, 
-                                                categoryNames, maxPrice, minPrice, sort, pageable);
-                            
-        List<String> productIds = productResult.getContent().stream().map(ProductIdWithDistance::getId).toList();
-        System.out.println("============================================================");
-        List<Products> products = productRepo.findByIdIn(productIds);
         return products;
     }
 

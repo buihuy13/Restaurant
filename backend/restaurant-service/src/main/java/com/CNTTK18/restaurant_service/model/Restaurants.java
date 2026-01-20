@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.hibernate.annotations.BatchSize;
 import org.locationtech.jts.geom.Point;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -78,6 +79,7 @@ public class Restaurants {
         joinColumns = @jakarta.persistence.JoinColumn(name = "restaurant_id"),
         inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "category_id")
     )
+    @BatchSize(size = 10)
     private Set<Categories> categories;
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
