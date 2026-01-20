@@ -2,6 +2,10 @@
 export const orderItemDTO = (item) => ({
     productId: item.productId,
     productName: item.productName,
+    cartItemImage: item.cartItemImage || item.imageURL || '',
+    imageURL: item.imageURL || item.cartItemImage || '',
+    sizeId: item.sizeId || null,
+    sizeName: item.sizeName || null,
     quantity: item.quantity,
     price: item.price,
     customizations: item.customizations || '',

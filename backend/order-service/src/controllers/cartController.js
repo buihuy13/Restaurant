@@ -44,7 +44,7 @@ class CartController {
     async addItemToCart(req, res) {
         try {
             const { userId } = req.params;
-            const { restaurant, item } = req.body;
+            const { restaurant, item, userLat, userLon } = req.body;
 
             if (!userId) {
                 return res.status(400).json({
@@ -67,9 +67,18 @@ class CartController {
                 });
             }
 
-            logger.info(`🛒 POST - Add item: ${userId} - ${item.productId}`);
+            logger.info(`POST - Add item: ${userId} - ${item.productId}`);
 
-            const cart = await cartService.addItemToCart(userId, restaurant, item);
+            // Pass user location to service for delivery fee calculation
+            const cart = await cartService.addItemToCart(
+                userId,
+                {
+                    ...restaurant,
+                    userLat,
+                    userLon,
+                },
+                item,
+            );
 
             res.status(201).json({
                 status: 'success',
@@ -77,7 +86,7 @@ class CartController {
                 data: cart,
             });
         } catch (error) {
-            logger.error(`❌ Add item error: ${error.message}`);
+            logger.error(`Add item error: ${error.message}`);
             res.status(400).json({
                 status: 'error',
                 message: error.message,
@@ -224,7 +233,7 @@ class CartController {
     async updateCartDetails(req, res) {
         try {
             const { userId, restaurantId } = req.params;
-            const { notes, deliveryAddress, discount, deliveryFee } = req.body;
+            const { notes, deliveryAddress, discount } = req.body;
 
             if (!userId || !restaurantId) {
                 return res.status(400).json({
@@ -239,7 +248,6 @@ class CartController {
                 notes,
                 deliveryAddress,
                 discount,
-                deliveryFee,
             });
 
             res.status(200).json({

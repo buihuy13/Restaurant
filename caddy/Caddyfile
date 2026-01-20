@@ -20,8 +20,19 @@ localhost:8443 {
         path /oauth2/*
         path /login/*
         path /eureka/*
+    }
+
+    @ws_routes {
         path /ws/*
         path /socket.io/*
+    }
+
+    handle @ws_routes {
+        reverse_proxy api-gateway:8080 {
+            transport http {
+                versions 1.1
+            }
+        }
     }
 
     handle @api_routes {

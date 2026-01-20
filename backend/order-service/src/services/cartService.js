@@ -1,8 +1,39 @@
 import Cart from '../models/Cart.js';
 import cacheService from './cacheService.js';
 import logger from '../utils/logger.js';
+import axios from 'axios';
+import { calculateDeliveryFee } from '../utils/deliveryFeeCalculator.js';
 
 class CartService {
+    // Fetch restaurant details from restaurant service
+    async fetchRestaurantDetails(restaurantId, userLat, userLon) {
+        try {
+            const url = `${process.env.RESTAURANT_SERVICE_URL}/api/restaurant/admin/${restaurantId}`;
+            const params = {};
+
+            if (userLat && userLon) {
+                params.lat = userLat;
+                params.lon = userLon;
+                logger.info(`Fetching restaurant with location: lat=${userLat}, lon=${userLon}`);
+            }
+
+            const response = await axios.get(url, {
+                params,
+                timeout: 5000,
+                validateStatus: (status) => status < 500,
+            });
+
+            if (response.status !== 200) {
+                throw new Error(`Restaurant service returned status ${response.status}`);
+            }
+
+            return response.data.data || response.data;
+        } catch (error) {
+            logger.error(`Failed to fetch restaurant details: ${error.message}`);
+            throw error;
+        }
+    }
+
     // Get cart by userId
     async getCart(userId) {
         try {
@@ -72,6 +103,31 @@ class CartService {
             if (restaurantIndex === -1) {
                 logger.info(`Adding new restaurant to cart: ${restaurant.restaurantName} (${restaurant.restaurantId})`);
 
+                // Calculate delivery fee based on distance and duration
+                let calculatedDeliveryFee = 0.6; // Default minimum fee
+
+                try {
+                    if (restaurant.userLat && restaurant.userLon) {
+                        const restaurantDetails = await this.fetchRestaurantDetails(
+                            restaurant.restaurantId,
+                            restaurant.userLat,
+                            restaurant.userLon,
+                        );
+
+                        const distance = parseFloat(restaurantDetails.distance) || 0;
+                        const duration = parseInt(restaurantDetails.duration) || 0;
+
+                        calculatedDeliveryFee = calculateDeliveryFee(distance, duration);
+                        logger.info(
+                            `Calculated delivery fee: $${calculatedDeliveryFee} (distance: ${distance}km, duration: ${duration}min)`,
+                        );
+                    } else {
+                        logger.warn('No user location provided, using minimum delivery fee');
+                    }
+                } catch (error) {
+                    logger.warn(`Failed to calculate delivery fee: ${error.message}. Using minimum fee.`);
+                }
+
                 cart.restaurants.push({
                     restaurantId: restaurant.restaurantId,
                     restaurantName: restaurant.restaurantName,
@@ -80,7 +136,7 @@ class CartService {
                     items: [], // Empty array for now
                     subtotal: 0,
                     tax: 0,
-                    deliveryFee: restaurant.deliveryFee || 0,
+                    deliveryFee: calculatedDeliveryFee,
                     discount: 0,
                     totalAmount: 0,
                     notes: '',
@@ -387,9 +443,9 @@ class CartService {
                 logger.info(`Discount updated: ${restaurantCart.discount}`);
             }
 
+            // deliveryFee is now automatically calculated and cannot be manually updated
             if (details.deliveryFee !== undefined) {
-                restaurantCart.deliveryFee = Math.max(0, details.deliveryFee);
-                logger.info(`Delivery fee updated: ${restaurantCart.deliveryFee}`);
+                logger.warn('deliveryFee cannot be manually updated - it is automatically calculated');
             }
 
             await cart.save();
@@ -477,8 +533,17 @@ class CartService {
                 restaurants: cartObj.restaurants.map((r) => ({
                     restaurantId: r.restaurantId,
                     restaurantName: r.restaurantName,
+                    restaurantImage: r.restaurantImage || '',
                     itemCount: r.items.length,
                     totalAmount: r.totalAmount,
+                    items: r.items.map((item) => ({
+                        productId: item.productId,
+                        productName: item.productName,
+                        cartItemImage: item.cartItemImage || '',
+                        quantity: item.quantity,
+                        price: item.price,
+                        subtotal: item.subtotal,
+                    })),
                 })),
             };
         } catch (error) {

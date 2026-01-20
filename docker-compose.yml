@@ -16,8 +16,6 @@ services:
             - api-gateway
             - payment-service
         restart: unless-stopped
-
-    # Zookeeper: trình quản lý cho Kafka
     rabbitmq:
         image: 'rabbitmq:3-management'
         environment:
@@ -154,6 +152,7 @@ services:
             - RABBITMQ_HOST=${RABBITMQ_HOST}
             - RABBITMQ_PORT=${RABBITMQ_PORT}
             - OTT_SECRETKEY=${OTT_SECRETKEY}
+            - FE_URL=${FE_URL}
         depends_on:
             db:
                 condition: service_healthy
