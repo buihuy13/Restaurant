@@ -19,30 +19,87 @@ registry=ghcr.io
 
 cat ghcr.pem | docker login $registry -u $github_username --password-stdin
 
+services=(
+    "api-gateway"
+    "user-service"
+    "order-service"
+    "chat-service"
+    "payment-service"
+    "notification-service"
+    "restaurant-service"
+    "service-discovery"
+    "blog-service"
+    "frontend"
+)
+
 # Build and push Docker images
 echo "Building images"
-docker build -t $registry/$github_username/api-gateway:$version ../backend/api-gateway
-docker build -t $registry/$github_username/user-service:$version ../backend/user-service
-docker build -t $registry/$github_username/order-service:$version ../backend/order-service
-docker build -t $registry/$github_username/chat-service:$version ../backend/chat-service
-docker build -t $registry/$github_username/payment-service:$version ../backend/payment-service
-docker build -t $registry/$github_username/notification-service:$version ../backend/notification-service
-docker build -t $registry/$github_username/restaurant-service:$version ../backend/restaurant-service
-docker build -t $registry/$github_username/service-discovery:$version ../backend/service-discovery
-docker build -t $registry/$github_username/blog-service:$version ../backend/blog-service
-docker build -t $registry/$github_username/frontend:$version ../frontend
+
+build_pids=()
+for service in "${services[@]}"; do
+    (
+        if [ "$service" = "frontend" ]; then
+            build_dir="../frontend"
+        else
+            build_dir="../backend/$service"
+        fi
+        
+        echo "  Building $service..."
+        if docker build -t $registry/$github_username/$service:$version $build_dir; then
+            echo "$service built successfully"
+        else
+            echo "$service build failed"
+            exit 1
+        fi
+    ) &
+    build_pids+=($!)
+done
+
+# Wait for all builds
+build_failed=0
+for pid in "${build_pids[@]}"; do
+    if ! wait $pid; then
+        build_failed=1
+    fi
+done
+
+if [ $build_failed -eq 1 ]; then
+    echo "Some builds failed"
+    exit 1
+fi
+
+echo "All images built successfully"
 
 echo "Pushing images to $registry"
-docker push $registry/$github_username/api-gateway:$version
-docker push $registry/$github_username/user-service:$version
-docker push $registry/$github_username/order-service:$version
-docker push $registry/$github_username/chat-service:$version
-docker push $registry/$github_username/payment-service:$version
-docker push $registry/$github_username/notification-service:$version
-docker push $registry/$github_username/restaurant-service:$version
-docker push $registry/$github_username/service-discovery:$version
-docker push $registry/$github_username/frontend:$version
-docker push $registry/$github_username/blog-service:$version
+
+push_pids=()
+for service in "${services[@]}"; do
+    (
+        echo "  Pushing $service..."
+        if docker push $registry/$github_username/$service:$version; then
+            echo "$service pushed successfully"
+        else
+            echo "$service push failed"
+            exit 1
+        fi
+    ) &
+    push_pids+=($!)
+done
+
+# Wait for all pushes
+push_failed=0
+for pid in "${push_pids[@]}"; do
+    if ! wait $pid; then
+        push_failed=1
+    fi
+done
+
+if [ $push_failed -eq 1 ]; then
+    echo "Some pushes failed"
+    exit 1
+fi
+
+echo "All images pushed successfully"
 
 deploy_host=4.194.34.185
 deploy_host_username=quochuy
@@ -52,7 +109,7 @@ remote_dir=/home/$deploy_host_username/restaurant/$tag
 echo "Creating remote directory $remote_dir on $deploy_host..."
 
 # ssh vào remote vm và tạo thư mục
-ssh -vv -i $deploy_host_private_key $deploy_host_username@$deploy_host mkdir -p $remote_dir
+ssh -i $deploy_host_private_key $deploy_host_username@$deploy_host mkdir -p $remote_dir
 
 echo "Uploading config and docker-compose files"
 scp -i $deploy_host_private_key \
@@ -60,6 +117,12 @@ scp -i $deploy_host_private_key \
     ./update-containers.sh \
     ../docker-compose.prod.yml \
     ../.env \
+    ./ghcr.pem \
+    ../backend/main.sql \
+    ../backend/main_postgres.sql \
+    ../backend/seed-data.sql \
+    ../backend/seed-restaurant-data.sql \
+    ../backend/seed-mongodb.js \
     $deploy_host_username@$deploy_host:$remote_dir/
 
 echo "Executing upgrade script on remote host"

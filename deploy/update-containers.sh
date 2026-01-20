@@ -22,7 +22,7 @@ $DOCKER_COMPOSE_CMD up -d
 
 echo "Checking container status..."
 #Investigate cải thiện thêm
-sleep 30
+sleep 300
 
 EXITED=$(docker compose -f docker-compose.prod.yml ps | grep Exit | wc -l)
 if [ "$EXITED" -gt 0 ]; then
