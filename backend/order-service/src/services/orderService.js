@@ -67,10 +67,10 @@ class OrderService {
                 throw new Error('Restaurant name missing');
             }
 
-            // if (restaurant.enabled === false) {
-            //     logger.warn(`Restaurant is disabled: ${restaurant.name}`);
-            //     throw new Error(`Restaurant is currently closed: ${restaurant.name}`);
-            // }
+            if (restaurant.enabled === false) {
+                logger.warn(`Restaurant is disabled: ${restaurant.name}`);
+                throw new Error(`Restaurant is currently closed: ${restaurant.name}`);
+            }
 
             if (restaurant.openingTime && restaurant.closingTime) {
                 const isOpen = this.checkRestaurantOpen(restaurant.openingTime, restaurant.closingTime);
