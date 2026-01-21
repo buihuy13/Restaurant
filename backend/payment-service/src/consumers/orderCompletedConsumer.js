@@ -50,6 +50,9 @@ export const startOrderCompletedConsumer = async () => {
 
                     const metadata = payment.metadata || {};
                     const merchantId = metadata.merchantId || metadata.merchant_id;
+                    // FIX: Wallet is keyed by restaurantId, not merchantId!
+                    const restaurantId = orderData.restaurantId || metadata.restaurantId;
+
                     const rawAmount =
                         metadata.amountForMerchant ||
                         metadata.amount_for_merchant ||
@@ -57,11 +60,12 @@ export const startOrderCompletedConsumer = async () => {
                         metadata.amount_for_restaurant;
                     const amountForMerchant = Number(rawAmount);
 
-                    if (!merchantId || !Number.isFinite(amountForMerchant) || amountForMerchant <= 0) {
+                    if (!restaurantId || !Number.isFinite(amountForMerchant) || amountForMerchant <= 0) {
                         logger.warn(
-                            `Missing merchant metadata or invalid amount for payment ${payment.paymentId}, skipping credit`,
+                            `Missing restaurantId/merchant metadata or invalid amount for payment ${payment.paymentId}, skipping credit`,
                             {
                                 paymentId: payment.paymentId,
+                                restaurantId,
                                 merchantId,
                                 amountForMerchant: rawAmount,
                             },
@@ -71,14 +75,14 @@ export const startOrderCompletedConsumer = async () => {
 
                     if (payment.metadata?.merchantCredited) {
                         logger.info(
-                            `Payment ${payment.paymentId} already credited to merchant ${merchantId}, skipping`,
+                            `Payment ${payment.paymentId} already credited to restaurant ${restaurantId}, skipping`,
                         );
                         return;
                     }
 
                     // Perform credit
                     await walletService.credit(
-                        merchantId,
+                        restaurantId,
                         payment.orderId,
                         amountForMerchant,
                         `Auto credit from payment ${payment.paymentId} after order completed`,
@@ -89,7 +93,7 @@ export const startOrderCompletedConsumer = async () => {
                     await payment.save();
 
                     logger.info(
-                        `Auto-credited wallet for merchant ${merchantId} amount ${amountForMerchant} for order ${orderId}`,
+                        `Auto-credited wallet for restaurant ${restaurantId} amount ${amountForMerchant} for order ${orderId}`,
                     );
                 } catch (err) {
                     logger.error('Error processing wallet credit on order completed:', err);

@@ -32,7 +32,7 @@ INSERT INTO size (id, name) VALUES
 INSERT INTO restaurants (id, res_name, address, longitude, latitude, rating, opening_time, closing_time, image_url, phone, merchant_id, slug, enabled) VALUES
 ('RES001', 'The Gourmet Kitchen', '123 Nguyen Hue, District 1, HCMC', 106.701317, 10.775658, 4.5, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635125/burger_rrezhv.jpg', '0901234567', 'testmerchantid', 'the-gourmet-kitchen', true),
 ('RES002', 'Pho Hanoi', '456 Le Loi, District 1, HCMC', 106.698316, 10.773852, 4.8, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635341/gasot_opwrcw.jpg', '0901234568', 'merchant_002', 'pho-hanoi', true),
-('RES003', 'Pizza Hut Express', '789 Tran Hung Dao, District 5, HCMC', 106.680088, 10.754292, 4.2, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635183/pizza_hks2cw.jpg', '0901234569', 'merchant_003', 'pizza-hut-express', true),
+('RES003', 'Pizza Hut Express', '789 Tran Hung Dao, District 5, HCMC', 106.695000, 10.772000, 4.2, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635183/pizza_hks2cw.jpg', '0901234569', 'merchant_003', 'pizza-hut-express', true),
 ('RES004', 'Korean BBQ House', '321 Pasteur, District 3, HCMC', 106.690167, 10.784308, 4.6, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635215/garan_oak9ge.jpg', '0901234570', 'merchant_004', 'korean-bbq-house', true),
 ('RES005', 'Sushi Tokyo', '555 Hai Ba Trung, District 1, HCMC', 106.696817, 10.788508, 4.7, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635330/daga_abs1zd.jpg', '0901234571', 'merchant_005', 'sushi-tokyo', true),
 ('RES006', 'Bubble Tea Cafe', '100 Nguyen Thi Minh Khai, District 3, HCMC', 106.686817, 10.780508, 4.4, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768640718/iced-coffee_xsym2r.jpg', '0901234572', 'merchant_006', 'bubble-tea-cafe', true),
@@ -41,7 +41,10 @@ INSERT INTO restaurants (id, res_name, address, longitude, latitude, rating, ope
 ('RES009', 'Burger House', '150 Dong Khoi, District 1, HCMC', 106.704817, 10.777508, 4.6, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635125/burger_rrezhv.jpg', '0901234575', 'merchant_009', 'burger-house', true),
 ('RES010', 'Taco Bell Vietnam', '88 Pasteur, District 1, HCMC', 106.692817, 10.782508, 4.5, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635233/tacos_g0bqyg.jpg', '0901234576', 'merchant_010', 'taco-bell-vietnam', true),
 ('RES011', 'Fried Chicken King', '45 Le Thanh Ton, District 1, HCMC', 106.699817, 10.779508, 4.7, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635215/garan_oak9ge.jpg', '0901234577', 'merchant_011', 'fried-chicken-king', true),
-('RES012', 'Healthy Bowl', '99 Nguyen Du, District 1, HCMC', 106.695817, 10.781508, 4.8, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768640680/orange-juice_qynanv.jpg', '0901234578', 'merchant_012', 'healthy-bowl', true);
+('RES012', 'Healthy Bowl', '99 Nguyen Du, District 1, HCMC', 106.695817, 10.781508, 4.8, '00:01:00', '23:59:00', 'https://res.cloudinary.com/djogch5t0/image/upload/v1768640680/orange-juice_qynanv.jpg', '0901234578', 'merchant_012', 'healthy-bowl', true),
+('RES013', 'Ocean Breeze Seafood', '88 Nguyen Hue, District 1, HCMC', 106.705000, 10.776000, 4.9, '10:00:00', '23:00:00', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769008889/Top-10-dac-san-hai-san-ngon-nhat-dat-Viet-duoc-sach-Ky-luc-ghi-nhan-9-1569550562-324-width768height512_bwf09i.jpg', '0901000181', 'merchant_seafood', 'ocean-breeze-seafood', true),
+('RES014', 'Hanoi Coffee Culture', '26 Le Loi, District 1, HCMC', 106.698000, 10.779000, 4.8, '07:00:00', '23:00:00', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769008716/cafe-hanoi-thumb_cgp1ow.webp', '0901000182', 'merchant_coffee', 'hanoi-coffee-culture', true),
+('RES015', 'Sweet Treats Ice Cream', '42 Ly Thuong Kiet, District 1, HCMC', 106.699042, 10.776056, 4.7, '09:00:00', '22:00:00', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769007978/wxzaur-_uq9qs0.jpg', '0901000183', 'merchant_dessert', 'sweet-treats-ice-cream', true);
 
 -- ============================================
 -- RESTAURANT CATEGORIES
@@ -58,6 +61,15 @@ INSERT INTO restaurant_categories (restaurant_id, category_id) VALUES
 ('RES003', 'CAT005'),
 -- Korean BBQ House
 ('RES004', 'CAT008'),
+-- Ocean Breeze Seafood
+('RES013', 'CAT002'), -- Main Dishes
+('RES013', 'CAT007'), -- Vietnamese
+-- Hanoi Coffee Culture
+('RES014', 'CAT001'), -- Beverages
+('RES014', 'CAT007'), -- Vietnamese
+-- Sweet Treats Ice Cream
+('RES015', 'CAT004'), -- Desserts
+('RES015', 'CAT013'); -- Healthy (maybe?) or just Desserts
 ('RES004', 'CAT002'),
 -- Sushi Tokyo
 ('RES005', 'CAT009'),
@@ -200,7 +212,20 @@ INSERT INTO products (id, product_name, description, restaurant_id, image_url, c
 ('PROD064', 'Japanese Curry Rice', 'Traditional Japanese curry with rice, vegetables, and choice of protein', 'RES005', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769004065/doi-gio-cho-ca-gia-dinh-voi-mon-com-ca-ri-kieu-nhat-ban-tre-em-cung-an-duoc-202007231448514435_vwfjfn.jpg', 'CAT009', 4.7, 'japanese-curry-rice', true, 0),
 ('PROD065', 'Tonkotsu Ramen', 'Rich pork bone broth ramen with chashu, egg, and noodles', 'RES005', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1766017787/eoxnxltgruqiyf6ailvl.jpg', 'CAT009', 4.9, 'tonkotsu-ramen', true, 0),
 ('PROD066', 'Miso Ramen', 'Savory miso broth with tender noodles and toppings', 'RES005', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769004152/download_qfadyi.jpg', 'CAT009', 4.8, 'miso-ramen', true, 0),
-('PROD067', 'Creamy Pasta', 'Italian pasta with rich cream sauce and parmesan', 'RES003', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769004216/2023_10_19_638333151281847208_mi-y-sot-kem_kobycn.webp', 'CAT010', 4.6, 'creamy-pasta', true, 0);
+('PROD067', 'Creamy Pasta', 'Italian pasta with rich cream sauce and parmesan', 'RES003', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769004216/2023_10_19_638333151281847208_mi-y-sot-kem_kobycn.webp', 'CAT010', 4.6, 'creamy-pasta', true, 0),
+
+-- Ocean Breeze Seafood (RES013)
+('PROD068', 'Premium Seafood Platter', 'Luxury seafood platter with lobster, crab, and special sauce', 'RES013', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769009294/at_nhung-mon-an-hai-san-dat-do-o-viet-nam_9823935f2ed73142be388bdd8cac4ba8_gvbxcn.jpg', 'CAT002', 5.0, 'premium-seafood-platter', true, 0),
+('PROD069', 'Steamed Tiger Prawns', 'Fresh tiger prawns steamed with coconut water', 'RES013', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769009315/b1b33810eeea53c04755c278b7c5b00d_u3uurt.jpg', 'CAT002', 4.8, 'steamed-tiger-prawns', true, 0),
+('PROD070', 'Grilled Scallops', 'Scallops grilled with onion and peanuts', 'RES013', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769009377/image-1359-1767713503_l2esbw.jpg', 'CAT002', 4.7, 'grilled-scallops', true, 0),
+
+-- Hanoi Coffee Culture (RES014)
+('PROD071', 'Hanoi Egg Coffee', 'Traditional Hanoi egg coffee with rich creamy foam', 'RES014', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769008570/Cafe_caf%C3%A9_c%C3%A0_ph%C3%AA_coffee_2_aglccm.webp', 'CAT001', 4.9, 'hanoi-egg-coffee', true, 0),
+('PROD072', 'Traditional Black Coffee', 'Strong Vietnamese black coffee (Cafe Den)', 'RES014', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769008763/thum-1200x676_h1xnny.jpg', 'CAT001', 4.8, 'traditional-black-coffee', true, 0),
+
+-- Sweet Treats Ice Cream (RES015)
+('PROD073', 'Chocolate Truffle Ice Cream', 'Rich dark chocolate ice cream with truffle bits', 'RES015', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769008810/cach-lam-kem-socola-th%C6%A1m-mat-ngon_yobbl9.jpg', 'CAT004', 4.9, 'chocolate-truffle-ice-cream', true, 0),
+('PROD074', 'Fruits & Yogurt Parfait', 'Fresh fruits layered with greek yogurt and granola', 'RES015', 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769011201/images_chbl18.jpg', 'CAT013', 4.7, 'fruits-yogurt-parfait', true, 0);
 
 -- ============================================
 -- PRODUCT SIZES (Pricing in USD)
@@ -367,7 +392,26 @@ INSERT INTO product_sizes (id, product_id, size_id, price) VALUES
 ('PS112', 'PROD066', 'M', 4.20),
 ('PS113', 'PROD066', 'L', 5.60),
 ('PS114', 'PROD067', 'M', 4.00),
-('PS115', 'PROD067', 'L', 5.40);
+('PS115', 'PROD067', 'L', 5.40),
+
+-- Ocean Breeze Seafood
+('PS116', 'PROD068', 'M', 25.00),
+('PS117', 'PROD068', 'L', 35.00),
+('PS118', 'PROD069', 'M', 12.00),
+('PS119', 'PROD069', 'L', 18.00),
+('PS120', 'PROD070', 'M', 10.00),
+
+-- Hanoi Coffee Culture
+('PS121', 'PROD071', 'M', 2.00),
+('PS122', 'PROD071', 'L', 2.50),
+('PS123', 'PROD072', 'M', 1.50),
+('PS124', 'PROD072', 'L', 2.00),
+
+-- Sweet Treats Ice Cream
+('PS125', 'PROD073', 'M', 3.00),
+('PS126', 'PROD073', 'L', 4.50),
+('PS127', 'PROD074', 'M', 4.00),
+('PS128', 'PROD074', 'L', 5.50);
 
 -- ============================================
 -- REVIEWS
