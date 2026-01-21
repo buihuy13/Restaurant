@@ -606,6 +606,7 @@ class OrderService {
                             completedAt: new Date().toISOString(),
                             paymentMethod: order.paymentMethod,
                             paymentStatus: order.paymentStatus,
+                            status: 'completed', // Add status field for payment-service validation
                         },
                     );
                     logger.info(`Order completed + PAID → Published wallet credit event: ${order.orderId}`);
