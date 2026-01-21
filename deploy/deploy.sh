@@ -101,6 +101,8 @@ fi
 
 echo "All images pushed successfully"
 
+git checkout develop
+
 deploy_host=4.194.34.185
 deploy_host_username=quochuy
 deploy_host_private_key=key.pem
