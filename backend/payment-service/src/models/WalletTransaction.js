@@ -2,6 +2,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
+// Quản lý giao dịch ví 
 const WalletTransaction = sequelize.define(
     'WalletTransaction',
     {

@@ -104,6 +104,7 @@ class WalletService {
 
     async getByRestaurantId(restaurantId) {
         const wallet = await Wallet.findOne({ where: { restaurantId } });
+
         if (!wallet) return { balance: 0, totalEarned: 0, totalWithdrawn: 0 };
         return {
             balance: parseFloat(wallet.balance),
@@ -215,8 +216,7 @@ class WalletService {
 
             const bank = payout.bankInfo;
             logger.warn(
-                `[FAKE CHUYỂN KHOẢN] ĐÃ DUYỆT #${payoutId} | ${payout.amount.toLocaleString()}đ | ${
-                    bank.bankName
+                `[FAKE CHUYỂN KHOẢN] ĐÃ DUYỆT #${payoutId} | ${payout.amount.toLocaleString()}đ | ${bank.bankName
                 } - STK: ${bank.accountNumber} - CTK: ${bank.accountHolderName}`,
             );
 

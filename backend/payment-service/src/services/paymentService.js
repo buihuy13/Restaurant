@@ -475,6 +475,13 @@ class PaymentService {
                 },
             };
 
+            // Check if payment already exists for this order to avoid duplicates (idempotency)
+            const existingPayment = await Payment.findOne({ where: { orderId: orderData.orderId } });
+            if (existingPayment) {
+                logger.info(`Payment already exists for order ${orderData.orderId}, skipping creation`);
+                return;
+            }
+
             await this.createPayment(paymentData);
         } catch (error) {
             logger.error(`handleOrderCreated failed: ${error.message}`);

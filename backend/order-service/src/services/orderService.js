@@ -592,21 +592,26 @@ class OrderService {
                     // MỚI ĐƯỢC CỘNG TIỀN!
                     await rabbitmqConnection.publishMessage(
                         rabbitmqConnection.exchanges.ORDER,
-                        'order.completed', // ← event này mới kích hoạt cộng tiền
+                        'order.completed',
                         {
                             orderId: order.orderId,
                             userId: order.userId,
                             restaurantId: order.restaurantId,
                             merchantId: order.merchantId,
                             restaurantName: order.restaurantName,
-                            totalAmount: order.finalAmount,
-                            platformFee: Math.round(order.finalAmount * 0.1),
-                            amountForMerchant: Math.round(order.finalAmount * 0.9),
-                            items: order.items,
-                            completedAt: new Date().toISOString(),
-                            paymentMethod: order.paymentMethod,
+
+                            // Critical fields for payment-service
+                            status: 'completed',
                             paymentStatus: order.paymentStatus,
-                            status: 'completed', // Add status field for payment-service validation
+                            totalAmount: order.finalAmount || order.totalAmount,
+
+                            // Calculate platform fee & merchant amount (10% platform fee)
+                            platformFee: (order.finalAmount || 0) * 0.1,
+                            amountForMerchant: (order.finalAmount || 0) * 0.9,
+
+                            items: order.items,
+                            paymentMethod: order.paymentMethod,
+                            completedAt: new Date().toISOString(),
                         },
                     );
                     logger.info(`Order completed + PAID → Published wallet credit event: ${order.orderId}`);
