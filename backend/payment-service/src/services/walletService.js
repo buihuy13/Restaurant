@@ -196,8 +196,8 @@ class WalletService {
             if (!payout || payout.status !== 'pending') throw new Error('Yêu cầu không hợp lệ');
 
             // Perform actual wallet debit now that admin approved
-            await payout.wallet.decrement('balance', { by: payout.amount, transaction: t });
-            await payout.wallet.increment('totalWithdrawn', { by: payout.amount, transaction: t });
+            await payout.Wallet.decrement('balance', { by: payout.amount, transaction: t });
+            await payout.Wallet.increment('totalWithdrawn', { by: payout.amount, transaction: t });
 
             await payout.update(
                 {
