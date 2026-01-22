@@ -8,7 +8,9 @@ class AdminWalletController {
     // Danh sách yêu cầu rút tiền
     async getPayoutRequests(req, res) {
         try {
-            const { status, page = 1, limit = 20 } = req.query;
+            const { status } = req.query;
+            const page = parseInt(req.query.page) || 1;
+            const limit = Math.min(parseInt(req.query.limit) || 20, 100);
             const offset = (page - 1) * limit;
 
             const where = status ? { status } : {};
