@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import logger from '../utils/logger.js';
+import restaurantService from '../services/restaurantService.js';
 
 export const restaurantAuth = async (req, res, next) => {
     try {
@@ -16,10 +17,17 @@ export const restaurantAuth = async (req, res, next) => {
             return res.status(403).json({ success: false, message: 'Chỉ merchant nhà hàng mới được truy cập ví' });
         }
 
-        // Gắn restaurantId vào req để dùng trong controller
+        // FIX: Resolve restaurantId from merchantId if missing in token
+        let restaurantId = decoded.restaurantId;
+        if (!restaurantId && decoded.id) {
+            logger.info(`Extracting restaurantId for merchant: ${decoded.id}`);
+            restaurantId = await restaurantService.findResIdByMerchantId(decoded.id);
+        }
+
+        // Gắn thông tin vào req để dùng trong controller
         req.user = {
             id: decoded.id,
-            restaurantId: decoded.restaurantId || decoded.id, // tùy bạn lưu kiểu gì trong token
+            restaurantId: restaurantId || decoded.id, // Fallback to id if still not found
             role: decoded.role,
         };
 

@@ -64,6 +64,7 @@ class RabbitMQConnection {
             await this.channel.bindQueue(this.queues.ORDER_CREATED, this.exchanges.ORDER, 'order.created');
             await this.channel.bindQueue(this.queues.ORDER_UPDATED, this.exchanges.ORDER, 'order.updated');
             await this.channel.bindQueue(this.queues.ORDER_CANCELLED, this.exchanges.ORDER, 'order.cancelled');
+            await this.channel.bindQueue(this.queues.ORDER_COMPLETED, this.exchanges.ORDER, 'order.completed');
             await this.channel.bindQueue(this.queues.PAYMENT_COMPLETED, this.exchanges.PAYMENT, 'payment.completed');
             await this.channel.bindQueue(this.queues.PAYMENT_FAILED, this.exchanges.PAYMENT, 'payment.failed');
 

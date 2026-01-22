@@ -21,39 +21,39 @@ create table users (
 create index idx_email on users(email);
 
 insert into users(id, `password`, username, email, phone, `role`, `enabled`, `verification_code`, `slug`) values 
-("testadminid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testadmin", "testadmin@gmail.com", "0762612698", "ADMIN", true, "abcxyz123", "abcxyz"),
-("testuserid", "$2a$12$CydeMvJj1Hvu/824Lh2NuOEIrZnlhRMIUM736cYXa7bSD3LUmGW7K", "testuser", "testuser@gmail.com", "0762612699", "USER", true, "abcxyz456", "abc"),
-("testmerchantid", "$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m", "testmerchant", "testmerchant@gmail.com", "0762612697", "MERCHANT", true, "abcxyz789", "xyz"),
-('user_gen_01', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_01', 'user01@gmail.com', '0901000001', 'USER', true, 'token_01', 'local1'),
-('user_gen_02', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_02', 'user02@gmail.com', '0901000002', 'USER', true, 'token_02', 'local2'),
-('user_gen_03', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_03', 'user03@gmail.com', '0901000003', 'USER', true, 'token_03', 'local3'),
-('user_gen_04', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_04', 'user04@gmail.com', '0901000004', 'USER', true, 'token_04', 'local4'),
-('user_gen_05', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_05', 'user05@gmail.com', '0901000005', 'USER', true, 'token_05', 'local5'),
-('user_gen_06', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_06', 'user06@gmail.com', '0901000006', 'USER', true, 'token_06', 'local6'),
-('user_gen_07', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_07', 'user07@gmail.com', '0901000007', 'USER', true, 'token_07', 'local7'),
-('user_gen_08', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_08', 'user08@gmail.com', '0901000008', 'USER', true, 'token_08', 'local8'),
-('user_gen_09', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_09', 'user09@gmail.com', '0901000009', 'USER', true, 'token_09', 'local9'),
-('user_gen_10', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_10', 'user10@gmail.com', '0901000010', 'USER', true, 'token_10', 'local10'),
-('user_gen_11', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_11', 'user11@gmail.com', '0901000011', 'USER', true, 'token_11', 'local11'),
-('user_gen_12', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_12', 'user12@gmail.com', '0901000012', 'USER', true, 'token_12', 'local12'),
-('user_gen_13', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_13', 'user13@gmail.com', '0901000013', 'USER', true, 'token_13', 'local13'),
-('user_gen_14', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_14', 'user14@gmail.com', '0901000014', 'USER', true, 'token_14', 'local14'),
-('user_gen_15', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_15', 'user15@gmail.com', '0901000015', 'USER', true, 'token_15', 'local15'),
-('user_gen_16', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_16', 'user16@gmail.com', '0901000016', 'USER', true, 'token_16', 'local16'),
-('user_gen_17', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_17', 'user17@gmail.com', '0901000017', 'USER', true, 'token_17', 'local17'),
-('user_gen_18', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_18', 'user18@gmail.com', '0901000018', 'USER', true, 'token_18', 'local18'),
-('user_gen_19', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_19', 'user19@gmail.com', '0901000019', 'USER', true, 'token_19', 'local19'),
-('user_gen_20', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_20', 'user20@gmail.com', '0901000020', 'USER', true, 'token_20', 'local20'),
-('user_gen_21', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_21', 'user21@gmail.com', '0901000021', 'USER', true, 'token_21', 'local21'),
-('user_gen_22', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_22', 'user22@gmail.com', '0901000022', 'USER', true, 'token_22', 'local22'),
-('user_gen_23', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_23', 'user23@gmail.com', '0901000023', 'USER', true, 'token_23', 'local23'),
-('user_gen_24', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_24', 'user24@gmail.com', '0901000024', 'USER', true, 'token_24', 'local24'),
-('user_gen_25', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_25', 'user25@gmail.com', '0901000025', 'USER', true, 'token_25', 'local25'),
-('user_gen_26', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_26', 'user26@gmail.com', '0901000026', 'USER', true, 'token_26', 'local26'),
-('user_gen_27', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_27', 'user27@gmail.com', '0901000027', 'USER', true, 'token_27', 'local27'),
-('user_gen_28', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_28', 'user28@gmail.com', '0901000028', 'USER', true, 'token_28', 'local28'),
-('user_gen_29', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_29', 'user29@gmail.com', '0901000029', 'USER', true, 'token_29', 'local29'),
-('user_gen_30', '$2a$12$xv4.GmxuJeUUs54wJNwPdODdcvnHs7ikvpCuLeVVMy4tki5hZLq/m', 'user_30', 'user30@gmail.com', '0901000030', 'USER', true, 'token_30', 'local30');
+("testadminid", "$2a$12$wM4Ceu0iK51euorKqByokuN7nBveBDdmXA6AgH3e5d7uVi.E0qm0a", "testadmin", "testadmin@gmail.com", "0762612698", "ADMIN", true, "abcxyz123", "abcxyz"),
+("testuserid", "$2a$12$CdzbDC327zy/.up8.yloReJTMtWtqvSxThDkmfj3tVbe9B0QOJecK", "testuser", "testuser@gmail.com", "0762612699", "USER", true, "abcxyz456", "abc"),
+("testmerchantid", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "testmerchant", "testmerchant@gmail.com", "0762612697", "MERCHANT", true, "abcxyz789", "xyz"),
+("merchant_seafood", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_seafood", "seafood@gmail.com", "0901000101", "MERCHANT", true, "verify_seafood", "merchant-seafood"),
+("merchant_coffee", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_coffee", "coffee@gmail.com", "0901000102", "MERCHANT", true, "verify_coffee", "merchant-coffee"),
+("merchant_dessert", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_dessert", "dessert@gmail.com", "0901000103", "MERCHANT", true, "verify_dessert", "merchant-dessert"),
+("merchant_002", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_002", "merchant002@gmail.com", "0901000002", "MERCHANT", true, "verify_002", "merchant-002"),
+("merchant_003", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_003", "merchant003@gmail.com", "0901000003", "MERCHANT", true, "verify_003", "merchant-003"),
+("merchant_004", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_004", "merchant004@gmail.com", "0901000004", "MERCHANT", true, "verify_004", "merchant-004"),
+("merchant_005", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_005", "merchant005@gmail.com", "0901000005", "MERCHANT", true, "verify_005", "merchant-005"),
+("merchant_006", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_006", "merchant006@gmail.com", "0901000006", "MERCHANT", true, "verify_006", "merchant-006"),
+("merchant_007", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_007", "merchant007@gmail.com", "0901000007", "MERCHANT", true, "verify_007", "merchant-007"),
+("merchant_008", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_008", "merchant008@gmail.com", "0901000008", "MERCHANT", true, "verify_008", "merchant-008"),
+("merchant_009", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_009", "merchant009@gmail.com", "0901000009", "MERCHANT", true, "verify_009", "merchant-009"),
+("merchant_010", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_010", "merchant010@gmail.com", "0901000010", "MERCHANT", true, "verify_010", "merchant-010"),
+("merchant_011", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_011", "merchant011@gmail.com", "0901000011", "MERCHANT", true, "verify_011", "merchant-011"),
+("merchant_012", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_012", "merchant012@gmail.com", "0901000012", "MERCHANT", true, "verify_012", "merchant-012"),
+("merchant_016", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_016", "merchant016@gmail.com", "0901000016", "MERCHANT", true, "verify_016", "merchant-016"),
+("merchant_017", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_017", "merchant017@gmail.com", "0901000017", "MERCHANT", true, "verify_017", "merchant-017"),
+("merchant_018", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_018", "merchant018@gmail.com", "0901000018", "MERCHANT", true, "verify_018", "merchant-018"),
+("merchant_019", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_019", "merchant019@gmail.com", "0901000019", "MERCHANT", true, "verify_019", "merchant-019"),
+("merchant_020", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_020", "merchant020@gmail.com", "0901000020", "MERCHANT", true, "verify_020", "merchant-020"),
+("merchant_021", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_021", "merchant021@gmail.com", "0901000021", "MERCHANT", true, "verify_021", "merchant-021"),
+("merchant_022", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_022", "merchant022@gmail.com", "0901000022", "MERCHANT", true, "verify_022", "merchant-022"),
+("merchant_023", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_023", "merchant023@gmail.com", "0901000023", "MERCHANT", true, "verify_023", "merchant-023"),
+("merchant_024", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_024", "merchant024@gmail.com", "0901000024", "MERCHANT", true, "verify_024", "merchant-024"),
+("merchant_025", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_025", "merchant025@gmail.com", "0901000025", "MERCHANT", true, "verify_025", "merchant-025"),
+("merchant_026", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_026", "merchant026@gmail.com", "0901000026", "MERCHANT", true, "verify_026", "merchant-026"),
+("merchant_027", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_027", "merchant027@gmail.com", "0901000027", "MERCHANT", true, "verify_027", "merchant-027"),
+("merchant_028", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_028", "merchant028@gmail.com", "0901000028", "MERCHANT", true, "verify_028", "merchant-028"),
+("merchant_029", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_029", "merchant029@gmail.com", "0901000029", "MERCHANT", true, "verify_029", "merchant-029"),
+("merchant_030", "$2a$12$qm2otp3bRqCk3Bc/R6qfjOcnIgBkL/J0KinMQl0vbnRenGEu4Rkza", "merchant_030", "merchant030@gmail.com", "0901000030", "MERCHANT", true, "verify_030", "merchant-030");
+
 
 create table address (
     id varchar(255) primary key,
@@ -221,4 +221,48 @@ CREATE TABLE payments (
   INDEX idx_status (status),
   INDEX idx_createdAt (createdAt)
 );
+
+CREATE TABLE IF NOT EXISTS wallets (
+    id CHAR(36) PRIMARY KEY,
+    restaurant_id VARCHAR(100) NOT NULL UNIQUE,
+    balance DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+    total_earned DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+    total_withdrawn DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS wallet_transactions (
+    id CHAR(36) PRIMARY KEY,
+    wallet_id CHAR(36) NOT NULL,
+    order_id VARCHAR(100),
+    payout_request_id CHAR(36),
+    type ENUM('EARN', 'WITHDRAW') NOT NULL,
+    amount DECIMAL(15, 2) NOT NULL,
+    status ENUM('PENDING', 'COMPLETED', 'FAILED') DEFAULT 'PENDING',
+    description TEXT,
+    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_wallet_id (wallet_id),
+    INDEX idx_order_id (order_id)
+);
+
+-- Seed Wallets
+INSERT INTO wallets (id, restaurant_id, balance, total_earned, total_withdrawn) VALUES
+(UUID(), 'RES001', 5000.00, 5000.00, 0),
+(UUID(), 'RES002', 2000.00, 2000.00, 0),
+(UUID(), 'RES003', 1000.00, 1000.00, 0),
+(UUID(), 'RES004', 3000.00, 3000.00, 0),
+(UUID(), 'RES005', 4000.00, 4000.00, 0),
+(UUID(), 'RES006', 1500.00, 1500.00, 0),
+(UUID(), 'RES007', 2500.00, 2500.00, 0),
+(UUID(), 'RES008', 3500.00, 3500.00, 0),
+(UUID(), 'RES009', 4500.00, 4500.00, 0),
+(UUID(), 'RES010', 5500.00, 5500.00, 0),
+(UUID(), 'RES011', 6000.00, 6000.00, 0),
+(UUID(), 'RES012', 7000.00, 7000.00, 0),
+(UUID(), 'RES013', 4500.00, 4500.00, 0), -- Ocean Breeze Seafood
+(UUID(), 'RES014', 3500.00, 3500.00, 0), -- Hanoi Coffee Culture
+(UUID(), 'RES015', 5000.00, 5000.00, 0), -- Sweet Treats Ice Cream
+(UUID(), 'ADMIN_WALLET', 1000000.00, 1000000.00, 0);
 
