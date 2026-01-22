@@ -6,7 +6,7 @@ const Wallet = sequelize.define(
     'Wallet',
     {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.CHAR(36),
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
         },

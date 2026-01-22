@@ -26,6 +26,42 @@ const merchantId = 'testmerchantid'; // Use this merchant ID for testing
 const restaurantId = 'RES001';
 const restaurantName = 'The Gourmet Kitchen';
 
+// REAL USER POOL from main.sql
+const userIds = [
+    { id: 'testuserid', name: 'Test User' },
+    { id: 'testadminid', name: 'Test Admin' },
+    { id: 'testmerchantid', name: 'Test Merchant' },
+    { id: 'merchant_seafood', name: 'Ocean Breeze Merchant' },
+    { id: 'merchant_coffee', name: 'Coffee Culture Owner' },
+    { id: 'merchant_dessert', name: 'Sweet Treats Manager' },
+    { id: 'merchant_002', name: 'Pho Hanoi Owner' },
+    { id: 'merchant_003', name: 'Pizza Hut Manager' },
+    { id: 'merchant_004', name: 'BBQ House Owner' },
+    { id: 'merchant_005', name: 'Sushi Tokyo Manager' },
+    { id: 'merchant_006', name: 'Bubble Tea Owner' },
+    { id: 'merchant_007', name: 'Saigon Street Food Owner' },
+    { id: 'merchant_008', name: 'Banh Mi Express Owner' },
+    { id: 'merchant_009', name: 'Burger House Owner' },
+    { id: 'merchant_010', name: 'Taco Bell Manager' },
+    { id: 'merchant_011', name: 'Fried Chicken King' },
+    { id: 'merchant_012', name: 'Healthy Bowl Owner' },
+    { id: 'merchant_016', name: 'Merchant 016' },
+    { id: 'merchant_017', name: 'Merchant 017' },
+    { id: 'merchant_018', name: 'Merchant 018' },
+    { id: 'merchant_019', name: 'Merchant 019' },
+    { id: 'merchant_020', name: 'Merchant 020' },
+    { id: 'merchant_021', name: 'Merchant 021' },
+    { id: 'merchant_022', name: 'Merchant 022' },
+    { id: 'merchant_023', name: 'Merchant 023' },
+    { id: 'merchant_024', name: 'Merchant 024' },
+    { id: 'merchant_025', name: 'Merchant 025' },
+    { id: 'merchant_026', name: 'Merchant 026' },
+    { id: 'merchant_027', name: 'Merchant 027' },
+    { id: 'merchant_028', name: 'Merchant 028' },
+    { id: 'merchant_029', name: 'Merchant 029' },
+    { id: 'merchant_030', name: 'Merchant 030' }
+];
+
 // Generate orders for the last 30 days with various times and ratings
 const orders = [];
 const now = new Date();
@@ -39,15 +75,18 @@ const products = [
     { id: 'PROD004', name: 'Beef Tacos', price: 48000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635233/tacos_g0bqyg.jpg' },
     { id: 'PROD005', name: 'Chicken Burrito', price: 52000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635268/buritos_b3kdr9.jpg' },
     { id: 'PROD006', name: 'French Fries', price: 25000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635297/khoaitaychien_n8njn6.jpg' },
-    { id: 'PROD007', name: 'Cheese Balls', price: 35000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635314/cheeseball_pibzk3.jpg' },
-    { id: 'PROD008', name: 'Grilled Duck', price: 95000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635330/daga_abs1zd.jpg' },
-    { id: 'PROD009', name: 'Soy Sauce Chicken', price: 75000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635341/gasot_opwrcw.jpg' },
-    { id: 'PROD010', name: 'Coca Cola', price: 15000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768640626/cocacola_vyo2mu.jpg' },
-    { id: 'PROD011', name: 'Orange Juice', price: 20000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768640680/orange-juice_qynanv.jpg' },
-    { id: 'PROD012', name: 'Iced Coffee', price: 25000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768640718/iced-coffee_xsym2r.jpg' },
-    { id: 'PROD013', name: 'Chocolate Cake', price: 45000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768640718/iced-coffee_xsym2r.jpg' },
-    { id: 'PROD014', name: 'Ice Cream Sundae', price: 35000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635314/cheeseball_pibzk3.jpg' },
-    { id: 'PROD015', name: 'Apple Pie', price: 40000, image: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768640680/orange-juice_qynanv.jpg' },
+    { id: 'PROD007', name: 'Special Pho', price: 65000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053123/pho-mon-an-truyen-thong-viet-nam-noi-tieng-the-gioi_jdgrzs.jpg' },
+    { id: 'PROD008', name: 'Bun Bo Hue', price: 75000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053123/pho-mon-an-truyen-thong-viet-nam-noi-tieng-the-gioi_jdgrzs.jpg' },
+    { id: 'PROD009', name: 'Special Fried Rice', price: 55000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053016/download_kcznof.jpg' },
+    { id: 'PROD010', name: 'Banh Mi Dac Biet', price: 35000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053368/banh_mi_man_3051eb6d27_cenvbj.webp' },
+    { id: 'PROD011', name: 'Vietnamese Milk Coffee', price: 25000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053084/download_aivrp9.jpg' },
+    { id: 'PROD012', name: 'Sushi Combo Set', price: 185000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053184/download_dzh6wo.jpg' },
+    { id: 'PROD013', name: 'Salmon Nigiri', price: 45000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053212/sushi-nhat-ban-jvb_gbpk6o.jpg' },
+    { id: 'PROD014', name: 'Sushi Roll Platter', price: 125000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053209/sushi_480x480_hrj5mg.webp' },
+    { id: 'PROD015', name: 'Tonkotsu Ramen', price: 60000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769055134/download_sjsrvl.jpg' },
+    { id: 'PROD019', name: 'Special Bun Dau Mam Tom', price: 95000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053161/mon-an-viet-ngon-8_hxwsqq.jpg' },
+    { id: 'PROD017', name: 'Grilled Pork Banh Mi', price: 40000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053368/banh_mi_man_3051eb6d27_cenvbj.webp' },
+    { id: 'PROD018', name: 'Vietnamese Sandwich Special', price: 45000, image: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053354/download_apkwfb.jpg' },
 ];
 
 const statuses = ['completed', 'completed', 'completed', 'completed', 'pending', 'confirmed', 'preparing', 'ready', 'cancelled'];
@@ -90,7 +129,7 @@ for (let i = 0; i < 100; i++) {
         _id: ObjectId(),
         orderId: `ORD-${orderDate.getFullYear()}${String(orderDate.getMonth() + 1).padStart(2, '0')}${String(orderDate.getDate()).padStart(2, '0')}-${String(i + 1).padStart(3, '0')}`,
         slug: `ord-${orderDate.getFullYear()}${String(orderDate.getMonth() + 1).padStart(2, '0')}${String(orderDate.getDate()).padStart(2, '0')}-${String(i + 1).padStart(3, '0')}`,
-        userId: `user_${Math.floor(Math.random() * 20) + 1}`,
+        userId: userIds[Math.floor(Math.random() * userIds.length)].id,
         restaurantId: restaurantId,
         restaurantName: restaurantName,
         merchantId: merchantId,
@@ -252,7 +291,7 @@ db.blogs.insertMany([
         content:
             '# Top 10 Best Burgers in Ho Chi Minh City 2026\n\nBurgers have become one of the most popular fast food items in Vietnam. Today we will explore the 10 best burger joints in Ho Chi Minh City!\n\n## 1. The Gourmet Kitchen - District 1\nJuicy beef patties with fresh ingredients. This is a favorite spot for burger enthusiasts.\n\n## 2. Burger Bros - Pasteur Street\nFamily recipe for over 5 years, famous for their signature sauce and crispy bacon.\n\n## 3. Classic Burger House - Nguyen Hue\nEstablished brand, serving from 10 AM daily.\n\n*Try them out and let us know your thoughts!*',
         excerpt: 'Discover the 10 best burger restaurants in Ho Chi Minh City 2026, from classic burgers to gourmet creations.',
-        coverImage: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635125/burger_rrezhv.jpg',
+        coverImage: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053016/download_kcznof.jpg',
         author: {
             userId: 'testuserid',
             name: 'Test User',
@@ -260,7 +299,7 @@ db.blogs.insertMany([
         category: 'review',
         tags: ['burgers', 'ho chi minh', 'fast food', 'top 10'],
         views: 1520,
-        likes: ['user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05'],
+        likes: ['testadminid', 'merchant_seafood', 'merchant_coffee', 'merchant_002', 'merchant_003'],
         likesCount: 5,
         commentsCount: 3,
         status: 'published',
@@ -283,7 +322,7 @@ db.blogs.insertMany([
         category: 'recipe',
         tags: ['pizza', 'italian', 'cooking', 'homemade'],
         views: 2340,
-        likes: ['testuserid', 'user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06'],
+        likes: ['testuserid', 'merchant_002', 'merchant_003', 'merchant_004', 'merchant_005', 'merchant_006', 'merchant_007'],
         likesCount: 7,
         commentsCount: 5,
         status: 'published',
@@ -306,7 +345,7 @@ db.blogs.insertMany([
         category: 'recipe',
         tags: ['fried chicken', 'cooking', 'comfort food', 'american'],
         views: 1890,
-        likes: ['user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04'],
+        likes: ['merchant_seafood', 'merchant_coffee', 'merchant_004', 'merchant_005'],
         likesCount: 4,
         commentsCount: 2,
         status: 'published',
@@ -329,7 +368,7 @@ db.blogs.insertMany([
         category: 'review',
         tags: ['tacos', 'mexican food', 'street food', 'guide'],
         views: 1650,
-        likes: ['testuserid', 'user_gen_01', 'user_gen_05'],
+        likes: ['testuserid', 'testadminid', 'merchant_005'],
         likesCount: 3,
         commentsCount: 4,
         status: 'published',
@@ -352,7 +391,7 @@ db.blogs.insertMany([
         category: 'health',
         tags: ['healthy eating', 'nutrition', 'lifestyle', 'wellness'],
         views: 2100,
-        likes: ['user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06', 'user_gen_07', 'user_gen_08'],
+        likes: ['merchant_008', 'merchant_009', 'merchant_010', 'merchant_011', 'merchant_012', 'merchant_016', 'merchant_017', 'merchant_018'],
         likesCount: 8,
         commentsCount: 6,
         status: 'published',
@@ -375,7 +414,7 @@ db.blogs.insertMany([
         category: 'tips',
         tags: ['coffee', 'vietnamese', 'culture', 'beverages'],
         views: 3200,
-        likes: ['user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06', 'user_gen_07', 'user_gen_08', 'user_gen_09', 'user_gen_10'],
+        likes: ['merchant_019', 'merchant_020', 'merchant_021', 'merchant_022', 'merchant_023', 'merchant_024', 'merchant_025', 'merchant_026', 'merchant_027', 'merchant_028'],
         likesCount: 10,
         commentsCount: 8,
         status: 'published',
@@ -398,7 +437,7 @@ db.blogs.insertMany([
         category: 'recipe',
         tags: ['korean bbq', 'grilling', 'asian cuisine', 'entertaining'],
         views: 2850,
-        likes: ['testuserid', 'user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06'],
+        likes: ['testuserid', 'testadminid', 'merchant_029', 'merchant_030', 'merchant_seafood', 'merchant_coffee', 'merchant_dessert'],
         likesCount: 7,
         commentsCount: 5,
         status: 'published',
@@ -421,7 +460,7 @@ db.blogs.insertMany([
         category: 'review',
         tags: ['pho', 'hanoi', 'vietnamese food', 'restaurants'],
         views: 4100,
-        likes: ['user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06', 'user_gen_07', 'user_gen_08', 'user_gen_09', 'user_gen_10', 'user_gen_11', 'user_gen_12'],
+        likes: ['testuserid', 'testadminid', 'merchant_seafood', 'merchant_coffee', 'merchant_dessert', 'merchant_002', 'merchant_003', 'merchant_004', 'merchant_005', 'merchant_010', 'merchant_011', 'merchant_012'],
         likesCount: 12,
         commentsCount: 10,
         status: 'published',
@@ -444,8 +483,8 @@ db.blogs.insertMany([
         category: 'tips',
         tags: ['burrito', 'taco', 'mexican food', 'food guide'],
         views: 2650,
-        likes: ['testuserid', 'user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05'],
-        likesCount: 6,
+        likes: ['testadminid', 'merchant_seafood', 'merchant_coffee', 'merchant_010', 'merchant_011'],
+        likesCount: 5,
         commentsCount: 7,
         status: 'published',
         createdAt: new Date('2026-01-19T15:00:00Z'),
@@ -459,7 +498,7 @@ db.blogs.insertMany([
         content:
             '# Food Photography Tips for Instagram\n\n## Why Food Photography Matters\n\nIn the age of social media, great food photos can make or break a restaurant\'s reputation. Here\'s how to take stunning food photos.\n\n## Essential Equipment\n\n### You Don\'t Need Expensive Gear\n- Modern smartphone cameras are excellent\n- Natural light is your best friend\n- Simple props enhance the shot\n\n## Lighting Tips\n\n### Natural Light is Best\n- Shoot near windows\n- Avoid direct sunlight (too harsh)\n- Overcast days provide soft, even light\n- Golden hour (sunrise/sunset) is magical\n\n### Avoid Flash\n- Creates harsh shadows\n- Unnatural colors\n- Makes food look unappetizing\n\n## Composition Techniques\n\n### Rule of Thirds\n- Divide frame into 9 equal parts\n- Place subject at intersection points\n- Creates balanced, interesting photos\n\n### Angles to Try\n\n**Overhead (Flat Lay)**\n- Perfect for: Pizza, bowls, platters\n- Shows entire dish and arrangement\n\n**45-Degree Angle**\n- Most versatile angle\n- Good for: Burgers, sandwiches, drinks\n- Shows height and layers\n\n**Eye Level**\n- Best for: Tall items, burgers, cakes\n- Creates intimate, inviting feel\n\n## Styling Tips\n\n### Keep It Simple\n- Remove clutter from background\n- Use neutral plates and surfaces\n- Add one or two props (napkin, utensils)\n\n### Add Context\n- Show hands holding food\n- Include drinks in the frame\n- Add fresh ingredients as props\n\n### Colors Matter\n- Complementary colors pop\n- Green herbs add freshness\n- White plates make colors vibrant\n\n## Editing Tips\n\n### Basic Adjustments\n1. **Brightness**: Slightly increase\n2. **Contrast**: Moderate boost\n3. **Saturation**: Subtle enhancement\n4. **Warmth**: Add slight warmth\n5. **Sharpness**: Light sharpening\n\n### Apps to Use\n- Lightroom Mobile (professional)\n- VSCO (filters)\n- Snapseed (free, powerful)\n- Instagram built-in tools\n\n## Common Mistakes to Avoid\n\n❌ Over-editing (unnatural colors)\n❌ Too many props (cluttered)\n❌ Poor lighting (dark, yellow)\n❌ Messy presentation\n❌ Using flash\n\n## Pro Tips\n\n✅ Shoot from multiple angles\n✅ Take photos before eating\n✅ Clean plate edges\n✅ Add steam for hot dishes\n✅ Show texture and details\n\n## Conclusion\n\nGreat food photography is about practice. Experiment with different angles, lighting, and compositions to find your style!\n\n*Happy shooting! 📸*',
         excerpt: 'Master the art of food photography with these professional tips for creating Instagram-worthy food photos using just your smartphone.',
-        coverImage: 'https://res.cloudinary.com/djogch5t0/image/upload/v1768635125/burger_rrezhv.jpg',
+        coverImage: 'https://res.cloudinary.com/djalvvgd0/image/upload/v1769053064/photo_fpgus1.jpg',
         author: {
             userId: 'testuserid',
             name: 'Test User',
@@ -467,7 +506,7 @@ db.blogs.insertMany([
         category: 'tips',
         tags: ['photography', 'instagram', 'social media', 'food styling'],
         views: 5200,
-        likes: ['user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06', 'user_gen_07', 'user_gen_08', 'user_gen_09', 'user_gen_10', 'user_gen_11', 'user_gen_12', 'user_gen_13', 'user_gen_14', 'user_gen_15'],
+        likes: ['merchant_002', 'merchant_003', 'merchant_004', 'merchant_005', 'merchant_006', 'merchant_007', 'merchant_008', 'merchant_009', 'merchant_010', 'merchant_011', 'merchant_012', 'merchant_016', 'merchant_017', 'merchant_018', 'merchant_019'],
         likesCount: 15,
         commentsCount: 12,
         status: 'published',
@@ -490,7 +529,7 @@ db.blogs.insertMany([
         category: 'recipe',
         tags: ['bibimbap', 'korean food', 'rice bowl', 'healthy'],
         views: 3800,
-        likes: ['user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06', 'user_gen_07', 'user_gen_08', 'user_gen_09'],
+        likes: ['merchant_020', 'merchant_021', 'merchant_022', 'merchant_023', 'merchant_024', 'merchant_025', 'merchant_026', 'merchant_027', 'merchant_028'],
         likesCount: 9,
         commentsCount: 6,
         status: 'published',
@@ -513,7 +552,7 @@ db.blogs.insertMany([
         category: 'recipe',
         tags: ['ramen', 'japanese food', 'noodles', 'comfort food'],
         views: 6200,
-        likes: ['testuserid', 'user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06', 'user_gen_07', 'user_gen_08', 'user_gen_09', 'user_gen_10', 'user_gen_11', 'user_gen_12', 'user_gen_13', 'user_gen_14', 'user_gen_15', 'user_gen_16', 'user_gen_17'],
+        likes: ['testuserid'],
         likesCount: 18,
         commentsCount: 14,
         status: 'published',
@@ -536,7 +575,7 @@ db.blogs.insertMany([
         category: 'recipe',
         tags: ['japanese curry', 'curry rice', 'family meal', 'comfort food'],
         views: 4500,
-        likes: ['user_gen_01', 'user_gen_02', 'user_gen_03', 'user_gen_04', 'user_gen_05', 'user_gen_06', 'user_gen_07', 'user_gen_08', 'user_gen_09', 'user_gen_10', 'user_gen_11'],
+        likes: ['merchant_seafood', 'merchant_coffee', 'merchant_dessert', 'merchant_002', 'merchant_003', 'merchant_004', 'merchant_005', 'merchant_006', 'merchant_007', 'merchant_008', 'merchant_009'],
         likesCount: 11,
         commentsCount: 9,
         status: 'published',
@@ -572,11 +611,11 @@ function createComment(blogId, userId, userName, content, createdDate, parentId 
 const blog1 = db.blogs.findOne({ slug: 'top-10-best-burgers-ho-chi-minh-city' });
 if (blog1) {
     comments.push(
-        createComment(blog1._id, 'user_gen_01', 'John Smith', 'Great list! I\'ve tried The Gourmet Kitchen and it\'s amazing! 🍔', new Date('2026-01-02T10:30:00Z')),
-        createComment(blog1._id, 'user_gen_02', 'Sarah Johnson', 'You should add Burger Bros to this list, their bacon burger is incredible!', new Date('2026-01-03T14:20:00Z')),
+        createComment(blog1._id, 'testadminid', 'Test Admin', 'Great list! I\'ve tried The Gourmet Kitchen and it\'s amazing! 🍔', new Date('2026-01-02T10:30:00Z')),
+        createComment(blog1._id, 'merchant_002', 'Pho Hanoi Owner', 'You should add Burger Bros to this list, their bacon burger is incredible!', new Date('2026-01-03T14:20:00Z')),
         createComment(blog1._id, 'testuserid', 'Test User', 'Thanks for the suggestion! I\'ll check them out for the next update.', new Date('2026-01-03T15:00:00Z'), null),
-        createComment(blog1._id, 'user_gen_03', 'Mike Chen', 'The photos look delicious! Definitely visiting this weekend.', new Date('2026-01-04T09:15:00Z')),
-        createComment(blog1._id, 'user_gen_04', 'Emily Davis', 'Which one has the best vegetarian options?', new Date('2026-01-05T11:45:00Z')),
+        createComment(blog1._id, 'merchant_003', 'Mike Chen', 'The photos look delicious! Definitely visiting this weekend.', new Date('2026-01-04T09:15:00Z')),
+        createComment(blog1._id, 'merchant_004', 'Emily Davis', 'Which one has the best vegetarian options?', new Date('2026-01-05T11:45:00Z')),
     );
 }
 
@@ -584,13 +623,13 @@ if (blog1) {
 const blog2 = db.blogs.findOne({ slug: 'how-to-make-authentic-italian-pizza-at-home' });
 if (blog2) {
     comments.push(
-        createComment(blog2._id, 'user_gen_01', 'John Smith', 'I tried this recipe and it turned out perfect! The dough was so good.', new Date('2026-01-06T16:30:00Z')),
-        createComment(blog2._id, 'user_gen_05', 'Lisa Wong', 'Can I use bread flour instead of all-purpose flour?', new Date('2026-01-07T10:00:00Z')),
+        createComment(blog2._id, 'testadminid', 'John Smith', 'I tried this recipe and it turned out perfect! The dough was so good.', new Date('2026-01-06T16:30:00Z')),
+        createComment(blog2._id, 'merchant_005', 'Lisa Wong', 'Can I use bread flour instead of all-purpose flour?', new Date('2026-01-07T10:00:00Z')),
         createComment(blog2._id, merchantId, 'Test Merchant', 'Yes! Bread flour will make it even chewier and more authentic.', new Date('2026-01-07T10:30:00Z'), null),
-        createComment(blog2._id, 'user_gen_06', 'David Lee', 'What temperature should the oven be for best results?', new Date('2026-01-08T12:00:00Z')),
+        createComment(blog2._id, 'merchant_seafood', 'David Lee', 'What temperature should the oven be for best results?', new Date('2026-01-08T12:00:00Z')),
         createComment(blog2._id, merchantId, 'Test Merchant', 'As hot as possible! 475°F minimum, but if your oven goes to 500°F, even better.', new Date('2026-01-08T12:15:00Z'), null),
-        createComment(blog2._id, 'user_gen_07', 'Anna Martinez', 'Made this for my family, everyone loved it! Thank you! 🍕', new Date('2026-01-09T18:45:00Z')),
-        createComment(blog2._id, 'user_gen_08', 'Tom Wilson', 'The step-by-step instructions are very clear. Great guide!', new Date('2026-01-10T08:20:00Z')),
+        createComment(blog2._id, 'merchant_coffee', 'Anna Martinez', 'Made this for my family, everyone loved it! Thank you! 🍕', new Date('2026-01-09T18:45:00Z')),
+        createComment(blog2._id, 'merchant_dessert', 'Tom Wilson', 'The step-by-step instructions are very clear. Great guide!', new Date('2026-01-10T08:20:00Z')),
     );
 }
 
@@ -598,10 +637,10 @@ if (blog2) {
 const blog3 = db.blogs.findOne({ slug: 'ultimate-guide-perfect-fried-chicken' });
 if (blog3) {
     comments.push(
-        createComment(blog3._id, 'user_gen_02', 'Sarah Johnson', 'The double dredge technique really works! Crispiest chicken ever!', new Date('2026-01-11T13:00:00Z')),
-        createComment(blog3._id, 'user_gen_09', 'Chris Brown', 'How long should I fry each piece?', new Date('2026-01-12T09:30:00Z')),
+        createComment(blog3._id, 'merchant_002', 'Sarah Johnson', 'The double dredge technique really works! Crispiest chicken ever!', new Date('2026-01-11T13:00:00Z')),
+        createComment(blog3._id, 'merchant_003', 'Chris Brown', 'How long should I fry each piece?', new Date('2026-01-12T09:30:00Z')),
         createComment(blog3._id, 'testuserid', 'Test User', 'About 12-15 minutes, until internal temp reaches 165°F. Use a thermometer!', new Date('2026-01-12T10:00:00Z'), null),
-        createComment(blog3._id, 'user_gen_10', 'Jessica Taylor', 'Can I use an air fryer instead?', new Date('2026-01-13T14:45:00Z')),
+        createComment(blog3._id, 'merchant_004', 'Jessica Taylor', 'Can I use an air fryer instead?', new Date('2026-01-13T14:45:00Z')),
     );
 }
 
@@ -609,11 +648,11 @@ if (blog3) {
 const blog4 = db.blogs.findOne({ slug: 'tacos-101-beginners-guide-mexican-street-food' });
 if (blog4) {
     comments.push(
-        createComment(blog4._id, 'user_gen_03', 'Mike Chen', 'Finally understand the difference between all the taco types! Thanks!', new Date('2026-01-13T11:00:00Z')),
-        createComment(blog4._id, 'user_gen_11', 'Maria Garcia', 'As a Mexican, I approve this guide! Very authentic. 🌮', new Date('2026-01-14T10:15:00Z')),
+        createComment(blog4._id, 'merchant_003', 'Mike Chen', 'Finally understand the difference between all the taco types! Thanks!', new Date('2026-01-13T11:00:00Z')),
+        createComment(blog4._id, 'merchant_005', 'Maria Garcia', 'As a Mexican, I approve this guide! Very authentic. 🌮', new Date('2026-01-14T10:15:00Z')),
         createComment(blog4._id, merchantId, 'Test Merchant', 'Thank you! I learned from my Mexican friends in California.', new Date('2026-01-14T11:00:00Z'), null),
-        createComment(blog4._id, 'user_gen_12', 'Robert Kim', 'Where can I buy good corn tortillas in HCMC?', new Date('2026-01-14T15:30:00Z')),
-        createComment(blog4._id, 'user_gen_13', 'Nina Patel', 'The al pastor recipe is spot on! Made it last night.', new Date('2026-01-15T09:20:00Z')),
+        createComment(blog4._id, 'merchant_seafood', 'Robert Kim', 'Where can I buy good corn tortillas in HCMC?', new Date('2026-01-14T15:30:00Z')),
+        createComment(blog4._id, 'merchant_coffee', 'Nina Patel', 'The al pastor recipe is spot on! Made it last night.', new Date('2026-01-15T09:20:00Z')),
     );
 }
 
@@ -621,13 +660,13 @@ if (blog4) {
 const blog5 = db.blogs.findOne({ slug: '5-healthy-eating-habits-better-lifestyle' });
 if (blog5) {
     comments.push(
-        createComment(blog5._id, 'user_gen_04', 'Emily Davis', 'I\'ve started meal planning and it\'s changed my life!', new Date('2026-01-16T08:00:00Z')),
-        createComment(blog5._id, 'user_gen_14', 'Kevin Zhang', 'Great tips! I\'m starting with habit #1 this week.', new Date('2026-01-16T12:30:00Z')),
-        createComment(blog5._id, 'user_gen_15', 'Sophie Anderson', 'The portion control tip is so helpful. Using smaller plates now!', new Date('2026-01-17T10:00:00Z')),
+        createComment(blog5._id, 'merchant_004', 'Emily Davis', 'I\'ve started meal planning and it\'s changed my life!', new Date('2026-01-16T08:00:00Z')),
+        createComment(blog5._id, 'merchant_seafood', 'Kevin Zhang', 'Great tips! I\'m starting with habit #1 this week.', new Date('2026-01-16T12:30:00Z')),
+        createComment(blog5._id, 'merchant_coffee', 'Sophie Anderson', 'The portion control tip is so helpful. Using smaller plates now!', new Date('2026-01-17T10:00:00Z')),
         createComment(blog5._id, 'testuserid', 'Test User', 'That\'s wonderful! Small changes make a big difference.', new Date('2026-01-17T11:00:00Z'), null),
-        createComment(blog5._id, 'user_gen_16', 'James Miller', 'Any tips for staying hydrated? I always forget to drink water.', new Date('2026-01-18T14:20:00Z')),
+        createComment(blog5._id, 'merchant_dessert', 'James Miller', 'Any tips for staying hydrated? I always forget to drink water.', new Date('2026-01-18T14:20:00Z')),
         createComment(blog5._id, 'testuserid', 'Test User', 'Try setting phone reminders every 2 hours, or get a water bottle with time markers!', new Date('2026-01-18T14:45:00Z'), null),
-        createComment(blog5._id, 'user_gen_17', 'Rachel Green', 'Love this article! Sharing with my friends.', new Date('2026-01-19T09:30:00Z')),
+        createComment(blog5._id, 'merchant_002', 'Rachel Green', 'Love this article! Sharing with my friends.', new Date('2026-01-19T09:30:00Z')),
     );
 }
 
@@ -635,14 +674,14 @@ if (blog5) {
 const blog6 = db.blogs.findOne({ slug: 'vietnamese-coffee-culture-deep-dive' });
 if (blog6) {
     comments.push(
-        createComment(blog6._id, 'user_gen_05', 'Lisa Wong', 'Vietnamese coffee is the best! I drink it every morning. ☕', new Date('2026-01-17T08:30:00Z')),
-        createComment(blog6._id, 'user_gen_18', 'Daniel Nguyen', 'Egg coffee is amazing! Everyone should try it at least once.', new Date('2026-01-17T10:15:00Z')),
-        createComment(blog6._id, 'user_gen_06', 'David Lee', 'Where can I buy a phin filter?', new Date('2026-01-17T14:00:00Z')),
+        createComment(blog6._id, 'merchant_005', 'Lisa Wong', 'Vietnamese coffee is the best! I drink it every morning. ☕', new Date('2026-01-17T08:30:00Z')),
+        createComment(blog6._id, 'merchant_002', 'Daniel Nguyen', 'Egg coffee is amazing! Everyone should try it at least once.', new Date('2026-01-17T10:15:00Z')),
+        createComment(blog6._id, 'merchant_seafood', 'David Lee', 'Where can I buy a phin filter?', new Date('2026-01-17T14:00:00Z')),
         createComment(blog6._id, 'testuserid', 'Test User', 'You can find them at any Vietnamese grocery store or online!', new Date('2026-01-17T14:30:00Z'), null),
-        createComment(blog6._id, 'user_gen_19', 'Amanda Clark', 'I visited Vietnam last year and fell in love with the coffee culture!', new Date('2026-01-18T09:00:00Z')),
-        createComment(blog6._id, 'user_gen_20', 'Peter Tran', 'Trung Nguyen coffee is the best brand! 👍', new Date('2026-01-18T16:45:00Z')),
-        createComment(blog6._id, 'user_gen_07', 'Anna Martinez', 'The condensed milk makes it so sweet and creamy. Love it!', new Date('2026-01-19T11:20:00Z')),
-        createComment(blog6._id, 'user_gen_08', 'Tom Wilson', 'Great article! Very informative about Vietnamese coffee history.', new Date('2026-01-20T08:00:00Z')),
+        createComment(blog6._id, 'testadminid', 'Amanda Clark', 'I visited Vietnam last year and fell in love with the coffee culture!', new Date('2026-01-18T09:00:00Z')),
+        createComment(blog6._id, 'merchant_003', 'Peter Tran', 'Trung Nguyen coffee is the best brand! 👍', new Date('2026-01-18T16:45:00Z')),
+        createComment(blog6._id, 'merchant_coffee', 'Anna Martinez', 'The condensed milk makes it so sweet and creamy. Love it!', new Date('2026-01-19T11:20:00Z')),
+        createComment(blog6._id, 'merchant_dessert', 'Tom Wilson', 'Great article! Very informative about Vietnamese coffee history.', new Date('2026-01-20T08:00:00Z')),
     );
 }
 
@@ -650,11 +689,11 @@ if (blog6) {
 const blog7 = db.blogs.findOne({ slug: 'korean-bbq-at-home-complete-guide' });
 if (blog7) {
     comments.push(
-        createComment(blog7._id, 'user_gen_09', 'Chris Brown', 'Samgyeopsal is my favorite! This guide is perfect.', new Date('2026-01-18T12:00:00Z')),
-        createComment(blog7._id, 'user_gen_10', 'Jessica Taylor', 'Can I use a regular grill instead of a Korean BBQ grill?', new Date('2026-01-18T15:30:00Z')),
+        createComment(blog7._id, 'merchant_003', 'Chris Brown', 'Samgyeopsal is my favorite! This guide is perfect.', new Date('2026-01-18T12:00:00Z')),
+        createComment(blog7._id, 'merchant_004', 'Jessica Taylor', 'Can I use a regular grill instead of a Korean BBQ grill?', new Date('2026-01-18T15:30:00Z')),
         createComment(blog7._id, merchantId, 'Test Merchant', 'Yes! Any grill works. The key is high heat and thin slices.', new Date('2026-01-18T16:00:00Z'), null),
-        createComment(blog7._id, 'user_gen_11', 'Maria Garcia', 'The marinade recipe is delicious! Used it for bulgogi.', new Date('2026-01-19T10:45:00Z')),
-        createComment(blog7._id, 'user_gen_12', 'Robert Kim', 'Don\'t forget the soju! 🍶 Perfect pairing with Korean BBQ.', new Date('2026-01-19T18:00:00Z')),
+        createComment(blog7._id, 'merchant_005', 'Maria Garcia', 'The marinade recipe is delicious! Used it for bulgogi.', new Date('2026-01-19T10:45:00Z')),
+        createComment(blog7._id, 'testadminid', 'Robert Kim', 'Don\'t forget the soju! 🍶 Perfect pairing with Korean BBQ.', new Date('2026-01-19T18:00:00Z')),
     );
 }
 
@@ -662,15 +701,15 @@ if (blog7) {
 const blog8 = db.blogs.findOne({ slug: 'best-pho-restaurants-hanoi' });
 if (blog8) {
     comments.push(
-        createComment(blog8._id, 'user_gen_13', 'Nina Patel', 'Phở Gia Truyền is incredible! Been there 3 times already.', new Date('2026-01-19T09:00:00Z')),
-        createComment(blog8._id, 'user_gen_14', 'Kevin Zhang', 'I prefer Phở Thìn, the stir-fried beef is unique!', new Date('2026-01-19T11:30:00Z')),
-        createComment(blog8._id, 'user_gen_15', 'Sophie Anderson', 'What\'s the best time to visit to avoid crowds?', new Date('2026-01-19T14:00:00Z')),
+        createComment(blog8._id, 'merchant_010', 'Nina Patel', 'Phở Gia Truyền is incredible! Been there 3 times already.', new Date('2026-01-19T09:00:00Z')),
+        createComment(blog8._id, 'merchant_seafood', 'Kevin Zhang', 'I prefer Phở Thìn, the stir-fried beef is unique!', new Date('2026-01-19T11:30:00Z')),
+        createComment(blog8._id, 'merchant_coffee', 'Sophie Anderson', 'What\'s the best time to visit to avoid crowds?', new Date('2026-01-19T14:00:00Z')),
         createComment(blog8._id, 'testuserid', 'Test User', 'Early morning (7-8 AM) or mid-afternoon (2-3 PM) are usually quieter.', new Date('2026-01-19T14:30:00Z'), null),
-        createComment(blog8._id, 'user_gen_16', 'James Miller', 'Phở 10 has the best chicken pho I\'ve ever had!', new Date('2026-01-20T08:45:00Z')),
-        createComment(blog8._id, 'user_gen_17', 'Rachel Green', 'Great list! I\'m visiting Hanoi next month, will try all of these! 🍜', new Date('2026-01-20T10:15:00Z')),
-        createComment(blog8._id, 'user_gen_18', 'Daniel Nguyen', 'Phở Vui is perfect for late night cravings after drinking!', new Date('2026-01-20T16:30:00Z')),
-        createComment(blog8._id, 'user_gen_19', 'Amanda Clark', 'The photos are making me hungry! 😋', new Date('2026-01-20T18:00:00Z')),
-        createComment(blog8._id, 'user_gen_20', 'Peter Tran', 'As a Hanoian, I approve this list! All authentic places.', new Date('2026-01-21T09:00:00Z')),
+        createComment(blog8._id, 'merchant_dessert', 'James Miller', 'Phở 10 has the best chicken pho I\'ve ever had!', new Date('2026-01-20T08:45:00Z')),
+        createComment(blog8._id, 'merchant_002', 'Rachel Green', 'Great list! I\'m visiting Hanoi next month, will try all of these! 🍜', new Date('2026-01-20T10:15:00Z')),
+        createComment(blog8._id, 'merchant_003', 'Daniel Nguyen', 'Phở Vui is perfect for late night cravings after drinking!', new Date('2026-01-20T16:30:00Z')),
+        createComment(blog8._id, 'merchant_004', 'Amanda Clark', 'The photos are making me hungry! 😋', new Date('2026-01-20T18:00:00Z')),
+        createComment(blog8._id, 'merchant_005', 'Peter Tran', 'As a Hanoian, I approve this list! All authentic places.', new Date('2026-01-21T09:00:00Z')),
         createComment(blog8._id, 'testuserid', 'Test User', 'Thank you! I spent weeks researching and tasting to make this list.', new Date('2026-01-21T10:00:00Z'), null),
     );
 }
@@ -679,13 +718,13 @@ if (blog8) {
 const blog9 = db.blogs.findOne({ slug: 'burrito-vs-taco-whats-the-difference' });
 if (blog9) {
     comments.push(
-        createComment(blog9._id, 'user_gen_01', 'John Smith', 'I always wondered about this! Great explanation.', new Date('2026-01-20T09:00:00Z')),
-        createComment(blog9._id, 'user_gen_02', 'Sarah Johnson', 'Team burrito all the way! More filling and less messy. 🌯', new Date('2026-01-20T11:30:00Z')),
-        createComment(blog9._id, 'user_gen_03', 'Mike Chen', 'Tacos are better! You can try different flavors in one meal.', new Date('2026-01-20T13:00:00Z')),
+        createComment(blog9._id, 'testadminid', 'John Smith', 'I always wondered about this! Great explanation.', new Date('2026-01-20T09:00:00Z')),
+        createComment(blog9._id, 'merchant_002', 'Sarah Johnson', 'Team burrito all the way! More filling and less messy. 🌯', new Date('2026-01-20T11:30:00Z')),
+        createComment(blog9._id, 'merchant_003', 'Mike Chen', 'Tacos are better! You can try different flavors in one meal.', new Date('2026-01-20T13:00:00Z')),
         createComment(blog9._id, merchantId, 'Test Merchant', 'Both have their place! I love tacos for lunch, burritos for dinner.', new Date('2026-01-20T13:30:00Z'), null),
-        createComment(blog9._id, 'user_gen_04', 'Emily Davis', 'The Mission-style burrito sounds amazing!', new Date('2026-01-20T15:45:00Z')),
-        createComment(blog9._id, 'user_gen_05', 'Lisa Wong', 'Breakfast burritos are the best invention ever!', new Date('2026-01-21T07:30:00Z')),
-        createComment(blog9._id, 'user_gen_06', 'David Lee', 'Street tacos in Mexico City changed my life. So simple, so good.', new Date('2026-01-21T12:00:00Z')),
+        createComment(blog9._id, 'merchant_004', 'Emily Davis', 'The Mission-style burrito sounds amazing!', new Date('2026-01-20T15:45:00Z')),
+        createComment(blog9._id, 'merchant_005', 'Lisa Wong', 'Breakfast burritos are the best invention ever!', new Date('2026-01-21T07:30:00Z')),
+        createComment(blog9._id, 'testuserid', 'David Lee', 'Street tacos in Mexico City changed my life. So simple, so good.', new Date('2026-01-21T12:00:00Z')),
     );
 }
 
@@ -693,18 +732,18 @@ if (blog9) {
 const blog10 = db.blogs.findOne({ slug: 'food-photography-tips-instagram' });
 if (blog10) {
     comments.push(
-        createComment(blog10._id, 'user_gen_07', 'Anna Martinez', 'These tips are gold! My Instagram photos look so much better now! 📸', new Date('2026-01-21T08:00:00Z')),
-        createComment(blog10._id, 'user_gen_08', 'Tom Wilson', 'The 45-degree angle tip really works! Thanks!', new Date('2026-01-21T09:30:00Z')),
-        createComment(blog10._id, 'user_gen_09', 'Chris Brown', 'What\'s the best editing app for beginners?', new Date('2026-01-21T10:15:00Z')),
+        createComment(blog10._id, 'merchant_seafood', 'Anna Martinez', 'These tips are gold! My Instagram photos look so much better now! 📸', new Date('2026-01-21T08:00:00Z')),
+        createComment(blog10._id, 'merchant_coffee', 'Tom Wilson', 'The 45-degree angle tip really works! Thanks!', new Date('2026-01-21T09:30:00Z')),
+        createComment(blog10._id, 'merchant_dessert', 'Chris Brown', 'What\'s the best editing app for beginners?', new Date('2026-01-21T10:15:00Z')),
         createComment(blog10._id, 'testuserid', 'Test User', 'Start with Snapseed - it\'s free and very powerful!', new Date('2026-01-21T10:30:00Z'), null),
-        createComment(blog10._id, 'user_gen_10', 'Jessica Taylor', 'Natural light makes such a huge difference! Never using flash again.', new Date('2026-01-21T11:00:00Z')),
-        createComment(blog10._id, 'user_gen_11', 'Maria Garcia', 'The rule of thirds changed my photography game!', new Date('2026-01-21T12:30:00Z')),
-        createComment(blog10._id, 'user_gen_12', 'Robert Kim', 'Can you do a tutorial on video editing for food content?', new Date('2026-01-21T13:00:00Z')),
+        createComment(blog10._id, 'testadminid', 'Jessica Taylor', 'Natural light makes such a huge difference! Never using flash again.', new Date('2026-01-21T11:00:00Z')),
+        createComment(blog10._id, 'merchant_002', 'Maria Garcia', 'The rule of thirds changed my photography game!', new Date('2026-01-21T12:30:00Z')),
+        createComment(blog10._id, 'merchant_003', 'Robert Kim', 'Can you do a tutorial on video editing for food content?', new Date('2026-01-21T13:00:00Z')),
         createComment(blog10._id, 'testuserid', 'Test User', 'Great idea! I\'ll work on a video editing guide next.', new Date('2026-01-21T13:15:00Z'), null),
-        createComment(blog10._id, 'user_gen_13', 'Nina Patel', 'My restaurant\'s Instagram engagement doubled after following these tips!', new Date('2026-01-21T14:00:00Z')),
-        createComment(blog10._id, 'user_gen_14', 'Kevin Zhang', 'The overhead shot tip is perfect for bowl dishes!', new Date('2026-01-21T15:30:00Z')),
-        createComment(blog10._id, 'user_gen_15', 'Sophie Anderson', 'Bookmarking this! Will refer back when posting food pics.', new Date('2026-01-21T16:45:00Z')),
-        createComment(blog10._id, 'user_gen_16', 'James Miller', 'Very comprehensive guide! Thank you for sharing your knowledge.', new Date('2026-01-21T18:00:00Z')),
+        createComment(blog10._id, 'merchant_004', 'Nina Patel', 'My restaurant\'s Instagram engagement doubled after following these tips!', new Date('2026-01-21T14:00:00Z')),
+        createComment(blog10._id, 'merchant_005', 'Kevin Zhang', 'The overhead shot tip is perfect for bowl dishes!', new Date('2026-01-21T15:30:00Z')),
+        createComment(blog10._id, 'testadminid', 'Sophie Anderson', 'Bookmarking this! Will refer back when posting food pics.', new Date('2026-01-21T16:45:00Z')),
+        createComment(blog10._id, 'testuserid', 'James Miller', 'Very comprehensive guide! Thank you for sharing your knowledge.', new Date('2026-01-21T18:00:00Z')),
     );
 }
 

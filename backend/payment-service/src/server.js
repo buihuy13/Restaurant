@@ -18,6 +18,7 @@ import { startOrderCompletedConsumer } from './consumers/orderCompletedConsumer.
 import orderCancelledConsumer from './consumers/orderCancelledConsumer.js';
 import adminWalletRoutes from './routes/adminWalletRoutes.js';
 import internalWalletRoutes from './routes/internalWalletRoutes.js';
+import './models/index.js'; // Ensure associations are registered
 
 
 const app = express();

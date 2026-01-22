@@ -48,15 +48,15 @@ export const startOrderCompletedConsumer = async () => {
                     return;
                 }
 
-                // FIX 4: Get info from EVENT
-                const restaurantId = orderData.restaurantId;
-                const merchantId = orderData.merchantId;
+                // FIX 4: Get info from EVENT and cross-check with PAYMENT metadata
+                // Prefer restaurantId (e.g. RES001) over merchantId
+                const restaurantId = orderData.restaurantId || orderData.merchantId || payment?.metadata?.restaurantId;
 
                 // Calculate amount for merchant (90% of total if not provided)
-                const totalAmount = Number(orderData.totalAmount || 0);
+                const totalAmount = Number(orderData.totalAmount || payment?.amount || 0);
                 const platformFee = Number(orderData.platformFee || totalAmount * 0.1);
                 const amountForMerchant = Number(
-                    orderData.amountForMerchant || (totalAmount - platformFee)
+                    orderData.amountForMerchant || payment?.metadata?.amountForMerchant || (totalAmount - platformFee)
                 );
 
                 if (!restaurantId) {

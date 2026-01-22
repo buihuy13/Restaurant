@@ -143,7 +143,7 @@ class WalletService {
         const wallet = await Wallet.findOne({ where: { restaurantId } });
         if (!wallet) throw new Error('Ví không tồn tại');
         if (parseFloat(wallet.balance) < amount) throw new Error('Số dư không đủ');
-        if (amount < 50000) throw new Error('Rút tối thiểu 50.000đ');
+        if (amount < 2) throw new Error('Rút tối thiểu 2 USD');
 
         // Validate bankInfo (fake nhưng vẫn phải hợp lệ)
         if (!bankInfo?.bankName || !bankInfo?.accountNumber || !bankInfo?.accountHolderName) {
@@ -173,7 +173,7 @@ class WalletService {
                     type: 'WITHDRAW',
                     amount: -amount,
                     status: 'PENDING',
-                    description: `Rút ${amount.toLocaleString()}đ → ${bankInfo.bankName}`,
+                    description: `Rút ${amount.toLocaleString()}$ → ${bankInfo.bankName}`,
                 },
                 { transaction: t },
             );
@@ -216,7 +216,7 @@ class WalletService {
 
             const bank = payout.bankInfo;
             logger.warn(
-                `[FAKE CHUYỂN KHOẢN] ĐÃ DUYỆT #${payoutId} | ${payout.amount.toLocaleString()}đ | ${bank.bankName
+                `[FAKE CHUYỂN KHOẢN] ĐÃ DUYỆT #${payoutId} | ${payout.amount.toLocaleString()}$ | ${bank.bankName
                 } - STK: ${bank.accountNumber} - CTK: ${bank.accountHolderName}`,
             );
 
