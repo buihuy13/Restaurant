@@ -23,7 +23,7 @@ localhost:8443 {
     }
 
     @ws_routes {
-        path /ws/*
+        path /ws*
         path /socket.io/*
     }
 
