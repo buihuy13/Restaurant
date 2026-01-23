@@ -118,12 +118,10 @@ scp -i $deploy_host_private_key \
     ../caddy/Caddyfile.prod \
     ./update-containers.sh \
     ../docker-compose.prod.yml \
-    ../.env \
+    ./.env \
     ./ghcr.pem \
     ../backend/main.sql \
     ../backend/main_postgres.sql \
-    ../backend/seed-data.sql \
-    ../backend/seed-restaurant-data.sql \
     ../backend/seed-mongodb.js \
     $deploy_host_username@$deploy_host:$remote_dir/
 
