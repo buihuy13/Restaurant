@@ -32,6 +32,8 @@ services=(
     "frontend"
 )
 
+nodejs_services=("order-service" "payment-service" "blog-service")
+
 # Build and push Docker images
 echo "Building images"
 
@@ -39,13 +41,22 @@ build_pids=()
 for service in "${services[@]}"; do
     (
         if [ "$service" = "frontend" ]; then
-            build_dir="../frontend"
+            build_context="../frontend"
+            dockerfile="../frontend/Dockerfile"
+         elif [[ " ${nodejs_services[@]} " =~ " ${service} " ]]; then
+            build_context="../backend/$service"
+            dockerfile="../backend/$service/Dockerfile"
         else
-            build_dir="../backend/$service"
+            build_context="../backend"
+            dockerfile="../backend/$service/Dockerfile"
         fi
         
         echo "  Building $service..."
-        if docker build -t $registry/$github_username/$service:$version $build_dir; then
+        if docker build \
+            -t $registry/$github_username/$service:$version \
+            -f $dockerfile \
+            --build-arg MODULE_PATH=$service \
+            $build_context; then
             echo "$service built successfully"
         else
             echo "$service build failed"
@@ -103,7 +114,7 @@ echo "All images pushed successfully"
 
 git checkout develop
 
-deploy_host=4.194.34.185
+deploy_host=4.193.224.239
 deploy_host_username=quochuy
 deploy_host_private_key=key.pem
 
