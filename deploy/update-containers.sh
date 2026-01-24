@@ -14,8 +14,53 @@ else
     exit 1
 fi
 
-echo "Pulling images version $VERSION..."
-$DOCKER_COMPOSE_CMD pull
+IMAGES=(
+    "stripe/stripe-cli:latest"
+    "rabbitmq:3-management"
+    "redis:7-alpine"
+    "mysql:8.0"
+    "postgis/postgis:16-3.4"
+    "mongo:6.0"
+    "openzipkin/zipkin"
+    "caddy:2-alpine"
+    "ghcr.io/$GITHUB_USER/service-discovery:$VERSION"
+    "ghcr.io/$GITHUB_USER/api-gateway:$VERSION"
+    "ghcr.io/$GITHUB_USER/user-service:$VERSION"
+    "ghcr.io/$GITHUB_USER/notification-service:$VERSION"
+    "ghcr.io/$GITHUB_USER/chat-service:$VERSION"
+    "ghcr.io/$GITHUB_USER/restaurant-service:$VERSION"
+    "ghcr.io/$GITHUB_USER/order-service:$VERSION"
+    "ghcr.io/$GITHUB_USER/payment-service:$VERSION"
+    "ghcr.io/$GITHUB_USER/blog-service:$VERSION"
+    "ghcr.io/$GITHUB_USER/frontend:$VERSION"
+)
+
+echo "Pull từng image để giảm tải I/O"
+
+for img in "${IMAGES[@]}"; do
+    echo "Pulling: $img"
+    
+    # Thử pull, nếu lỗi thì thử lại tối đa 3 lần
+    n=0
+    until [ "$n" -ge 3 ]
+    do
+        docker pull "$img" && break
+        n=$((n+1)) 
+        echo "Pull lỗi, thử lại lần $n sau 5s"
+        sleep 5
+    done
+    
+    if [ "$n" -ge 3 ]; then
+       echo "Không thể pull $img -> Dừng deploy."
+       exit 1
+    fi
+
+    echo "Done: $img"
+    sleep 3
+done
+
+# Down trước để clean up
+$DOCKER_COMPOSE_CMD down --remove-orphans
 
 echo "Starting containers in detached mode..."
 $DOCKER_COMPOSE_CMD up -d
