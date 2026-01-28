@@ -7,12 +7,12 @@ const WalletTransaction = sequelize.define(
     'WalletTransaction',
     {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.CHAR(36),
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
         },
         walletId: {
-            type: DataTypes.UUID,
+            type: DataTypes.CHAR(36),
             allowNull: false,
             field: 'wallet_id',
         },
@@ -21,7 +21,7 @@ const WalletTransaction = sequelize.define(
             field: 'order_id',
         },
         payoutRequestId: {
-            type: DataTypes.UUID,
+            type: DataTypes.CHAR(36),
             field: 'payout_request_id',
         },
         type: {

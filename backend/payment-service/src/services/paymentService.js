@@ -19,16 +19,13 @@ class PaymentService {
 
             // Sử dụng metadata trực tiếp từ dữ liệu gửi lên, gán cả 2 loại key để an toàn
             const inputMeta = paymentData.metadata || {};
-            const merchantId = inputMeta.merchantId || inputMeta.merchant_id;
-            const restaurantId = inputMeta.restaurantId || inputMeta.restaurant_id;
-            const amountForMerchant = inputMeta.amountForMerchant || inputMeta.amountForRestaurant;
+            const restaurantId = inputMeta.restaurantId || inputMeta.restaurant_id || inputMeta.merchantId || inputMeta.merchant_id;
+            const amountForMerchant = inputMeta.amountForMerchant || inputMeta.amountForRestaurant || inputMeta.amount_for_merchant;
 
             const metadata = {
                 ...inputMeta,
-                merchantId: merchantId, // Truyền cả merchantId
-                restaurantId: restaurantId, // Truyền cả restaurantId
+                restaurantId: restaurantId,
                 amountForMerchant: amountForMerchant,
-                amountForRestaurant: amountForMerchant,
             };
 
             const payment = await Payment.create({
@@ -76,12 +73,8 @@ class PaymentService {
                     paymentId: payment.paymentId,
                     orderId: payment.orderId,
                     userId: payment.userId,
-                    merchantId: payment.metadata?.merchantId || payment.metadata?.merchant_id,
-                    restaurantId: payment.metadata?.restaurantId || payment.metadata?.restaurant_id,
-                    amountForMerchant:
-                        payment.metadata?.amountForMerchant ||
-                        payment.metadata?.amount_for_merchant ||
-                        payment.metadata?.amountForRestaurant,
+                    restaurantId: payment.metadata?.restaurantId,
+                    amountForMerchant: payment.metadata?.amountForMerchant,
                 },
             );
 
@@ -343,17 +336,12 @@ class PaymentService {
         try {
             const metadata = payment.metadata || {};
             logger.info('publishPaymentCompleted - payment metadata:', { paymentId: payment.paymentId, metadata });
-            let merchantId =
-                metadata.merchantId || metadata.merchant_id || metadata.restaurantId || metadata.restaurant_id;
-            let rawAmount =
-                metadata.amountForMerchant ||
-                metadata.amount_for_merchant ||
-                metadata.amountForRestaurant ||
-                metadata.amount_for_restaurant;
+            let restaurantId = metadata.restaurantId;
+            let rawAmount = metadata.amountForMerchant;
             let amountForMerchant = Number(rawAmount);
 
             // Fallback: if metadata missing merchant info, try to fetch order from Order Service
-            if ((!merchantId || !Number.isFinite(amountForMerchant) || amountForMerchant <= 0) && payment.orderId) {
+            if ((!restaurantId || !Number.isFinite(amountForMerchant) || amountForMerchant <= 0) && payment.orderId) {
                 const orderServiceUrl =
                     process.env.ORDER_SERVICE_URL || process.env.ORDER_SERVICE || process.env.ORDER_SERVICE_URL_BASE;
                 if (orderServiceUrl) {
@@ -368,25 +356,18 @@ class PaymentService {
                         const resp = await axios.get(url, { timeout: 5000 });
                         const order = resp.data?.data || resp.data;
                         if (order) {
-                            merchantId =
-                                merchantId ||
-                                order.merchantId ||
-                                order.merchant_id ||
-                                order.merchant ||
-                                order.restaurantId ||
-                                order.restaurant_id ||
-                                order.restaurant;
+                            restaurantId = restaurantId || order.restaurantId || order.restaurant_id || order.merchantId || order.merchant_id;
                             const total = Number(
                                 order.totalAmount || order.total_amount || order.total || payment.amount || 0,
                             );
                             amountForMerchant = amountForMerchant || Math.round(total * 0.9);
 
                             // persist enriched metadata back to payment so future retries don't need lookup
-                            payment.metadata = { ...metadata, merchantId, amountForMerchant };
+                            payment.metadata = { ...metadata, restaurantId, amountForMerchant };
                             await payment.save();
                             logger.info('publishPaymentCompleted - enriched payment metadata from order service', {
                                 paymentId: payment.paymentId,
-                                merchantId,
+                                restaurantId,
                                 amountForMerchant,
                             });
                         }
@@ -408,7 +389,7 @@ class PaymentService {
             logger.info('publishPaymentCompleted - deferred merchant credit to order.completed consumer', {
                 paymentId: payment.paymentId,
                 orderId: payment.orderId,
-                merchantId,
+                restaurantId,
                 amountForMerchant,
             });
         } catch (creditError) {
@@ -470,7 +451,7 @@ class PaymentService {
                 currency: (orderData.currency || 'USD').toLowerCase(),
                 // pass restaurant info into metadata so later when payment completes we can credit merchant
                 metadata: {
-                    merchantId: orderData.merchantId || orderData.restaurantId,
+                    restaurantId: orderData.restaurantId || orderData.merchantId,
                     amountForMerchant: Math.round((orderData.totalAmount || 0) * 0.9), // default 10% platform fee
                 },
             };

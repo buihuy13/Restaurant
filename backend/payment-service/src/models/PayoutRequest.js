@@ -7,12 +7,12 @@ const PayoutRequest = sequelize.define(
     'PayoutRequest',
     {
         id: {
-            type: DataTypes.UUID,
+            type: DataTypes.CHAR(36),
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
         },
         walletId: {
-            type: DataTypes.UUID,
+            type: DataTypes.CHAR(36),
             allowNull: false,
             field: 'wallet_id',
         },

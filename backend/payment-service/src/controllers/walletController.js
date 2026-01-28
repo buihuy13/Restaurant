@@ -29,10 +29,10 @@ class WalletController {
             const { amount, bankInfo, note } = req.body;
 
             // Validate đẹp hơn
-            if (!amount || amount < 50000) {
+            if (!amount || amount < 2) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Số tiền rút phải ≥ 50.000đ',
+                    message: 'Số tiền rút phải ≥ 2$',
                 });
             }
             if (!bankInfo?.bankName || !bankInfo?.accountNumber || !bankInfo?.accountHolderName) {
